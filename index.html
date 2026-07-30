@@ -1342,9 +1342,23 @@ async function saveSettings(){
   const spec=document.getElementById('set-spec').value.trim();if(spec){const el=document.getElementById('aboutSpec');if(el)el.textContent=spec;}
   const sched=document.getElementById('set-sched').value.trim();if(sched){const el=document.getElementById('aboutSched');if(el)el.textContent=sched;}
   const country=document.getElementById('set-country').value.trim();if(country){const el=document.getElementById('aboutCountry');if(el)el.textContent=country;}
-  renderSocialLinks(); // تحديث وسائل التواصل
+  renderSocialLinks();
   const np=document.getElementById('set-newpass').value.trim(),cp=document.getElementById('set-confirmpass').value.trim();
   if(np){if(np!==cp){showToast('كلمتا السر غير متطابقتين','err');return;}adminPass=np;document.getElementById('set-newpass').value='';document.getElementById('set-confirmpass').value='';}
+
+  // حفظ على Firebase
+  const nm2  = document.getElementById('set-name')?.value.trim();
+  const kk2  = document.getElementById('set-kick')?.value.trim();
+  const bio2 = document.getElementById('set-bio')?.value.trim();
+  const spec2= document.getElementById('set-spec')?.value.trim();
+  const sch2 = document.getElementById('set-sched')?.value.trim();
+  const cou2 = document.getElementById('set-country')?.value.trim();
+  await saveSettingsToServer({
+    channelName: nm2, kickUsername: kk2, bio: bio2,
+    spec: spec2, sched: sch2, country: cou2,
+    channelImg: channelImg || null,
+  });
+  await saveSocialsToServer();
   showToast('✅ تم حفظ الإعدادات');
 }
 

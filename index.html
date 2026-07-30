@@ -4,6 +4,33 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>متجر القناة — Kick</title>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyABF3eoST-KqM8LkVwCGNtSPlr1YwPS0ZY",
+    authDomain: "aboodshop-c48ff.firebaseapp.com",
+    databaseURL: "https://aboodshop-c48ff-default-rtdb.firebaseio.com",
+    projectId: "aboodshop-c48ff",
+    storageBucket: "aboodshop-c48ff.firebasestorage.app",
+    messagingSenderId: "196863431531",
+    appId: "1:196863431531:web:f5568e6af276100914b22e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  // نصدّر للـ window
+  window._fbDB    = db;
+  window._fbRef   = ref;
+  window._fbSet   = set;
+  window._fbGet   = get;
+  window._fbUpdate = update;
+  window._fbOnValue = onValue;
+  window._fbReady = true;
+  window.dispatchEvent(new Event('fbReady'));
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -75,7 +102,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 .login-choice h2{font-size:22px;font-weight:900;margin-bottom:8px;}
 .login-choice p{color:var(--muted);font-size:14px;margin-bottom:28px;}
 .login-options{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
-.login-option-btn{display:flex;align-items:center;gap:10px;padding:14px 28px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;border:none;font-family:'Cairo',sans-serif;transition:transform .15s,opacity .15s;min-width:180px;justify-content:center;}
+.login-option-btn{display:flex;align-items:center;gap:10px;padding:14px 28px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;border:2px solid transparent;font-family:'Cairo',sans-serif;transition:transform .15s,opacity .15s;min-width:180px;justify-content:center;}
 .login-option-btn:hover{transform:translateY(-2px);opacity:.9;}
 
 /* STORE */
@@ -379,7 +406,7 @@ svg.ic{display:inline-block;vertical-align:middle;fill:none;stroke:currentColor;
       Discord
     </button>
     <button class="login-btn kick-btn" id="kickBtn" onclick="openLoginChoice()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h4v6l4-6h4l-5 8 5 8h-4l-4-6v6H4V4z"/></svg>
+      <svg width="16" height="16" viewBox="0 0 50 50" fill="none"><path d="M8 5H18V22L28 5H40L27 25L40 45H28L18 28V45H8V5Z" fill="#53FC18"/></svg>
       Kick
     </button>
     <button class="logout-btn hidden" id="logoutBtn" onclick="doLogout()">خروج</button>
@@ -408,10 +435,9 @@ svg.ic{display:inline-block;vertical-align:middle;fill:none;stroke:currentColor;
   <div class="features-grid">
     <div class="feature-card"><div class="feature-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="feature-title">نقاط الولاء</div><div class="feature-desc">شاهد البث وتفاعل واكسب نقاط كل ساعة تلقائياً</div></div>
     <div class="feature-card"><div class="feature-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div><div class="feature-title">المتجر الحصري</div><div class="feature-desc">استبدل نقاطك بجوائز ومميزات حصرية</div></div>
-    <div class="feature-card"><div class="feature-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.001.02.011.04.027.053a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.099 18.09.12 18.12.149 18.14a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+    <div class="feature-card"><div class="feature-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.001.02.011.04.027.053a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
     </div><div class="feature-title">سجّل بـ Discord</div><div class="feature-desc">تسجيل دخول سريع وآمن بحساب Discord الخاص بك</div></div>
-    <div class="feature-card"><div class="feature-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5h4"/><path d="M18 9h2a2 2 0 0 0 2-2V5h-4"/><path d="M12 17v4"/><path d="M8 21h8"/><path d="M6 3h12v8a6 6 0 0 1-12 0V3z"/></svg></div><div class="feature-title">سجّل بـ Kick</div><div class="feature-desc">ربط مباشر بحساب Kick وتتبع نقاطك تلقائياً</div></div>
+    <div class="feature-card"><div class="feature-icon"><svg width="28" height="28" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5H18V22L28 5H40L27 25L40 45H28L18 28V45H8V5Z" fill="#53FC18"/></svg></div><div class="feature-title">سجّل بـ Kick</div><div class="feature-desc">ربط مباشر بحساب Kick وتتبع نقاطك تلقائياً</div></div>
   </div>
 </section>
 
@@ -934,13 +960,13 @@ svg.ic{display:inline-block;vertical-align:middle;fill:none;stroke:currentColor;
   <div class="modal-box">
     <h3>🔐 تسجيل الدخول</h3>
     <p>اختر طريقة تسجيل الدخول المفضلة لديك</p>
-    <div class="login-options">
+    <div class="login-options" style="display:flex;flex-direction:column;gap:12px;">
       <button class="login-option-btn" style="background:var(--discord);color:#fff;" onclick="loginWith('discord')">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.001.02.011.04.027.053a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
         تسجيل بـ Discord
       </button>
-      <button class="login-option-btn" style="background:var(--kick);color:#000;" onclick="loginWith('kick')">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h4v6l4-6h4l-5 8 5 8h-4l-4-6v6H4V4z"/></svg>
+      <button class="login-option-btn" style="background:#53FC18;color:#000;font-weight:900;" onclick="loginWith('kick')">
+        <svg width="22" height="22" viewBox="0 0 50 50" fill="none"><path d="M8 5H18V22L28 5H40L27 25L40 45H28L18 28V45H8V5Z" fill="#53FC18"/></svg>
         تسجيل بـ Kick
       </button>
     </div>
@@ -1267,8 +1293,8 @@ function renderOrdersTable(){
   if(!orders.length){w.innerHTML='<div class="empty-state"><div class="empty-state-icon">🛒</div><p>لا توجد طلبات</p></div>';return;}
   w.innerHTML=`<table class="data-table"><thead><tr><th>#</th><th>المستخدم</th><th>المنصة</th><th>المنتج</th><th>السعر</th><th>التاريخ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>${orders.map((o,i)=>`<tr><td style="color:var(--muted);font-size:12px;">${orders.length-i}</td><td style="color:var(--kick);font-weight:700;">${o.kickName}</td><td><span class="provider-badge provider-${o.provider||'kick'}">${o.provider==='discord'?'Discord':'Kick'}</span></td><td>${o.icon} ${o.product}</td><td style="color:var(--kick);font-weight:700;">${o.price.toLocaleString()} نق</td><td style="color:var(--muted);font-size:12px;">${o.date}</td><td><span class="status-badge ${o.status==='pending'?'s-pending':'s-done'}">${o.status==='pending'?'⏳ معلق':'✅ منجز'}</span></td><td><div class="td-actions">${o.status==='pending'?`<button class="btn-sm btn-done" onclick="markDone(${o.id})">✓ تم</button>`:''}<button class="btn-sm btn-del" onclick="delOrder(${o.id})">🗑</button></div></td></tr>`).join('')}</tbody></table>`;
 }
-function markDone(id){const o=orders.find(x=>x.id===id);if(o){o.status='done';renderOrdersTable();updateBadges();showToast('✅ تم تحديث الطلب');}}
-function delOrder(id){orders=orders.filter(x=>x.id!==id);renderOrdersTable();updateBadges();showToast('تم حذف الطلب');}
+async function markDone(id){const o=orders.find(x=>x.id===id);if(o){o.status='done';renderOrdersTable();updateBadges();showToast('✅ تم تحديث الطلب');}}
+async function delOrder(id){orders=orders.filter(x=>x.id!==id);renderOrdersTable();updateBadges();showToast('تم حذف الطلب');}
 
 function renderProductsAdmin(){
   const g=document.getElementById('productsAdminGrid');
@@ -1293,7 +1319,7 @@ function openProductModal(id){
   document.getElementById('productModal').classList.remove('hidden');
 }
 function handleProdImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{pendingProdImg=ev.target.result;document.getElementById('prodImgPreview').src=ev.target.result;document.getElementById('prodImgPreview').style.display='block';document.getElementById('prodImgEmoji').style.display='none';};r.readAsDataURL(f);}
-function saveProduct(){
+async function saveProduct(){
   const name=document.getElementById('prod-name').value.trim();
   const price=parseInt(document.getElementById('prod-price').value);
   const icon=document.getElementById('prod-icon').value.trim()||'🎁';
@@ -1305,7 +1331,7 @@ function saveProduct(){
   closeOverlay('productModal');renderProductsAdmin();renderStore()
 }
 function toggleProd(id){const p=PRODUCTS.find(x=>x.id===id);if(p){p.active=!p.active;renderProductsAdmin();renderStore();showToast(p.active?'✅ تم تفعيل المنتج':'⏸ تم إيقاف المنتج');}}
-function delProd(id){if(!confirm('حذف المنتج؟'))return;PRODUCTS=PRODUCTS.filter(x=>x.id!==id);renderProductsAdmin();renderStore();showToast('تم الحذف');}
+async function delProd(id){if(!confirm('حذف المنتج؟'))return;PRODUCTS=PRODUCTS.filter(x=>x.id!==id);renderProductsAdmin();renderStore();showToast('تم الحذف');}
 
 function renderUsersTable(){
   const w=document.getElementById('usersTable');
@@ -1313,7 +1339,7 @@ function renderUsersTable(){
   w.innerHTML=`<table class="data-table"><thead><tr><th>المستخدم</th><th>المنصة</th><th>النقاط</th><th>التسجيل</th></tr></thead><tbody>${users.map(u=>`<tr><td style="display:flex;align-items:center;gap:8px;"><img src="${u.avatar}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;"/>${u.username}</td><td><span class="provider-badge provider-${u.provider}">${u.provider==='discord'?'Discord':'Kick'}</span></td><td style="color:var(--kick);font-weight:700;">${u.points.toLocaleString()} نق</td><td style="color:var(--muted);font-size:12px;">${u.joined}</td></tr>`).join('')}</tbody></table>`;
 }
 
-function addManualPoints(){
+async function addManualPoints(){
   const un=document.getElementById('manualPtsUser').value.trim();
   const amt=parseInt(document.getElementById('manualPtsAmount').value);
   if(!un){showToast('أدخل اسم المستخدم','err');return;}
@@ -1328,7 +1354,7 @@ function addManualPoints(){
 // SETTINGS
 function handleChannelImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{channelImg=ev.target.result;['navAvatar','aboutAvatar','adminSideAva','settingAvaPreview'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=`<img src="${channelImg}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`;});showToast('✅ تم رفع الصورة');};r.readAsDataURL(f);}
 
-function saveSettings(){
+async function saveSettings(){
   const nm=document.getElementById('set-name').value.trim();
   if(nm){['navName','aboutName','adminSideName'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=nm;});}
   const kk=document.getElementById('set-kick').value.trim();
@@ -1410,7 +1436,7 @@ function setStreamStatus(status) {
   showToast(status === 'live' ? '🔴 البث شغال!' : '😴 البث أوقف');
 }
 
-function saveStreamSettings() {
+async function saveStreamSettings() {
   const username = document.getElementById('stream-username')?.value.trim() || '';
   const title    = document.getElementById('stream-title')?.value.trim() || '';
   const viewers  = document.getElementById('stream-viewers')?.value.trim() || '';
@@ -1439,7 +1465,15 @@ function saveStreamSettings() {
   if (kickBtn)  kickBtn.href = 'https://kick.com/' + username;
 
   renderStream();
-  showToast('✅ تم حفظ إعدادات البث');
+  await saveSettingsToServer({
+    streamUsername: streamState.username,
+    streamStatus:   streamState.status,
+    offlineMsg:     streamState.offlineMsg,
+    offlineIcon:    streamState.offlineIcon,
+    offlineBg:      streamState.offlineBg || null,
+    streamTitle:    streamState.title,
+  });
+  showToast('✅ تم حفظ إعدادات البث على السيرفر');
 }
 
 function handleOfflineBg(e) {
@@ -1506,6 +1540,243 @@ function renderStream() {
 }
 
 
+
+
+// ══════════════════════════════════════════
+// SETTINGS SYNC — Firebase Realtime Database
+// ══════════════════════════════════════════
+
+function waitFB(fn) {
+  if (window._fbReady) fn();
+  else window.addEventListener('fbReady', fn, { once: true });
+}
+
+// ── حفظ الإعدادات على Firebase ──
+async function saveSettingsToServer(data) {
+  return new Promise(resolve => {
+    waitFB(async () => {
+      try {
+        const r = window._fbRef(window._fbDB, 'settings');
+        const snap = await window._fbGet(r);
+        const current = snap.exists() ? snap.val() : {};
+        await window._fbSet(r, { ...current, ...data });
+        resolve(true);
+      } catch(e) { console.error('Firebase save error:', e); resolve(false); }
+    });
+  });
+}
+
+// ── جلب الإعدادات من Firebase ──
+async function loadSettingsFromServer() {
+  return new Promise(resolve => {
+    waitFB(async () => {
+      try {
+        const snap = await window._fbGet(window._fbRef(window._fbDB, 'settings'));
+        if (!snap.exists()) { resolve({}); return; }
+        const settings = snap.val();
+
+        if (settings.channelName) {
+          ['navName','aboutName','adminSideName'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.textContent = settings.channelName;
+          });
+          const si = document.getElementById('set-name'); if (si) si.value = settings.channelName;
+        }
+        if (settings.kickUsername) {
+          const h = document.getElementById('aboutHandle'); if (h) h.textContent = settings.kickUsername;
+          const t = document.getElementById('aboutKickTxt'); if (t) t.textContent = 'kick.com/' + settings.kickUsername;
+          const l = document.getElementById('aboutKickLink'); if (l) l.href = 'https://kick.com/' + settings.kickUsername;
+          const si = document.getElementById('set-kick'); if (si) si.value = settings.kickUsername;
+        }
+        if (settings.bio) {
+          const el = document.getElementById('aboutBio'); if (el) el.textContent = settings.bio;
+          const si = document.getElementById('set-bio'); if (si) si.value = settings.bio;
+        }
+        if (settings.spec) {
+          const el = document.getElementById('aboutSpec'); if (el) el.textContent = settings.spec;
+          const si = document.getElementById('set-spec'); if (si) si.value = settings.spec;
+        }
+        if (settings.sched) {
+          const el = document.getElementById('aboutSched'); if (el) el.textContent = settings.sched;
+          const si = document.getElementById('set-sched'); if (si) si.value = settings.sched;
+        }
+        if (settings.country) {
+          const el = document.getElementById('aboutCountry'); if (el) el.textContent = settings.country;
+          const si = document.getElementById('set-country'); if (si) si.value = settings.country;
+        }
+        if (settings.channelImg) {
+          channelImg = settings.channelImg;
+          ['navAvatar','aboutAvatar','adminSideAva','settingAvaPreview'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = `<img src="${settings.channelImg}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`;
+          });
+        }
+        if (settings.streamUsername) {
+          streamState.username = settings.streamUsername;
+          const si = document.getElementById('stream-username'); if (si) si.value = settings.streamUsername;
+        }
+        if (settings.streamStatus) {
+          streamState.status = settings.streamStatus;
+        }
+        if (settings.streamTitle) {
+          streamState.title = settings.streamTitle;
+          const si = document.getElementById('stream-title'); if (si) si.value = settings.streamTitle;
+        }
+        if (settings.offlineMsg) {
+          streamState.offlineMsg = settings.offlineMsg;
+          const si = document.getElementById('offline-msg-input'); if (si) si.value = settings.offlineMsg;
+        }
+        if (settings.offlineIcon) {
+          streamState.offlineIcon = settings.offlineIcon;
+          const si = document.getElementById('offline-icon-input'); if (si) si.value = settings.offlineIcon;
+        }
+        if (settings.offlineBg) {
+          streamState.offlineBg = settings.offlineBg;
+        }
+        if (settings.offlineColor) {
+          streamState.offlineColor = settings.offlineColor;
+        }
+
+        renderStream();
+        console.log('✅ تم تحميل الإعدادات من Firebase');
+        resolve(settings);
+      } catch(e) {
+        console.error('Firebase load error:', e);
+        resolve({});
+      }
+    });
+  });
+}
+
+// ── حفظ وسائل التواصل ──
+async function saveSocialsToServer() {
+  return new Promise(resolve => {
+    waitFB(async () => {
+      try {
+        await window._fbSet(window._fbRef(window._fbDB, 'socialLinks'), socialLinks);
+        resolve(true);
+      } catch(e) { resolve(false); }
+    });
+  });
+}
+
+// ── جلب وسائل التواصل ──
+async function loadSocialsFromServer() {
+  return new Promise(resolve => {
+    waitFB(async () => {
+      try {
+        const snap = await window._fbGet(window._fbRef(window._fbDB, 'socialLinks'));
+        if (snap.exists() && Array.isArray(snap.val()) && snap.val().length > 0) {
+          socialLinks = snap.val();
+          renderSocialLinks();
+        }
+        resolve(true);
+      } catch(e) { resolve(false); }
+    });
+  });
+}
+
+async function loadSettingsFromServer() {
+  try {
+    const res = await fetch(`${WORKER_URL}/api/settings`);
+    const settings = await res.json();
+    if (!settings || Object.keys(settings).length === 0) return;
+
+    // تطبيق الإعدادات على الواجهة
+    if (settings.channelName) {
+      ['navName','aboutName','adminSideName'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = settings.channelName;
+      });
+      const si = document.getElementById('set-name');
+      if (si) si.value = settings.channelName;
+    }
+    if (settings.kickUsername) {
+      const h = document.getElementById('aboutHandle'); if (h) h.textContent = settings.kickUsername;
+      const t = document.getElementById('aboutKickTxt'); if (t) t.textContent = 'kick.com/' + settings.kickUsername;
+      const l = document.getElementById('aboutKickLink'); if (l) l.href = 'https://kick.com/' + settings.kickUsername;
+      const si = document.getElementById('set-kick'); if (si) si.value = settings.kickUsername;
+    }
+    if (settings.bio) {
+      const el = document.getElementById('aboutBio'); if (el) el.textContent = settings.bio;
+      const si = document.getElementById('set-bio'); if (si) si.value = settings.bio;
+    }
+    if (settings.spec) {
+      const el = document.getElementById('aboutSpec'); if (el) el.textContent = settings.spec;
+      const si = document.getElementById('set-spec'); if (si) si.value = settings.spec;
+    }
+    if (settings.sched) {
+      const el = document.getElementById('aboutSched'); if (el) el.textContent = settings.sched;
+      const si = document.getElementById('set-sched'); if (si) si.value = settings.sched;
+    }
+    if (settings.country) {
+      const el = document.getElementById('aboutCountry'); if (el) el.textContent = settings.country;
+      const si = document.getElementById('set-country'); if (si) si.value = settings.country;
+    }
+    if (settings.channelImg) {
+      channelImg = settings.channelImg;
+      ['navAvatar','aboutAvatar','adminSideAva','settingAvaPreview'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = `<img src="${settings.channelImg}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`;
+      });
+    }
+    if (settings.streamUsername) {
+      streamState.username = settings.streamUsername;
+      const si = document.getElementById('stream-username'); if (si) si.value = settings.streamUsername;
+    }
+    if (settings.streamStatus) {
+      streamState.status = settings.streamStatus;
+      renderStream();
+    }
+    if (settings.offlineMsg) {
+      streamState.offlineMsg = settings.offlineMsg;
+      const si = document.getElementById('offline-msg-input'); if (si) si.value = settings.offlineMsg;
+    }
+    if (settings.offlineIcon) {
+      streamState.offlineIcon = settings.offlineIcon;
+      const si = document.getElementById('offline-icon-input'); if (si) si.value = settings.offlineIcon;
+    }
+    if (settings.offlineBg) {
+      streamState.offlineBg = settings.offlineBg;
+    }
+
+    console.log('✅ تم تحميل إعدادات الموقع من السيرفر');
+  } catch (e) {
+    console.log('⚠️ تعذر تحميل الإعدادات من السيرفر');
+  }
+}
+
+async function loadSocialsFromServer() {
+  try {
+    const res = await fetch(`${WORKER_URL}/api/socials`);
+    const data = await res.json();
+    if (data.socials && data.socials.length > 0) {
+      socialLinks = data.socials;
+      renderSocialLinks();
+    }
+  } catch (e) {}
+}
+
+async function saveSettingsToServer(data) {
+  try {
+    await fetch(`${WORKER_URL}/api/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+      body: JSON.stringify(data)
+    });
+  } catch (e) {
+    console.error('فشل حفظ الإعدادات:', e);
+  }
+}
+
+async function saveSocialsToServer() {
+  try {
+    await fetch(`${WORKER_URL}/api/socials`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+      body: JSON.stringify({ socials: socialLinks })
+    });
+  } catch (e) {}
+}
 
 // ══════════════════════════════════════════
 // POINTS SETTINGS — إعدادات النقاط
@@ -1714,7 +1985,7 @@ function updateSocialPlaceholder() {
   document.getElementById('newSocialUrl').placeholder = placeholders[t] || 'https://...';
 }
 
-function addSocialLink() {
+async function addSocialLink() {
   const type = document.getElementById('newSocialType').value;
   const url  = document.getElementById('newSocialUrl').value.trim();
   if (!url || url === '#') { showToast('أدخل الرابط', 'err'); return; }
@@ -1724,12 +1995,14 @@ function addSocialLink() {
   socialLinks.push({ type, url });
   document.getElementById('newSocialUrl').value = '';
   renderSocialLinks();
+  await saveSocialsToServer();
   showToast('✅ تمت إضافة ' + SOCIAL_LABELS[type]);
 }
 
-function removeSocialLink(type) {
+async function removeSocialLink(type) {
   socialLinks = socialLinks.filter(s => s.type !== type);
   renderSocialLinks();
+  await saveSocialsToServer();
   showToast('تم حذف وسيلة التواصل');
 }
 
@@ -1843,7 +2116,7 @@ function selectAllPerms(val) {
   });
 }
 
-function saveStaff() {
+async function saveStaff() {
   const name      = document.getElementById('staff-name').value.trim();
   const username  = document.getElementById('staff-username').value.trim();
   const roleTitle = document.getElementById('staff-role-title').value.trim();

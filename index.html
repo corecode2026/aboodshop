@@ -4,31 +4,11 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>متجر القناة — Kick</title>
-<!-- Firebase Compat SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" onload="initFirebase()"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
-  function initFirebase() {
-    if (typeof firebase === 'undefined') return;
-    if (firebase.apps && firebase.apps.length > 0) return;
-    const firebaseConfig = {
-      apiKey: "AIzaSyABF3eoST-KqM8LkVwCGNtSPlr1YwPS0ZY",
-      authDomain: "aboodshop-c48ff.firebaseapp.com",
-      databaseURL: "https://aboodshop-c48ff-default-rtdb.firebaseio.com",
-      projectId: "aboodshop-c48ff",
-      storageBucket: "aboodshop-c48ff.firebasestorage.app",
-      messagingSenderId: "196863431531",
-      appId: "1:196863431531:web:f5568e6af276100914b22e"
-    };
-    firebase.initializeApp(firebaseConfig);
-    window._fbDB = firebase.database();
-    window._fbReady = true;
-    window.dispatchEvent(new Event('fbReady'));
-  }
-  // تشغيل بعد تحميل الصفحة كاملة
-  window.addEventListener('load', () => {
-    if (typeof firebase !== 'undefined') initFirebase();
-  });
+// Firebase REST API — بدون SDK
+const FB_URL = 'https://aboodshop-c48ff-default-rtdb.firebaseio.com';
+window._fbReady = true;
+window.dispatchEvent(new Event('fbReady'));
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"/>
 <style>
@@ -1552,26 +1532,29 @@ function waitFB(fn) {
 
 // ── حفظ الإعدادات على Firebase ──
 async function saveSettingsToServer(data) {
-  return new Promise(resolve => {
-    waitFB(async () => {
-      try {
-        const snap = await window._fbDB.ref('settings').once('value');
-        const current = snap.exists() ? snap.val() : {};
-        await window._fbDB.ref('settings').set({ ...current, ...data });
-        resolve(true);
-      } catch(e) { console.error('Firebase save error:', e); resolve(false); }
+  try {
+    // جيب الإعدادات الحالية
+    const getRes = await fetch(`${FB_URL}/settings.json`);
+    const current = getRes.ok ? (await getRes.json() || {}) : {};
+    // ادمجها مع الجديدة واحفظ
+    const merged = { ...current, ...data };
+    await fetch(`${FB_URL}/settings.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(merged)
     });
-  });
+    return true;
+  } catch(e) { console.error('Firebase save error:', e); return false; }
 }
 
 // ── جلب الإعدادات من Firebase ──
 async function loadSettingsFromServer() {
-  return new Promise(resolve => {
-    waitFB(async () => {
-      try {
-        const snap = await window._fbDB.ref('settings').once('value');
-        if (!snap.exists()) { resolve({}); return; }
-        const settings = snap.val();
+  try {
+    const res = await fetch(`${FB_URL}/settings.json`);
+    if (!res.ok) return;
+    const settings = await res.json();
+    if (!settings) return;
+    try {
 
         if (settings.channelName) {
           ['navName','aboutName','adminSideName'].forEach(id => {
@@ -1635,42 +1618,34 @@ async function loadSettingsFromServer() {
         }
 
         renderStream();
-        console.log('✅ تم تحميل الإعدادات من Firebase');
-        resolve(settings);
-      } catch(e) {
-        console.error('Firebase load error:', e);
-        resolve({});
-      }
-    });
-  });
+      console.log('✅ تم تحميل الإعدادات من Firebase');
+    } catch(e) { console.error('Apply settings error:', e); }
+  } catch(e) { console.error('Firebase load error:', e); }
 }
 
 // ── حفظ وسائل التواصل ──
 async function saveSocialsToServer() {
-  return new Promise(resolve => {
-    waitFB(async () => {
-      try {
-        await window._fbDB.ref('socialLinks').set(socialLinks);
-        resolve(true);
-      } catch(e) { resolve(false); }
+  try {
+    await fetch(`${FB_URL}/socialLinks.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(socialLinks)
     });
-  });
+    return true;
+  } catch(e) { return false; }
 }
 
 // ── جلب وسائل التواصل ──
 async function loadSocialsFromServer() {
-  return new Promise(resolve => {
-    waitFB(async () => {
-      try {
-        const snap = await window._fbDB.ref('socialLinks').once('value');
-        if (snap.exists() && Array.isArray(snap.val()) && snap.val().length > 0) {
-          socialLinks = snap.val();
-          renderSocialLinks();
-        }
-        resolve(true);
-      } catch(e) { resolve(false); }
-    });
-  });
+  try {
+    const res = await fetch(`${FB_URL}/socialLinks.json`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && Array.isArray(data) && data.length > 0) {
+      socialLinks = data;
+      renderSocialLinks();
+    }
+  } catch(e) {}
 }
 
 

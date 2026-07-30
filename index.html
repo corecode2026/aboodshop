@@ -4,32 +4,31 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>متجر القناة — Kick</title>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyABF3eoST-KqM8LkVwCGNtSPlr1YwPS0ZY",
-    authDomain: "aboodshop-c48ff.firebaseapp.com",
-    databaseURL: "https://aboodshop-c48ff-default-rtdb.firebaseio.com",
-    projectId: "aboodshop-c48ff",
-    storageBucket: "aboodshop-c48ff.firebasestorage.app",
-    messagingSenderId: "196863431531",
-    appId: "1:196863431531:web:f5568e6af276100914b22e"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db  = getDatabase(app);
-
-  // نصدّر للـ window
-  window._fbDB    = db;
-  window._fbRef   = ref;
-  window._fbSet   = set;
-  window._fbGet   = get;
-  window._fbUpdate = update;
-  window._fbOnValue = onValue;
-  window._fbReady = true;
-  window.dispatchEvent(new Event('fbReady'));
+<!-- Firebase Compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" onload="initFirebase()"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+  function initFirebase() {
+    if (typeof firebase === 'undefined') return;
+    if (firebase.apps && firebase.apps.length > 0) return;
+    const firebaseConfig = {
+      apiKey: "AIzaSyABF3eoST-KqM8LkVwCGNtSPlr1YwPS0ZY",
+      authDomain: "aboodshop-c48ff.firebaseapp.com",
+      databaseURL: "https://aboodshop-c48ff-default-rtdb.firebaseio.com",
+      projectId: "aboodshop-c48ff",
+      storageBucket: "aboodshop-c48ff.firebasestorage.app",
+      messagingSenderId: "196863431531",
+      appId: "1:196863431531:web:f5568e6af276100914b22e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    window._fbDB = firebase.database();
+    window._fbReady = true;
+    window.dispatchEvent(new Event('fbReady'));
+  }
+  // تشغيل بعد تحميل الصفحة كاملة
+  window.addEventListener('load', () => {
+    if (typeof firebase !== 'undefined') initFirebase();
+  });
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"/>
 <style>
@@ -1556,10 +1555,9 @@ async function saveSettingsToServer(data) {
   return new Promise(resolve => {
     waitFB(async () => {
       try {
-        const r = window._fbRef(window._fbDB, 'settings');
-        const snap = await window._fbGet(r);
+        const snap = await window._fbDB.ref('settings').once('value');
         const current = snap.exists() ? snap.val() : {};
-        await window._fbSet(r, { ...current, ...data });
+        await window._fbDB.ref('settings').set({ ...current, ...data });
         resolve(true);
       } catch(e) { console.error('Firebase save error:', e); resolve(false); }
     });
@@ -1571,7 +1569,7 @@ async function loadSettingsFromServer() {
   return new Promise(resolve => {
     waitFB(async () => {
       try {
-        const snap = await window._fbGet(window._fbRef(window._fbDB, 'settings'));
+        const snap = await window._fbDB.ref('settings').once('value');
         if (!snap.exists()) { resolve({}); return; }
         const settings = snap.val();
 
@@ -1652,7 +1650,7 @@ async function saveSocialsToServer() {
   return new Promise(resolve => {
     waitFB(async () => {
       try {
-        await window._fbSet(window._fbRef(window._fbDB, 'socialLinks'), socialLinks);
+        await window._fbDB.ref('socialLinks').set(socialLinks);
         resolve(true);
       } catch(e) { resolve(false); }
     });
@@ -1664,7 +1662,7 @@ async function loadSocialsFromServer() {
   return new Promise(resolve => {
     waitFB(async () => {
       try {
-        const snap = await window._fbGet(window._fbRef(window._fbDB, 'socialLinks'));
+        const snap = await window._fbDB.ref('socialLinks').once('value');
         if (snap.exists() && Array.isArray(snap.val()) && snap.val().length > 0) {
           socialLinks = snap.val();
           renderSocialLinks();

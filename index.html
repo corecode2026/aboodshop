@@ -1888,8 +1888,49 @@ async function renderAdminChats(){
 function selChat(n){
   selectedChat=n;if(chats[n])chats[n].forEach(m=>{if(m.from==='user')m.read=true;});renderAdminChats();
   const view=document.getElementById('aChatView'),msgs=chats[n]||[];
-  view.innerHTML=`<div class="chat-view-head"><div style="font-size:14px;font-weight:700;">${n}</div></div><div class="chat-view-msgs" id="aMsgs">${msgs.map(m=>`<div class="cvm ${m.from==='admin'?'admin':'user'}">${m.text}</div>`).join('')}</div><div class="chat-view-input"><input class="cv-inp" id="aReply" placeholder="رد على ${n}..." onkeydown="if(event.key==='Enter')aReplyFn('${n}')"/><button class="cv-send" onclick="aReplyFn('${n}')">إرسال</button></div>`;
+  view.innerHTML=`<div class="chat-view-head" style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-size:14px;font-weight:700;">${n}</div>
+    <button onclick="deleteChat('${n}')" style="background:rgba(255,64,64,.1);color:var(--red);border:1px solid rgba(255,64,64,.2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'Cairo',sans-serif;">🗑 حذف المحادثة</button>
+  </div>
+  <div class="chat-view-msgs" id="aMsgs">
+    ${msgs.map((m,i)=>`<div style="display:flex;align-items:flex-end;gap:6px;${m.from==='admin'?'flex-direction:row-reverse':''}">
+      <div class="cvm ${m.from==='admin'?'admin':'user'}" style="position:relative;group:true">${m.text}</div>
+      <button onclick="deleteChatMsg('${n}',${i})" style="background:rgba(255,64,64,.1);color:var(--red);border:none;width:20px;height:20px;border-radius:50%;font-size:10px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;opacity:.6;" title="حذف">✕</button>
+    </div>`).join('')}
+  </div>
+  <div class="chat-view-input">
+    <input class="cv-inp" id="aReply" placeholder="رد على ${n}..." onkeydown="if(event.key==='Enter')aReplyFn('${n}')"/>
+    <button class="cv-send" onclick="aReplyFn('${n}')">إرسال</button>
+  </div>`;
   const el=document.getElementById('aMsgs');if(el)el.scrollTop=el.scrollHeight;
+}
+
+async function deleteChatMsg(sender, idx) {
+  if(!chats[sender]) return;
+  chats[sender].splice(idx, 1);
+  try {
+    await fetch(`${W}/api/admin/chat-delete-msg`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},
+      body:JSON.stringify({sender, idx})
+    });
+  } catch(e){}
+  selChat(sender);
+}
+
+async function deleteChat(sender) {
+  if(!confirm(`حذف محادثة ${sender} كاملاً؟`)) return;
+  delete chats[sender];
+  try {
+    await fetch(`${W}/api/admin/chat-delete`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},
+      body:JSON.stringify({sender})
+    });
+  } catch(e){}
+  document.getElementById('aChatView').innerHTML='<div class="no-chat">اختر محادثة 👈</div>';
+  renderAdminChats();
+  showToast('تم حذف المحادثة');
 }
 async function aReplyFn(n){
   const inp=document.getElementById('aReply'),txt=inp.value.trim();

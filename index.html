@@ -641,12 +641,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 <section class="page" id="page-rules">
   <div class="section-head"><div class="section-title"><span class="green">قوانين</span> القناة</div></div>
   <div class="rules" id="rulesList">
-    <div class="rule"><div class="rule-num">1</div><div><div class="rule-title">احترام الجميع</div><div class="rule-desc">يُمنع السب والشتم وإهانة أي شخص في الشات.</div></div></div>
-    <div class="rule"><div class="rule-num">2</div><div><div class="rule-title">ممنوع السبام</div><div class="rule-desc">لا تكرر نفس الرسالة أكثر من مرتين.</div></div></div>
-    <div class="rule"><div class="rule-num">3</div><div><div class="rule-title">لا للإفساد</div><div class="rule-desc">ممنوع كشف تفاصيل الألعاب قبل أن يصلها الستريمر.</div></div></div>
-    <div class="rule"><div class="rule-num">4</div><div><div class="rule-title">الدعاية ممنوعة</div><div class="rule-desc">لا تضع روابط لقنوات أخرى دون إذن.</div></div></div>
-    <div class="rule"><div class="rule-num">5</div><div><div class="rule-title">كسب النقاط بنزاهة</div><div class="rule-desc">استخدام بوتات يؤدي لحذف الحساب.</div></div></div>
-    <div class="rule"><div class="rule-num">6</div><div><div class="rule-title">قرارات المود نهائية</div><div class="rule-desc">احترم قرارات فريق الإشراف.</div></div></div>
+    <div class="empty" style="padding:40px;"><p style="color:var(--muted);">جاري التحميل...</p></div>
   </div>
 </section>
 
@@ -686,6 +681,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
         <button class="am" onclick="aTab('products',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></span> المنتجات</button>
         <button class="am" onclick="aTab('users',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span> المستخدمون</button>
         <button class="am" onclick="aTab('staff',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span> الموظفون</button>
+        <button class="am" onclick="aTab('rules-admin',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> القوانين</button>
         <button class="am" onclick="aTab('pts-cfg',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> النقاط</button>
         <button class="am" onclick="aTab('settings',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span> الإعدادات</button>
       </div>
@@ -750,6 +746,16 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
         </div>
         <div id="staffList"></div>
       </div>
+
+      <!-- RULES ADMIN -->
+      <div class="asub" id="asub-rules-admin">
+        <div class="section-head">
+          <div class="section-title">إدارة القوانين</div>
+          <button class="btn btn-kick" style="font-size:13px;padding:7px 14px;" onclick="openRuleModal(null)">+ إضافة قانون</button>
+        </div>
+        <div id="rulesAdminList"></div>
+      </div>
+
       <!-- POINTS CONFIG -->
       <div class="asub" id="asub-pts-cfg">
         <div class="section-head"><div class="section-title">إعدادات النقاط</div></div>
@@ -1093,6 +1099,26 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
         </div>
       </div>
       <button class="btn btn-ghost" onclick="doLogout();toggleDrawer();" style="width:100%;justify-content:center;font-size:13px;">تسجيل الخروج</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- RULE MODAL -->
+<div class="overlay hidden" id="ruleModal">
+  <div class="modal wide">
+    <h3 id="ruleModalTitle" style="margin-bottom:16px;">إضافة قانون</h3>
+    <div class="pf-group full" style="margin-bottom:12px;">
+      <label style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px;display:block;">عنوان القانون</label>
+      <input class="pf-input" id="rf-title" placeholder="مثال: احترام الجميع"/>
+    </div>
+    <div class="pf-group full" style="margin-bottom:16px;">
+      <label style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px;display:block;">وصف القانون</label>
+      <textarea class="pf-input" id="rf-desc" rows="3" placeholder="اشرح القانون بالتفصيل..." style="resize:vertical;"></textarea>
+    </div>
+    <div class="m-btns">
+      <button class="m-ok" onclick="saveRule()">💾 حفظ</button>
+      <button class="m-cancel" onclick="closeModal('ruleModal')">إلغاء</button>
     </div>
   </div>
 </div>
@@ -1565,6 +1591,7 @@ function aTab(tab, btn) {
   document.getElementById('asub-'+tab)?.classList.add('on');
   if(btn) btn.classList.add('on');
   if(tab==='dashboard') loadDashboard();
+  if(tab==='rules-admin') renderRules();
   if(tab==='orders') loadOrders();
   if(tab==='products') loadAdminProds();
   if(tab==='users') loadUsers();
@@ -1907,10 +1934,106 @@ document.addEventListener('touchend', e => {
 }, { passive:true });
 
 
+
+// ══════════════════════════════════════════
+// RULES — نظام القوانين الديناميكي
+// ══════════════════════════════════════════
+let rules = [
+  { id:1, title:'احترام الجميع', desc:'يُمنع السب والشتم وإهانة أي شخص في الشات.' },
+  { id:2, title:'ممنوع السبام', desc:'لا تكرر نفس الرسالة أكثر من مرتين.' },
+  { id:3, title:'لا للإفساد', desc:'ممنوع كشف تفاصيل الألعاب قبل أن يصلها الستريمر.' },
+  { id:4, title:'الدعاية ممنوعة', desc:'لا تضع روابط لقنوات أخرى دون إذن.' },
+  { id:5, title:'كسب النقاط بنزاهة', desc:'استخدام بوتات يؤدي لحذف الحساب.' },
+  { id:6, title:'قرارات المود نهائية', desc:'احترم قرارات فريق الإشراف.' },
+];
+let editingRuleId = null;
+
+async function loadRules() {
+  try {
+    const res = await fetch(`${W}/api/rules`);
+    const d = await res.json();
+    if (d.rules && d.rules.length > 0) rules = d.rules;
+  } catch(e) {}
+  renderRules();
+}
+
+function renderRules() {
+  // صفحة القوانين
+  const list = document.getElementById('rulesList');
+  if (list) {
+    list.innerHTML = rules.length
+      ? rules.map((r,i) => `<div class="rule"><div class="rule-num">${i+1}</div><div><div class="rule-title">${r.title}</div><div class="rule-desc">${r.desc}</div></div></div>`).join('')
+      : '<div class="empty"><p>لا توجد قوانين بعد</p></div>';
+  }
+  // لوحة الإدارة
+  const adminList = document.getElementById('rulesAdminList');
+  if (adminList) {
+    adminList.innerHTML = rules.length
+      ? rules.map((r,i) => `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(83,252,24,.1);border:1px solid var(--border);color:var(--kick);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;margin-bottom:4px;">${r.title}</div>
+            <div style="font-size:13px;color:var(--muted);">${r.desc}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="btn-sm btn-edit" onclick="openRuleModal(${r.id})">✏️</button>
+            <button class="btn-sm btn-del" onclick="deleteRule(${r.id})">🗑</button>
+          </div>
+        </div>`).join('')
+      : '<div class="empty"><p>لا توجد قوانين</p></div>';
+  }
+}
+
+function openRuleModal(id) {
+  editingRuleId = id;
+  const r = id ? rules.find(x => x.id === id) : null;
+  setEl('ruleModalTitle', id ? 'تعديل قانون' : 'إضافة قانون');
+  setVal('rf-title', r ? r.title : '');
+  setVal('rf-desc', r ? r.desc : '');
+  document.getElementById('ruleModal').classList.remove('hidden');
+}
+
+async function saveRule() {
+  const title = gv('rf-title');
+  const desc  = gv('rf-desc');
+  if (!title) { showToast('أدخل عنوان القانون','err'); return; }
+
+  if (editingRuleId) {
+    rules = rules.map(r => r.id === editingRuleId ? { ...r, title, desc } : r);
+  } else {
+    rules.push({ id: Date.now(), title, desc });
+  }
+
+  closeModal('ruleModal');
+  renderRules();
+  await saveRulesToServer();
+  showToast('✅ تم حفظ القانون');
+}
+
+async function deleteRule(id) {
+  if (!confirm('حذف هذا القانون؟')) return;
+  rules = rules.filter(r => r.id !== id);
+  renderRules();
+  await saveRulesToServer();
+  showToast('تم الحذف');
+}
+
+async function saveRulesToServer() {
+  try {
+    await fetch(`${W}/api/rules`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+      body: JSON.stringify({ rules }),
+    });
+  } catch(e) {}
+}
+
 async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);
   loadStore();
   renderStream();
+  loadRules();
 
   // ارجع للإدارة إذا كان مسجل دخول
   if (sessionStorage.getItem('adminIn') === '1') {

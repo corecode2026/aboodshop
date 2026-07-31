@@ -108,7 +108,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 .live-badge{background:rgba(255,64,64,.12);border:1px solid rgba(255,64,64,.3);color:var(--red);font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:1px;display:flex;align-items:center;gap:6px;}
 .stream-title-txt{font-size:15px;font-weight:700;flex:1;}
 .stream-viewers-txt{font-size:13px;color:var(--muted);}
-.stream-wrap{display:grid;grid-template-columns:1fr 340px;gap:0;border-radius:12px;overflow:hidden;border:1px solid var(--border);height:500px;}
+.stream-wrap{display:grid;grid-template-columns:2fr 1fr;gap:0;border-radius:12px;overflow:hidden;border:1px solid var(--border);height:520px;}
 .stream-embed{background:#000;overflow:hidden;}
 .stream-embed iframe{width:100%;height:100%;border:none;}
 .stream-chat{background:var(--card);overflow:hidden;border-right:1px solid var(--border);}
@@ -404,7 +404,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
       </div>
       <div class="stream-wrap">
         <div class="stream-embed"><iframe id="kickIframe" src="" allowfullscreen></iframe></div>
-        <div class="stream-chat"><iframe id="kickChat" src="" scrolling="yes"></iframe></div>
+        <div class="stream-chat"><iframe id="kickChat" src="" scrolling="yes" allow="autoplay; fullscreen" frameborder="0"></iframe></div>
       </div>
     </div>
     <div id="streamOffline" class="stream-offline">
@@ -1020,8 +1020,11 @@ function renderStream() {
   if (streamState.status === 'live' && streamState.username) {
     liveEl.style.display = 'block'; offEl.style.display = 'none';
     const titleEl = document.getElementById('streamTitle'); if(titleEl) titleEl.textContent = streamState.title || 'البث المباشر';
-    const iframe = document.getElementById('kickIframe'); if(iframe) iframe.src = `https://player.kick.com/${streamState.username}?autoplay=true`;
-    const chat = document.getElementById('kickChat'); if(chat) chat.src = `https://kick.com/${streamState.username}/chatroom`;
+    const iframe = document.getElementById('kickIframe'); 
+    if(iframe) iframe.src = `https://player.kick.com/${streamState.username}?autoplay=true&muted=false`;
+    const chat = document.getElementById('kickChat'); 
+    if(chat) chat.src = `https://kick.com/${streamState.username}/chatroom`;
+    chat.setAttribute('allow','autoplay; fullscreen');
   } else {
     liveEl.style.display = 'none'; offEl.style.display = 'block';
     const bg = document.getElementById('offlineBg');

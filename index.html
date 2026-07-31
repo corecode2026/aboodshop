@@ -604,19 +604,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
               <div class="file-wrap"><button class="btn-secondary" style="font-size:12px;padding:6px 12px;">📁 رفع صورة</button><input type="file" accept="image/*" onchange="handleAva(event)"/></div>
             </div>
           </div>
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-            <div style="font-size:13px;font-weight:600;margin-bottom:6px;">🎬 صورة شاشة التحميل</div>
-            <div style="display:flex;align-items:center;gap:14px;">
-              <div style="width:72px;height:72px;border-radius:10px;border:2px solid var(--border);background:var(--card2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;" id="lsImgPreview">🎮</div>
-              <div>
-                <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">الصورة اللي تظهر وسط الشاشة عند فتح الموقع</div>
-                <div style="display:flex;gap:8px;align-items:center;">
-                  <div class="file-wrap"><button class="btn-secondary" style="font-size:12px;padding:6px 12px;">📁 رفع صورة</button><input type="file" accept="image/*" onchange="handleLsImg(event)"/></div>
-                  <input class="set-input" id="set-ls-url" placeholder="أو أدخل رابط URL" dir="ltr" style="min-width:180px;font-size:12px;" oninput="previewLsUrl(this.value)"/>
-                </div>
-              </div>
-            </div>
-          </div>
+
         </div>
         <div class="settings-box">
           <div class="settings-box-title">🏪 معلومات القناة</div>
@@ -1001,14 +989,14 @@ async function loadAllSettings() {
     const s = await sRes.json();
     const { socials } = await socRes.json();
 
-    if (s.channelName) { setEl('navName', s.channelName); setEl('adminName', s.channelName); setEl('aboutName', s.channelName); setVal('set-name', s.channelName); updateLoadingScreen(s.channelName, s.channelImg); }
+    if (s.channelName) { setEl('navName', s.channelName); setEl('adminName', s.channelName); setEl('aboutName', s.channelName); setVal('set-name', s.channelName); }
     if (s.kickUsername) { setEl('aboutHandle', s.kickUsername); setVal('set-kick', s.kickUsername); const c = document.getElementById('offlineCta'); if(c) c.href='https://kick.com/'+s.kickUsername; }
     if (s.bio) { setEl('aboutBio', s.bio); setVal('set-bio', s.bio); }
     if (s.spec) { setEl('aboutSpec', s.spec); setVal('set-spec', s.spec); }
     if (s.sched) { setEl('aboutSched', s.sched); setVal('set-sched', s.sched); }
     if (s.country) { setEl('aboutCountry', s.country); setVal('set-country', s.country); }
-    if (s.channelImg) { channelImg = s.channelImg; updateAvatars(s.channelImg); }
-    if (s.lsImg) { setLsImg(s.lsImg); }
+    if (s.channelImg && !s.channelImg.includes('REMOVED')) { channelImg = s.channelImg; updateAvatars(s.channelImg); }
+
     if (s.streamStatus)   { streamState.status = s.streamStatus; }
     if (s.streamUsername) { streamState.username = s.streamUsername; setVal('set-stream-user', s.streamUsername); }
     if (s.streamTitle)    { streamState.title = s.streamTitle; setVal('set-stream-title', s.streamTitle); }
@@ -1033,7 +1021,7 @@ async function saveSettings() {
     sched:          gv('set-sched'),
     country:        gv('set-country'),
     channelImg:     channelImg || null,
-    lsImg:          window._lsImgSrc || null,
+
     streamStatus:   streamState.status,
     streamUsername: gv('set-stream-user'),
     streamTitle:    gv('set-stream-title'),

@@ -881,13 +881,14 @@ const SOCIAL_LABELS = { kick:'Kick', discord:'Discord', twitter:'Twitter', youtu
 // ═══════════════════════════════════════════
 function goTo(id, btn) {
   if (id === 'admin' && !adminIn) {
-    // تحقق من sessionStorage أولاً
     if (sessionStorage.getItem('adminIn') === '1') {
       adminIn = true;
     } else {
       openAdminLogin(); return;
     }
   }
+  // احفظ الصفحة الحالية
+  if (id !== 'admin') sessionStorage.setItem('lastPage', id);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.nl').forEach(b => b && b.classList.remove('on'));
   document.getElementById('page-' + id)?.classList.add('on');
@@ -1580,10 +1581,17 @@ async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);
   loadStore();
   renderStream();
-  // ارجع للإدارة إذا كان مسجل دخول قبل
+
+  // ارجع للإدارة إذا كان مسجل دخول
   if (sessionStorage.getItem('adminIn') === '1') {
     adminIn = true;
     goTo('admin', null);
+  } else {
+    // ارجع للصفحة الأخيرة
+    const lastPage = sessionStorage.getItem('lastPage');
+    if (lastPage && lastPage !== 'home') {
+      goTo(lastPage, null);
+    }
   }
 }
 init();

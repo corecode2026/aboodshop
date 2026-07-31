@@ -730,6 +730,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
       <div class="pf-group"><label>السعر (نقاط)</label><input class="pf-input" id="pf-price" type="number" placeholder="500" dir="ltr"/></div>
       <div class="pf-group"><label>الأيقونة</label><input class="pf-input" id="pf-icon" placeholder="🎮" style="font-size:20px;text-align:center;"/></div>
       <div class="pf-group"><label>الحالة</label><select class="pf-input" id="pf-active"><option value="true">✅ نشط</option><option value="false">⏸ موقوف</option></select></div>
+      <div class="pf-group"><label>الكمية المتاحة</label><input class="pf-input" id="pf-qty" type="number" placeholder="∞ بلا حد" dir="ltr" min="0"/></div>
       <div class="pf-group full"><label>الوصف</label><textarea class="pf-input" id="pf-desc" rows="2" style="resize:vertical;"></textarea></div>
     </div>
     <div class="m-btns" style="margin-top:12px;">
@@ -1154,8 +1155,12 @@ async function loadStore() {
     if (!products.length) { g.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">لا توجد منتجات</p>'; return; }
     g.innerHTML = products.map(p => {
       const can = currentUser && currentUser.points >= p.price;
+      const outOfStock = p.qty !== null && p.qty !== undefined && p.qty <= 0;
       const img = p.img ? `<div class="prod-img"><img src="${p.img}" alt="${p.name}"/></div>` : `<div class="prod-img">${p.icon||'🎁'}</div>`;
-      return `<div class="product-card">${img}<div class="prod-body"><div class="prod-name">${p.name}</div><div class="prod-desc">${p.desc}</div><div class="prod-price">⭐ ${p.price.toLocaleString()} نقطة</div><button class="buy-btn" ${!can?'disabled':''} onclick="openBuy(${p.id})">${!currentUser?'سجّل دخول أولاً':!can?'نقاط غير كافية':'استبدال الآن'}</button></div></div>`;
+      const qtyBadge = p.qty != null ? `<span style="font-size:11px;color:${p.qty<=0?'var(--red)':'var(--muted)'};margin-right:6px;">${p.qty<=0?'نفذت الكمية ❌':'متبقي: '+p.qty}</span>` : '';
+      const btnDisabled = !can || outOfStock;
+      const btnText = outOfStock ? 'نفذت الكمية' : !currentUser ? 'سجّل دخول أولاً' : !can ? 'نقاط غير كافية' : 'استبدال الآن';
+      return `<div class="product-card">${img}<div class="prod-body"><div class="prod-name">${p.name}</div><div class="prod-desc">${p.desc}</div><div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:10px;""><div class="prod-price">⭐ ${p.price.toLocaleString()} نقطة</div>${qtyBadge}</div><button class="buy-btn" ${btnDisabled?'disabled':''} onclick="openBuy(${p.id})">${btnText}</button></div></div>`;
     }).join('');
   } catch(e) { g.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;">تعذر التحميل</p>'; }
 }
@@ -1288,7 +1293,7 @@ function openProdModal(id) {
   editingProdId = id; pendingProdImg = null;
   const p = id?(window._adminProds||[]).find(x=>x.id===id):null;
   setEl('prodModalTitle', id?'تعديل منتج':'إضافة منتج');
-  setVal('pf-name',p?p.name:''); setVal('pf-price',p?p.price:''); setVal('pf-icon',p?p.icon:'🎁'); setVal('pf-desc',p?p.desc:''); document.getElementById('pf-active').value = p?String(p.active):'true';
+  setVal('pf-name',p?p.name:''); setVal('pf-price',p?p.price:''); setVal('pf-icon',p?p.icon:'🎁'); setVal('pf-desc',p?p.desc:''); document.getElementById('pf-active').value = p?String(p.active):'true'; setVal('pf-qty', p&&p.qty!=null?p.qty:'');
   document.getElementById('prodImgEmoji').style.display='block'; document.getElementById('prodImgEmoji').textContent=p?p.icon:'🎁';
   const prev=document.getElementById('prodImgPrev');
   if(p&&p.img){prev.src=p.img;prev.style.display='block';document.getElementById('prodImgEmoji').style.display='none';}else{prev.src='';prev.style.display='none';}
@@ -1300,7 +1305,9 @@ function handleProdImg(e){const f=e.target.files[0];if(!f)return;const r=new Fil
 async function saveProd() {
   const name=gv('pf-name'),price=parseInt(gv('pf-price')),icon=gv('pf-icon')||'🎁',desc=gv('pf-desc'),active=document.getElementById('pf-active').value==='true';
   if(!name||!price){showToast('أدخل الاسم والسعر','err');return;}
-  const body={name,price,icon,desc,active};if(pendingProdImg)body.img=pendingProdImg;
+  const qtyVal = document.getElementById('pf-qty').value;
+  const qty = qtyVal === '' ? null : Number(qtyVal);
+  const body={name,price,icon,desc,active,qty};if(pendingProdImg)body.img=pendingProdImg;
   try {
     if(editingProdId) await fetch(`${W}/api/admin/products/${editingProdId}`,{method:'PUT',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify(body)});
     else await fetch(`${W}/api/admin/products`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify(body)});

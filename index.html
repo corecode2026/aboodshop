@@ -856,41 +856,7 @@ function goTo(id, btn) {
 function loginWith(p) { document.getElementById('loginModal').classList.remove('hidden'); }
 function doLogin(provider) {
   closeModal('loginModal');
-  if (provider === 'discord') {
-    window.location.href = `${W}/auth/discord/login`;
-  } else {
-    // Kick — تسجيل يدوي
-    openKickManualLogin();
-  }
-}
-
-function openKickManualLogin() {
-  const name = prompt('أدخل اسم حسابك على Kick:');
-  if (!name || !name.trim()) return;
-  loginKickManual(name.trim());
-}
-
-async function loginKickManual(username) {
-  try {
-    const res = await fetch(`${W}/auth/kick/manual`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username })
-    });
-    const d = await res.json();
-    if (d.success) {
-      localStorage.setItem('sk_token', d.token);
-      sessionToken = d.token;
-      currentUser = { id: d.id, username: d.username, avatar: d.avatar, provider: 'kick', points: d.points };
-      updateAuthUI();
-      loadStore();
-      showToast(`أهلاً ${d.username}! 🎉`);
-    } else {
-      showToast('فشل تسجيل الدخول', 'err');
-    }
-  } catch(e) {
-    showToast('خطأ في الاتصال', 'err');
-  }
+  window.location.href = `${W}/auth/${provider}/login`;
 }
 
 async function checkAuth() {

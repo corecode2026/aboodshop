@@ -1,1417 +1,479 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>متجر القناة</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --kick:#53FC18;--discord:#5865F2;
-  --bg:#0A0A0F;--card:#13131A;--card2:#1C1C26;
-  --border:rgba(83,252,24,0.15);--bw:rgba(255,255,255,0.08);
-  --text:#F0F0F0;--muted:#888;--red:#ff4040;--orange:#FFA500;
-}
-body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;direction:rtl;}
-.green{color:var(--kick);}
-.hidden{display:none!important;}
-a{text-decoration:none;color:inherit;}
-button{font-family:'Cairo',sans-serif;cursor:pointer;}
-input,select,textarea{font-family:'Cairo',sans-serif;}
+// ============================================================
+// Cloudflare Worker — Auth + API + Firebase bridge
+// ============================================================
 
-/* ── NAV ── */
-.nav{display:flex;align-items:center;justify-content:space-between;padding:10px 24px;background:rgba(10,10,15,0.97);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;gap:10px;flex-wrap:wrap;}
-.nav-logo{display:flex;align-items:center;gap:10px;cursor:pointer;}
-.nav-ava{width:34px;height:34px;border-radius:50%;border:2px solid var(--kick);background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden;flex-shrink:0;}
-.nav-ava img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.nav-name{font-weight:700;font-size:15px;}
-.kick-tag{background:var(--kick);color:#000;font-weight:900;font-size:10px;padding:2px 6px;border-radius:3px;letter-spacing:1px;}
-.nav-links{display:flex;gap:3px;}
-.nl{padding:6px 12px;border-radius:7px;font-size:13px;font-weight:600;border:none;background:transparent;color:var(--muted);transition:all .15s;}
-.nl:hover{color:var(--text);background:var(--card2);}
-.nl.on{color:#000;background:var(--kick);}
-.nav-right{display:flex;align-items:center;gap:8px;}
-.pts-chip{display:flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border);padding:5px 12px;border-radius:20px;font-size:13px;color:var(--kick);font-weight:700;}
-.user-chip{display:flex;align-items:center;gap:7px;background:var(--card2);border:1px solid var(--bw);padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;}
-.user-chip img{width:22px;height:22px;border-radius:50%;object-fit:cover;}
-.pbadge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
-.pbadge-discord{background:var(--discord);color:#fff;}
-.pbadge-kick{background:var(--kick);color:#000;}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:7px;font-weight:700;font-size:13px;border:none;transition:opacity .15s;}
-.btn:hover{opacity:.85;}
-.btn-kick{background:var(--kick);color:#000;}
-.btn-discord{background:var(--discord);color:#fff;}
-.btn-ghost{background:var(--card2);color:var(--muted);border:1px solid var(--bw);}
-.btn-ghost:hover{color:var(--red);}
-.btn-admin{background:var(--card2);color:var(--muted);border:1px solid var(--bw);padding:7px 12px;font-size:12px;}
-.btn-admin:hover{color:var(--kick);border-color:var(--border);}
+const SITE_ORIGIN = 'https://corecode2026.github.io';
+const FB_URL      = 'https://aboodshop-c48ff-default-rtdb.firebaseio.com';
 
-/* ── LAYOUT ── */
-.wrap{max-width:920px;margin:0 auto;padding:28px 20px;}
-.page{display:none;}.page.on{display:block;}
+const CORS = {
+  'Access-Control-Allow-Origin':  SITE_ORIGIN,
+  'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type,x-admin-key',
+};
 
-/* ── BUTTONS ── */
-.btn-primary{background:var(--kick);color:#000;padding:10px 22px;border-radius:8px;font-weight:700;font-size:14px;border:none;}
-.btn-secondary{background:transparent;color:var(--text);padding:10px 22px;border-radius:8px;font-weight:600;font-size:14px;border:1px solid var(--bw);}
-.btn-danger{background:rgba(255,64,64,.12);color:var(--red);padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;border:1px solid rgba(255,64,64,.25);}
-.btn-sm{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;border:none;}
-.btn-edit{background:rgba(83,152,255,.12);color:#5398FF;border:1px solid rgba(83,152,255,.2);}
-.btn-del{background:rgba(255,64,64,.1);color:var(--red);border:1px solid rgba(255,64,64,.2);}
-.btn-ok{background:var(--kick);color:#000;}
-.btn-pause{background:rgba(255,165,0,.1);color:var(--orange);border:1px solid rgba(255,165,0,.2);}
-
-/* ── HOME ── */
-.hero{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px 36px;margin-bottom:24px;position:relative;overflow:hidden;}
-.hero::after{content:'';position:absolute;top:-60px;right:-60px;width:240px;height:240px;background:radial-gradient(circle,rgba(83,252,24,.07),transparent 70%);pointer-events:none;}
-.live-dot{display:inline-flex;align-items:center;gap:7px;background:rgba(255,64,64,.1);border:1px solid rgba(255,64,64,.25);color:var(--red);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:18px;}
-.live-ring{width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse 1.4s infinite;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
-.hero h1{font-size:28px;font-weight:900;line-height:1.3;margin-bottom:12px;}
-.hero p{color:var(--muted);font-size:14px;line-height:1.7;max-width:480px;margin-bottom:24px;}
-.hero-cta{display:flex;gap:10px;flex-wrap:wrap;}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;}
-.stat-n{font-size:26px;font-weight:900;color:var(--kick);}
-.stat-l{font-size:12px;color:var(--muted);margin-top:6px;}
-.feats{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
-.feat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
-.feat-icon{font-size:0;margin-bottom:10px;}
-.feat-icon svg{width:28px;height:28px;}
-.feat-title{font-size:15px;font-weight:700;margin-bottom:6px;}
-.feat-desc{font-size:13px;color:var(--muted);line-height:1.6;}
-
-/* ── ABOUT ── */
-.about-hero{display:flex;align-items:center;gap:24px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:20px;}
-.about-ava{width:90px;height:90px;border-radius:50%;border:3px solid var(--kick);background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:38px;overflow:hidden;flex-shrink:0;}
-.about-ava img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.about-tag{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--kick);margin-bottom:4px;}
-.about-name{font-size:26px;font-weight:900;margin-bottom:4px;}
-.about-handle{font-size:13px;color:var(--muted);}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;}
-.card-title{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
-.card-title svg{width:16px;height:16px;opacity:.8;}
-.bio-text{font-size:14px;color:var(--muted);line-height:1.8;}
-.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px;}
-.info-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
-.info-icon{font-size:0;margin-bottom:8px;}
-.info-icon svg{width:24px;height:24px;stroke:var(--kick);}
-.info-label{font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600;}
-.info-val{font-size:13px;font-weight:700;}
-.socials-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
-.social-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;transition:opacity .15s;}
-.social-btn:hover{opacity:.8;}
-
-/* ── STREAM ── */
-.stream-section{margin-bottom:20px;}
-.stream-live-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
-.live-badge{background:rgba(255,64,64,.12);border:1px solid rgba(255,64,64,.3);color:var(--red);font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:1px;display:flex;align-items:center;gap:6px;}
-.stream-title-txt{font-size:15px;font-weight:700;flex:1;}
-.stream-viewers-txt{font-size:13px;color:var(--muted);}
-.stream-wrap{width:100%;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
-.stream-embed{background:#000;overflow:hidden;width:100%;aspect-ratio:16/9;}
-.stream-embed iframe{width:100%;height:100%;border:none;}
-.stream-chat{background:var(--card);overflow:hidden;border-right:1px solid var(--border);}
-.stream-chat iframe{width:100%;height:100%;border:none;}
-@media(max-width:700px){.stream-wrap{grid-template-columns:1fr;height:auto;}.stream-embed{aspect-ratio:16/9;}.stream-chat{height:300px;}}
-.stream-offline{border-radius:12px;overflow:hidden;border:1px solid var(--border);}
-.offline-bg{position:relative;min-height:320px;background:var(--card2);display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center;}
-.offline-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);}
-.offline-content{position:relative;z-index:1;text-align:center;padding:40px 20px;}
-.offline-icon{font-size:50px;margin-bottom:12px;line-height:1;}
-.offline-title{font-size:20px;font-weight:900;margin-bottom:8px;}
-.offline-msg{font-size:14px;color:rgba(255,255,255,.7);margin-bottom:20px;line-height:1.6;}
-.offline-cta{display:inline-flex;align-items:center;gap:8px;background:var(--kick);color:#000;padding:10px 22px;border-radius:8px;font-weight:700;font-size:14px;}
-
-/* ── STORE ── */
-.store-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;}
-.product-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .2s,transform .15s;}
-.product-card:hover{border-color:var(--kick);transform:translateY(-3px);}
-.prod-img{width:100%;height:150px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:48px;overflow:hidden;flex-shrink:0;}
-.prod-img img{width:100%;height:100%;object-fit:cover;}
-.prod-body{padding:14px;display:flex;flex-direction:column;flex:1;}
-.prod-name{font-size:14px;font-weight:700;margin-bottom:5px;}
-.prod-desc{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5;flex:1;}
-.prod-price{display:inline-flex;align-items:center;gap:4px;background:rgba(83,252,24,.08);border:1px solid var(--border);color:var(--kick);font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:10px;align-self:flex-start;}
-.buy-btn{width:100%;padding:8px;border-radius:8px;background:var(--kick);color:#000;font-weight:700;font-size:13px;border:none;}
-.buy-btn:disabled{background:var(--card2);color:var(--muted);cursor:not-allowed;}
-
-/* ── RULES ── */
-.rules{display:flex;flex-direction:column;gap:12px;}
-.rule{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:flex;gap:12px;align-items:flex-start;}
-.rule-num{width:30px;height:30px;border-radius:50%;background:rgba(83,252,24,.1);border:1px solid var(--border);color:var(--kick);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.rule-title{font-size:14px;font-weight:700;margin-bottom:4px;}
-.rule-desc{font-size:13px;color:var(--muted);line-height:1.5;}
-
-/* ── POINTS ── */
-.pts-hero{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;text-align:center;margin-bottom:24px;}
-.pts-big{font-size:54px;font-weight:900;color:var(--kick);line-height:1;}
-.pts-label{color:var(--muted);font-size:14px;margin:8px 0 18px;}
-.progress-wrap{background:var(--card2);border-radius:8px;height:10px;overflow:hidden;margin-bottom:6px;}
-.progress-bar{height:100%;border-radius:8px;background:var(--kick);transition:width .6s;}
-.progress-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:16px;}
-.history{display:flex;flex-direction:column;gap:10px;}
-.history-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
-.h-title{font-size:14px;font-weight:600;}
-.h-time{font-size:12px;color:var(--muted);margin-top:3px;}
-.pts-plus{color:var(--kick);font-size:14px;font-weight:800;}
-.pts-minus{color:#ff5555;font-size:14px;font-weight:800;}
-
-/* ── ADMIN ── */
-.admin-layout{display:flex;min-height:calc(100vh - 120px);}
-.admin-side{width:210px;flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:14px 0 0 14px;padding:18px 0;display:flex;flex-direction:column;}
-.admin-side-top{padding:0 14px 14px;border-bottom:1px solid var(--border);margin-bottom:10px;display:flex;align-items:center;gap:10px;}
-.admin-ava{width:38px;height:38px;border-radius:50%;border:2px solid var(--kick);background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;flex-shrink:0;}
-.admin-ava img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.admin-name{font-size:13px;font-weight:700;}
-.admin-role{font-size:11px;color:var(--kick);}
-.admin-menu{display:flex;flex-direction:column;gap:2px;padding:0 8px;flex:1;}
-.am{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);transition:all .15s;border:none;background:transparent;width:100%;text-align:right;}
-.am:hover{background:var(--card2);color:var(--text);}
-.am.on{background:rgba(83,252,24,.12);color:var(--kick);}
-.am-icon{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-.am-icon svg{width:16px;height:16px;}
-.mbadge{margin-right:auto;background:var(--red);color:#fff;font-size:10px;font-weight:900;padding:1px 6px;border-radius:10px;}
-.admin-side-foot{padding:10px 8px 0;border-top:1px solid var(--border);margin-top:auto;}
-.admin-main{flex:1;background:var(--card2);border:1px solid var(--border);border-right:none;border-radius:0 14px 14px 0;padding:22px;overflow-y:auto;}
-.asub{display:none;}.asub.on{display:block;}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.section-title{font-size:16px;font-weight:700;}
-.a-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;}
-.a-stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
-.a-stat-n{font-size:22px;font-weight:900;color:var(--kick);}
-.a-stat-l{font-size:11px;color:var(--muted);margin-top:3px;}
-.table{width:100%;border-collapse:collapse;}
-.table th{text-align:right;font-size:11px;color:var(--muted);font-weight:700;padding:9px 10px;border-bottom:1px solid var(--border);}
-.table td{padding:10px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;}
-.table tr:last-child td{border-bottom:none;}
-.table tr:hover td{background:rgba(255,255,255,.02);}
-.sbadge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
-.s-pending{background:rgba(255,165,0,.12);color:var(--orange);}
-.s-done{background:rgba(83,252,24,.12);color:var(--kick);}
-.s-off{background:rgba(255,64,64,.1);color:var(--red);}
-.empty{text-align:center;padding:48px 20px;color:var(--muted);}
-.empty svg{width:40px;height:40px;margin-bottom:12px;opacity:.4;}
-.td-acts{display:flex;gap:5px;align-items:center;}
-.prods-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:18px;}
-.prod-adm{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
-.pa-img{width:100%;height:110px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;}
-.pa-img img{width:100%;height:100%;object-fit:cover;}
-.pa-body{padding:10px;}
-.pa-name{font-size:13px;font-weight:700;margin-bottom:4px;}
-.pa-price{font-size:11px;color:var(--kick);font-weight:700;margin-bottom:8px;}
-.pa-acts{display:flex;gap:5px;flex-wrap:wrap;}
-.settings-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px;}
-.settings-box-title{font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
-.settings-box-title svg{width:15px;height:15px;opacity:.7;}
-.set-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);gap:10px;}
-.set-row:last-child{border-bottom:none;padding-bottom:0;}
-.set-label{font-size:13px;font-weight:600;}
-.set-desc{font-size:11px;color:var(--muted);margin-top:2px;}
-.set-input{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:7px;font-size:13px;min-width:160px;flex-shrink:0;}
-.set-input:focus{outline:none;border-color:var(--kick);}
-.img-upload-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
-.img-preview{width:72px;height:72px;border-radius:50%;border:3px solid var(--border);background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden;flex-shrink:0;}
-.img-preview img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.file-wrap{position:relative;display:inline-block;}
-.file-wrap input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-.chat-panel{display:grid;grid-template-columns:200px 1fr;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;height:460px;}
-.chat-list{border-left:1px solid var(--border);overflow-y:auto;}
-.chat-item{padding:11px 12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;}
-.chat-item:hover{background:var(--card2);}
-.chat-item.on{background:rgba(83,252,24,.06);border-right:3px solid var(--kick);}
-.chat-item-name{font-size:13px;font-weight:700;}
-.chat-item-prev{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.chat-unread{display:inline-block;width:7px;height:7px;background:var(--kick);border-radius:50%;margin-left:4px;}
-.chat-view{display:flex;flex-direction:column;}
-.chat-view-head{padding:12px 14px;border-bottom:1px solid var(--border);}
-.chat-view-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;}
-.cvm{max-width:75%;padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;}
-.cvm.user{background:var(--card2);align-self:flex-start;border-radius:10px 10px 10px 2px;}
-.cvm.admin{background:var(--kick);color:#000;font-weight:600;align-self:flex-end;border-radius:10px 10px 2px 10px;}
-.chat-view-input{padding:10px;border-top:1px solid var(--border);display:flex;gap:8px;}
-.cv-inp{flex:1;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;}
-.cv-inp:focus{outline:none;border-color:var(--kick);}
-.cv-send{background:var(--kick);color:#000;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;}
-.no-chat{display:flex;align-items:center;justify-content:center;flex:1;color:var(--muted);font-size:14px;}
-.staff-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
-.staff-ava{width:42px;height:42px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:2px solid var(--border);}
-.staff-name{font-size:14px;font-weight:700;margin-bottom:2px;}
-.staff-user{font-size:12px;color:var(--muted);margin-bottom:6px;}
-.staff-role-tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;margin-bottom:8px;}
-.staff-perms{display:flex;flex-wrap:wrap;gap:5px;}
-.perm-tag{font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(83,252,24,.1);border:1px solid var(--border);color:var(--kick);font-weight:600;}
-.staff-acts{display:flex;flex-direction:column;gap:5px;margin-right:auto;}
-.points-cfg{display:flex;flex-direction:column;gap:12px;}
-
-/* ── MODALS ── */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:200;}
-.overlay.hidden{display:none!important;}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px;max-width:420px;width:92%;text-align:center;}
-.modal.wide{max-width:540px;text-align:right;}
-.modal h3{font-size:18px;font-weight:800;margin-bottom:8px;}
-.modal p{font-size:13px;color:var(--muted);margin-bottom:20px;}
-.m-input{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:14px;margin-bottom:10px;direction:ltr;text-align:center;}
-.m-input:focus{outline:none;border-color:var(--kick);}
-.m-err{color:var(--red);font-size:12px;margin-bottom:10px;min-height:18px;}
-.m-btns{display:flex;gap:10px;margin-top:8px;}
-.m-btns button{flex:1;padding:11px;border-radius:8px;font-weight:700;font-size:14px;border:none;}
-.m-ok{background:var(--kick);color:#000;}
-.m-cancel{background:var(--card2);color:var(--text);}
-.buy-price{font-size:24px;font-weight:900;color:var(--kick);margin-bottom:10px;}
-.login-opts{display:flex;flex-direction:column;gap:12px;margin:4px 0 16px;}
-.login-opt{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 28px;border-radius:12px;font-weight:700;font-size:15px;border:none;transition:transform .15s,opacity .15s;width:100%;}
-.login-opt:hover{transform:translateY(-2px);opacity:.9;}
-.prod-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.pf-group{display:flex;flex-direction:column;gap:4px;}
-.pf-group label{font-size:12px;color:var(--muted);font-weight:600;}
-.pf-group.full{grid-column:1/-1;}
-.pf-input{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;width:100%;}
-.pf-input:focus{outline:none;border-color:var(--kick);}
-.prod-img-box{width:100%;height:150px;background:var(--card2);border-radius:10px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;font-size:48px;overflow:hidden;position:relative;cursor:pointer;border:2px dashed var(--border);}
-.prod-img-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.prod-img-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:3px 10px;border-radius:10px;pointer-events:none;}
-.perm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
-.perm-item{background:var(--card);border:1px solid var(--bw);border-radius:8px;padding:9px 10px;cursor:pointer;transition:border-color .15s;}
-.perm-item:hover{border-color:var(--border);}
-.perm-item input[type=checkbox]{display:none;}
-.perm-item:has(input:checked){background:rgba(83,252,24,.05);border-color:var(--border);}
-.perm-label{font-size:13px;font-weight:700;display:flex;align-items:center;gap:5px;}
-.perm-item input:checked ~ .perm-label{color:var(--kick);}
-.perm-sub{font-size:11px;color:var(--muted);margin-top:2px;}
-.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;}
-.toggle{position:relative;width:42px;height:22px;flex-shrink:0;}
-.toggle input{opacity:0;width:0;height:0;}
-.toggle-sl{position:absolute;cursor:pointer;inset:0;background:var(--card2);border:1px solid var(--border);border-radius:22px;transition:.3s;}
-.toggle-sl::before{content:'';position:absolute;height:14px;width:14px;right:3px;top:3px;background:var(--muted);border-radius:50%;transition:.3s;}
-.toggle input:checked+.toggle-sl{background:rgba(83,252,24,.2);border-color:var(--kick);}
-.toggle input:checked+.toggle-sl::before{background:var(--kick);transform:translateX(-20px);}
-
-/* ── CHAT BUBBLE ── */
-.chat-bubble{position:fixed;bottom:22px;left:22px;z-index:300;}
-.chat-toggle{width:52px;height:52px;border-radius:50%;background:var(--kick);color:#000;border:none;font-size:0;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(83,252,24,.3);transition:transform .2s;}
-.chat-toggle:hover{transform:scale(1.1);}
-.chat-toggle svg{width:22px;height:22px;}
-.chat-box{position:absolute;bottom:64px;left:0;width:310px;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:none;box-shadow:0 8px 32px rgba(0,0,0,.5);}
-.chat-box.on{display:block;}
-.chat-box-head{background:var(--kick);color:#000;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;}
-.chat-box-title{font-weight:700;font-size:14px;}
-.chat-box-close{background:none;border:none;font-size:18px;color:#000;line-height:1;}
-.chat-name-row{padding:7px 10px;border-bottom:1px solid var(--border);background:rgba(83,252,24,.04);}
-.chat-name-inp{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:5px 9px;border-radius:6px;font-size:12px;}
-.chat-msgs{height:200px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;}
-.cmsg{max-width:80%;padding:7px 11px;border-radius:10px;font-size:13px;line-height:1.5;}
-.cmsg.support{background:var(--card2);align-self:flex-start;border-radius:10px 10px 10px 2px;}
-.cmsg.user{background:var(--kick);color:#000;align-self:flex-end;border-radius:10px 10px 2px 10px;font-weight:600;}
-.chat-inp-row{display:flex;gap:7px;padding:9px 10px;border-top:1px solid var(--border);}
-.chat-inp{flex:1;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:8px;font-size:13px;}
-.chat-inp:focus{outline:none;border-color:var(--kick);}
-.chat-send{background:var(--kick);color:#000;border:none;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
-.chat-send svg{width:14px;height:14px;}
-
-/* ── TOAST ── */
-.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--kick);color:#000;padding:11px 26px;border-radius:30px;font-weight:700;font-size:14px;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
-.toast.on{opacity:1;}
-
-/* ── RESPONSIVE ── */
-@media(max-width:700px){
-  .nav-links{display:none;}
-  .hero{padding:22px 16px;}.hero h1{font-size:21px;}
-  .stats,.feats,.a-stats,.prod-form{grid-template-columns:1fr;}
-  .store-grid{grid-template-columns:1fr;}.wrap{padding:14px 10px;}
-  .about-hero{flex-direction:column;text-align:center;}
-  .admin-layout{flex-direction:column;}
-  .admin-side{width:100%;border-radius:14px 14px 0 0;}
-  .admin-main{border-radius:0 0 14px 14px;border-right:1px solid var(--border);border-top:none;}
-  .chat-panel{grid-template-columns:1fr;height:auto;}
-  .chat-list{height:160px;border-left:none;border-bottom:1px solid var(--border);}
-  .perm-grid{grid-template-columns:1fr;}
-  .login-opts{align-items:stretch;}
-}
-</style>
-</head>
-<body>
-
-<!-- NAV -->
-<nav class="nav">
-  <div class="nav-logo" onclick="goTo('home',this)">
-    <div class="nav-ava" id="navAva">🎮</div>
-    <span class="kick-tag">KICK</span>
-    <span class="nav-name" id="navName">القناة</span>
-  </div>
-  <div class="nav-links">
-    <button class="nl on" onclick="goTo('home',this)">الرئيسية</button>
-    <button class="nl" onclick="goTo('about',this)">من أنا</button>
-    <button class="nl" onclick="goTo('store',this)">المتجر</button>
-    <button class="nl" onclick="goTo('rules',this)">القوانين</button>
-    <button class="nl" onclick="goTo('points',this)">النقاط</button>
-  </div>
-  <div class="nav-right">
-    <div class="pts-chip hidden" id="navPts">⭐ <span id="navPtsVal">0</span> نقطة</div>
-    <div class="user-chip hidden" id="userChip">
-      <img id="userAva" src="" alt=""/>
-      <span id="userName"></span>
-      <span class="pbadge" id="userProvider"></span>
-    </div>
-
-
-    <button class="btn" id="btnLinkKick" onclick="openLinkKick()" style="display:none;background:rgba(83,252,24,.1);color:var(--kick);border:1px solid var(--border);font-size:12px;padding:6px 10px;">
-      <svg width="14" height="14" viewBox="0 0 50 50" fill="none"><path d="M8 5H18V22L28 5H40L27 25L40 45H28L18 28V45H8V5Z" fill="#53FC18"/></svg>
-      ربط Kick
-    </button>
-    <button class="btn btn-ghost hidden" id="btnLogout" onclick="doLogout()">خروج</button>
-    <button class="btn btn-discord" id="btnDiscord" onclick="doLogin('discord')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057c.001.02.011.04.027.053a19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg> Discord</button>
-    <button class="btn btn-kick" id="btnKick" onclick="doLogin('kick')" style="display:flex;"><svg width="16" height="16" viewBox="0 0 50 50" fill="none"><path d="M8 5H18V22L28 5H40L27 25L40 45H28L18 28V45H8V5Z" fill="#000"/></svg> Kick</button>
-    <button class="btn btn-admin" onclick="openAdminLogin()">⚙️ إدارة</button>
-  </div>
-</nav>
-
-<main class="wrap">
-
-<!-- HOME -->
-<section class="page on" id="page-home">
-  <div class="hero">
-    <div class="live-dot"><span class="live-ring"></span> LIVE</div>
-    <h1>أهلاً بك في<br><span class="green">متجر القناة</span></h1>
-    <p>اكسب نقاط من التفاعل مع البث واستبدلها بجوائز حصرية!</p>
-    <div class="hero-cta">
-      <button class="btn-secondary" onclick="goTo('store',null)">تصفح المتجر</button>
-    </div>
-  </div>
-  <div class="stats">
-    <div class="stat"><div class="stat-n">50</div><div class="stat-l">نقطة كل ساعة</div></div>
-    <div class="stat"><div class="stat-n">100</div><div class="stat-l">نقطة ترحيبية</div></div>
-    <div class="stat"><div class="stat-n">∞</div><div class="stat-l">جوائز للاستبدال</div></div>
-  </div>
-  <div class="feats">
-    <div class="feat"><div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--kick)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="feat-title">نقاط الولاء</div><div class="feat-desc">شاهد البث وتفاعل واكسب نقاط تلقائياً</div></div>
-    <div class="feat"><div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--kick)" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></div><div class="feat-title">المتجر الحصري</div><div class="feat-desc">استبدل نقاطك بجوائز ومميزات حصرية</div></div>
-    <div class="feat"><div class="feat-icon"><svg viewBox="0 0 24 24" fill="var(--discord)" stroke="none"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057c.001.02.011.04.027.053a19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg></div><div class="feat-title">سجّل بـ Discord</div><div class="feat-desc">تسجيل دخول سريع وآمن</div></div>
-    <div class="feat"><div class="feat-icon"><svg viewBox="0 0 50 50" fill="none"><path d="M8 5H18V22L28 5H40L27 25L40 45H28L18 28V45H8V5Z" fill="var(--kick)"/></svg></div><div class="feat-title">سجّل بـ Kick</div><div class="feat-desc">ربط مباشر بحساب Kick</div></div>
-  </div>
-</section>
-
-<!-- ABOUT -->
-<section class="page" id="page-about">
-  <div class="stream-section" id="streamSection">
-    <div id="streamLive" style="display:none;">
-      <div class="stream-live-head">
-        <div class="live-badge"><span class="live-ring"></span> LIVE</div>
-        <div class="stream-title-txt" id="streamTitle">البث المباشر</div>
-        <div class="stream-viewers-txt" id="streamViewers"></div>
-      </div>
-      <div class="stream-wrap">
-        <div class="stream-embed"><iframe id="kickIframe" src="" allowfullscreen allow="autoplay; fullscreen"></iframe></div>
-      </div>
-    </div>
-    <div id="streamOffline" class="stream-offline">
-      <div class="offline-bg" id="offlineBg">
-        <div class="offline-overlay"></div>
-        <div class="offline-content">
-          <div class="offline-icon" id="offlineIcon">😴</div>
-          <div class="offline-title">القناة غير متصلة حالياً</div>
-          <div class="offline-msg" id="offlineMsg">تابعنا على Kick لتعرف موعد البث القادم!</div>
-          <a class="offline-cta" id="offlineCta" href="#" target="_blank">
-            <svg width="14" height="14" viewBox="0 0 50 50" fill="none"><path d="M8 5H18V22L28 5H40L27 25L40 45H28L18 28V45H8V5Z" fill="#000"/></svg>
-            تابع القناة
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="about-hero">
-    <div class="about-ava" id="aboutAva">🎮</div>
-    <div>
-      <div class="about-tag">الستريمر</div>
-      <div class="about-name" id="aboutName">القناة</div>
-      <div class="about-handle">kick.com/<span class="green" id="aboutHandle">username</span></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      من أنا؟
-    </div>
-    <div class="bio-text" id="aboutBio">أهلاً! أنا ستريمر شغوف بعالم الألعاب والترفيه.</div>
-  </div>
-  <div class="info-grid">
-    <div class="info-card"><div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><div class="info-label">التخصص</div><div class="info-val" id="aboutSpec">ألعاب FPS</div></div>
-    <div class="info-card"><div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="info-label">مواعيد البث</div><div class="info-val" id="aboutSched">يومياً 8 مساءً</div></div>
-    <div class="info-card"><div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><div class="info-label">من وين</div><div class="info-val" id="aboutCountry">فلسطين 🇵🇸</div></div>
-    <div class="info-card"><div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div class="info-label">لغة البث</div><div class="info-val">عربي</div></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> تواصل معي</div>
-    <div class="socials-row" id="socialsRow"><p style="color:var(--muted);font-size:13px;">لا توجد وسائل تواصل مضافة</p></div>
-  </div>
-</section>
-
-<!-- STORE -->
-<section class="page" id="page-store">
-  <div class="section-head"><div class="section-title">المتجر <span class="green">الحصري</span></div></div>
-  <div class="store-grid" id="storeGrid"><p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p></div>
-</section>
-
-<!-- RULES -->
-<section class="page" id="page-rules">
-  <div class="section-head"><div class="section-title"><span class="green">قوانين</span> القناة</div></div>
-  <div class="rules" id="rulesList">
-    <div class="rule"><div class="rule-num">1</div><div><div class="rule-title">احترام الجميع</div><div class="rule-desc">يُمنع السب والشتم وإهانة أي شخص في الشات.</div></div></div>
-    <div class="rule"><div class="rule-num">2</div><div><div class="rule-title">ممنوع السبام</div><div class="rule-desc">لا تكرر نفس الرسالة أكثر من مرتين.</div></div></div>
-    <div class="rule"><div class="rule-num">3</div><div><div class="rule-title">لا للإفساد</div><div class="rule-desc">ممنوع كشف تفاصيل الألعاب قبل أن يصلها الستريمر.</div></div></div>
-    <div class="rule"><div class="rule-num">4</div><div><div class="rule-title">الدعاية ممنوعة</div><div class="rule-desc">لا تضع روابط لقنوات أخرى دون إذن.</div></div></div>
-    <div class="rule"><div class="rule-num">5</div><div><div class="rule-title">كسب النقاط بنزاهة</div><div class="rule-desc">استخدام بوتات يؤدي لحذف الحساب.</div></div></div>
-    <div class="rule"><div class="rule-num">6</div><div><div class="rule-title">قرارات المود نهائية</div><div class="rule-desc">احترم قرارات فريق الإشراف.</div></div></div>
-  </div>
-</section>
-
-<!-- POINTS -->
-<section class="page" id="page-points">
-  <div class="section-head"><div class="section-title">نقاطي <span class="green">وسجل الأنشطة</span></div></div>
-  <div id="ptsGuest" style="text-align:center;padding:60px 0;">
-    <div style="font-size:46px;margin-bottom:14px;">🔒</div>
-    <p style="color:var(--muted);font-size:15px;margin-bottom:24px;">سجّل دخول لترى نقاطك</p>
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-      <button class="btn btn-discord" onclick="doLogin('discord')">سجّل بـ Discord</button>
-    </div>
-  </div>
-  <div id="ptsUser" style="display:none;">
-    <div class="pts-hero">
-      <div class="pts-big" id="ptsNum">0</div>
-      <div class="pts-label">نقطة متاحة للاستبدال</div>
-      <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
-      <div class="progress-labels"><span>0</span><span id="ptsGoalLabel">الهدف: 1500 نقطة</span></div>
-    </div>
-    <div style="font-size:15px;font-weight:700;margin-bottom:12px;">سجل الأنشطة</div>
-    <div class="history" id="historyList"></div>
-  </div>
-</section>
-
-<!-- ADMIN -->
-<section class="page" id="page-admin">
-  <div class="admin-layout">
-    <div class="admin-side">
-      <div class="admin-side-top">
-        <div class="admin-ava" id="adminAva">🎮</div>
-        <div><div class="admin-name" id="adminName">القناة</div><div class="admin-role">⚙️ Admin</div></div>
-      </div>
-      <div class="admin-menu">
-        <button class="am on" onclick="aTab('dashboard',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></span> الرئيسية</button>
-        <button class="am" onclick="aTab('orders',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></span> الطلبات <span class="mbadge hidden" id="pendingBadge">0</span></button>
-        <button class="am" onclick="aTab('chats',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span> الدردشات</button>
-        <button class="am" onclick="aTab('products',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></span> المنتجات</button>
-        <button class="am" onclick="aTab('users',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span> المستخدمون</button>
-        <button class="am" onclick="aTab('staff',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span> الموظفون</button>
-        <button class="am" onclick="aTab('pts-cfg',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> النقاط</button>
-        <button class="am" onclick="aTab('settings',this)"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span> الإعدادات</button>
-      </div>
-      <div class="admin-side-foot">
-        <button class="btn-danger" onclick="adminLogout()" style="width:100%;font-size:12px;padding:8px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-left:4px;"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          خروج
-        </button>
-      </div>
-    </div>
-    <div class="admin-main">
-      <!-- DASHBOARD -->
-      <div class="asub on" id="asub-dashboard">
-        <div class="a-stats">
-          <div class="a-stat"><div class="a-stat-n" id="st-total">0</div><div class="a-stat-l">إجمالي الطلبات</div></div>
-          <div class="a-stat"><div class="a-stat-n" id="st-pending">0</div><div class="a-stat-l">معلقة</div></div>
-          <div class="a-stat"><div class="a-stat-n" id="st-done">0</div><div class="a-stat-l">منجزة</div></div>
-          <div class="a-stat"><div class="a-stat-n" id="st-users">0</div><div class="a-stat-l">مستخدمون</div></div>
-        </div>
-        <div style="font-size:14px;font-weight:700;margin-bottom:10px;">آخر الطلبات</div>
-        <div id="recentOrders"><div class="empty"><p>لا توجد طلبات بعد</p></div></div>
-      </div>
-      <!-- ORDERS -->
-      <div class="asub" id="asub-orders">
-        <div class="section-head"><div class="section-title">الطلبات</div></div>
-        <div id="ordersTable"></div>
-      </div>
-      <!-- CHATS -->
-      <div class="asub" id="asub-chats">
-        <div class="section-head"><div class="section-title">الدردشات</div></div>
-        <div class="chat-panel">
-          <div class="chat-list" id="aChatList"><div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">لا توجد محادثات</div></div>
-          <div class="chat-view" id="aChatView"><div class="no-chat">اختر محادثة 👈</div></div>
-        </div>
-      </div>
-      <!-- PRODUCTS -->
-      <div class="asub" id="asub-products">
-        <div class="section-head">
-          <div class="section-title">المنتجات</div>
-          <button class="btn btn-kick" style="font-size:13px;padding:7px 14px;" onclick="openProdModal(null)">+ إضافة</button>
-        </div>
-        <div class="prods-grid" id="prodsGrid"></div>
-      </div>
-      <!-- USERS -->
-      <div class="asub" id="asub-users">
-        <div class="section-head"><div class="section-title">المستخدمون</div></div>
-        <div class="settings-box" style="margin-bottom:16px;">
-          <div class="settings-box-title">⭐ إضافة نقاط يدوياً</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
-            <div><div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">اسم المستخدم</div><input class="pf-input" id="addPtsUser" placeholder="username" dir="ltr"/></div>
-            <div><div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">النقاط</div><input class="pf-input" id="addPtsAmt" type="number" placeholder="500" dir="ltr"/></div>
-            <button class="btn btn-kick" onclick="addPtsManual()" style="height:36px;padding:0 14px;">إضافة</button>
-          </div>
-        </div>
-        <div id="usersTable"></div>
-      </div>
-      <!-- STAFF -->
-      <div class="asub" id="asub-staff">
-        <div class="section-head">
-          <div class="section-title">الموظفون</div>
-          <button class="btn btn-kick" style="font-size:13px;padding:7px 14px;" onclick="openStaffModal(null)">+ إضافة موظف</button>
-        </div>
-        <div id="staffList"></div>
-      </div>
-      <!-- POINTS CONFIG -->
-      <div class="asub" id="asub-pts-cfg">
-        <div class="section-head"><div class="section-title">إعدادات النقاط</div></div>
-        <div class="settings-box">
-          <div class="settings-box-title">🎯 طرق الكسب</div>
-          <div class="set-row"><div><div class="set-label">نقاط ترحيبية</div></div><div style="display:flex;align-items:center;gap:6px;"><input class="set-input" id="pc-welcome" type="number" value="100" style="width:80px;min-width:80px;" dir="ltr"/><span style="font-size:12px;color:var(--muted);">نقطة</span></div></div>
-          <div class="set-row"><div><div class="set-label">لكل رسالة بالشات</div><div class="set-desc">مع كولداون بين كل مكافأة</div></div><div style="display:flex;align-items:center;gap:6px;"><input class="set-input" id="pc-msg" type="number" value="5" style="width:80px;min-width:80px;" dir="ltr"/><span style="font-size:12px;color:var(--muted);">نقطة</span></div></div>
-          <div class="set-row"><div><div class="set-label">مشاهدة ساعة</div></div><div style="display:flex;align-items:center;gap:6px;"><input class="set-input" id="pc-hour" type="number" value="50" style="width:80px;min-width:80px;" dir="ltr"/><span style="font-size:12px;color:var(--muted);">نقطة</span></div></div>
-          <div class="set-row"><div><div class="set-label">سبسكريب</div></div><div style="display:flex;align-items:center;gap:6px;"><input class="set-input" id="pc-sub" type="number" value="500" style="width:80px;min-width:80px;" dir="ltr"/><span style="font-size:12px;color:var(--muted);">نقطة</span></div></div>
-          <div class="set-row"><div><div class="set-label">فولو</div></div><div style="display:flex;align-items:center;gap:6px;"><input class="set-input" id="pc-follow" type="number" value="50" style="width:80px;min-width:80px;" dir="ltr"/><span style="font-size:12px;color:var(--muted);">نقطة</span></div></div>
-        </div>
-        <div class="settings-box">
-          <div class="settings-box-title">🔒 قيود</div>
-          <div class="set-row"><div><div class="set-label">كولداون الشات</div></div><div style="display:flex;align-items:center;gap:6px;"><input class="set-input" id="pc-cooldown" type="number" value="2" style="width:80px;min-width:80px;" dir="ltr"/><span style="font-size:12px;color:var(--muted);">دقيقة</span></div></div>
-          <div class="set-row"><div><div class="set-label">حد أقصى في الساعة</div></div><div style="display:flex;align-items:center;gap:6px;"><input class="set-input" id="pc-maxhr" type="number" value="100" style="width:80px;min-width:80px;" dir="ltr"/><span style="font-size:12px;color:var(--muted);">نقطة</span></div></div>
-          <div class="set-row"><div><div class="set-label">هدف النقاط</div></div><div style="display:flex;align-items:center;gap:6px;"><input class="set-input" id="pc-goal" type="number" value="1500" style="width:80px;min-width:80px;" dir="ltr"/><span style="font-size:12px;color:var(--muted);">نقطة</span></div></div>
-        </div>
-        <button class="btn btn-kick" onclick="savePtsCfg()">💾 حفظ إعدادات النقاط</button>
-      </div>
-      <!-- SETTINGS -->
-      <div class="asub" id="asub-settings">
-        <div class="section-head"><div class="section-title">الإعدادات</div></div>
-        <div class="settings-box">
-          <div class="settings-box-title">🖼️ صورة القناة</div>
-          <div class="img-upload-row">
-            <div class="img-preview" id="settingAva">🎮</div>
-            <div>
-              <div style="font-size:13px;font-weight:600;margin-bottom:6px;">صورة الملف الشخصي</div>
-              <div class="file-wrap"><button class="btn-secondary" style="font-size:12px;padding:6px 12px;">📁 رفع صورة</button><input type="file" accept="image/*" onchange="handleAva(event)"/></div>
-            </div>
-          </div>
-        </div>
-        <div class="settings-box">
-          <div class="settings-box-title">🏪 معلومات القناة</div>
-          <div class="set-row"><div><div class="set-label">اسم القناة</div></div><input class="set-input" id="set-name" value="القناة"/></div>
-          <div class="set-row"><div><div class="set-label">يوزرنيم Kick</div></div><input class="set-input" id="set-kick" value="username" dir="ltr"/></div>
-          <div class="set-row"><div><div class="set-label">البايو</div></div><input class="set-input" id="set-bio" value="أهلاً!" style="min-width:220px;"/></div>
-          <div class="set-row"><div><div class="set-label">التخصص</div></div><input class="set-input" id="set-spec" value="ألعاب FPS"/></div>
-          <div class="set-row"><div><div class="set-label">مواعيد البث</div></div><input class="set-input" id="set-sched" value="يومياً 8 مساءً"/></div>
-          <div class="set-row"><div><div class="set-label">البلد</div></div><input class="set-input" id="set-country" value="فلسطين 🇵🇸"/></div>
-        </div>
-        <div class="settings-box">
-          <div class="settings-box-title">📡 البث المباشر</div>
-          <div class="set-row"><div><div class="set-label">حالة البث</div></div>
-            <div style="display:flex;gap:8px;">
-              <button id="btn-live" onclick="setStream('live')" style="background:rgba(255,64,64,.15);color:var(--red);border:1px solid rgba(255,64,64,.3);padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;">🔴 شغّل</button>
-              <button id="btn-offline" onclick="setStream('offline')" style="background:rgba(83,252,24,.1);color:var(--kick);border:1px solid var(--border);padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;">😴 أوقف</button>
-            </div>
-          </div>
-          <div class="set-row"><div><div class="set-label">يوزرنيم Kick للبث</div></div><input class="set-input" id="set-stream-user" placeholder="username" dir="ltr"/></div>
-          <div class="set-row"><div><div class="set-label">عنوان البث</div></div><input class="set-input" id="set-stream-title" placeholder="اختياري"/></div>
-          <div class="set-row"><div><div class="set-label">رسالة عدم الاتصال</div></div><input class="set-input" id="set-offline-msg" value="تابعنا على Kick!" style="min-width:200px;"/></div>
-          <div class="set-row"><div><div class="set-label">إيموجي عدم الاتصال</div></div><input class="set-input" id="set-offline-icon" value="😴" style="width:60px;min-width:60px;font-size:18px;text-align:center;"/></div>
-          <div class="set-row"><div><div class="set-label">لون خلفية عدم الاتصال</div></div>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <input type="color" id="set-offline-color" value="#0A0A0F" style="width:36px;height:36px;border:none;border-radius:6px;cursor:pointer;"/>
-              <div class="file-wrap"><button class="btn-secondary" style="font-size:12px;padding:5px 10px;">📁 صورة</button><input type="file" accept="image/*" onchange="handleOfflineBg(event)"/></div>
-            </div>
-          </div>
-        </div>
-        <div class="settings-box">
-          <div class="settings-box-title">🔗 وسائل التواصل</div>
-          <div id="socialsAdmin" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
-          <div style="background:var(--card2);border-radius:10px;padding:12px;border:1px dashed var(--border);">
-            <div style="font-size:13px;font-weight:700;margin-bottom:10px;">+ إضافة وسيلة</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-              <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600;">المنصة</div>
-                <select class="set-input" id="newSocialType" style="min-width:unset;width:100%;" onchange="updateSocialPH()">
-                  <option value="kick">Kick</option><option value="discord">Discord</option>
-                  <option value="twitter">Twitter</option><option value="youtube">YouTube</option>
-                  <option value="instagram">Instagram</option><option value="tiktok">TikTok</option>
-                  <option value="telegram">Telegram</option><option value="whatsapp">WhatsApp</option>
-                  <option value="facebook">Facebook</option><option value="twitch">Twitch</option>
-                  <option value="website">موقع</option>
-                </select>
-              </div>
-              <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600;">الرابط</div><input class="set-input" id="newSocialUrl" placeholder="https://..." dir="ltr" style="min-width:unset;width:100%;" onkeydown="if(event.key==='Enter')addSocial()"/></div>
-            </div>
-            <button class="btn btn-kick" onclick="addSocial()" style="font-size:13px;padding:7px 14px;">+ إضافة</button>
-          </div>
-        </div>
-        <div class="settings-box">
-          <div class="settings-box-title">🔐 كلمة سر الإدارة</div>
-          <div class="set-row"><div><div class="set-label">كلمة السر الجديدة</div></div><input class="set-input" id="set-newpass" type="password" placeholder="••••••" dir="ltr"/></div>
-          <div class="set-row"><div><div class="set-label">تأكيد كلمة السر</div></div><input class="set-input" id="set-confirmpass" type="password" placeholder="••••••" dir="ltr"/></div>
-        </div>
-        <button class="btn btn-kick" onclick="saveSettings()">💾 حفظ كل الإعدادات</button>
-      </div>
-    </div>
-  </div>
-</section>
-</main>
-
-<!-- LOGIN MODAL -->
-<div class="overlay hidden" id="loginModal">
-  <div class="modal">
-    <h3>🔐 تسجيل الدخول</h3>
-    <p>اختر طريقة تسجيل الدخول</p>
-    <div class="login-opts">
-      <button class="login-opt" style="background:var(--discord);color:#fff;" onclick="doLogin('discord')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057c.001.02.011.04.027.053a19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
-        تسجيل بـ Discord
-      </button>
-
-    </div>
-    <button class="m-cancel" onclick="closeModal('loginModal')" style="width:100%;padding:10px;border-radius:8px;font-weight:700;font-size:14px;border:none;">إلغاء</button>
-  </div>
-</div>
-
-<!-- ADMIN LOGIN -->
-<div class="overlay hidden" id="adminModal">
-  <div class="modal">
-    <h3>⚙️ دخول الإدارة</h3>
-    <p>أدخل بيانات المدير</p>
-    <input class="m-input" id="aUser" placeholder="admin"/>
-    <input class="m-input" id="aPass" type="password" placeholder="••••••"/>
-    <div class="m-err" id="aErr"></div>
-    <div class="m-btns">
-      <button class="m-ok" onclick="submitAdmin()">دخول</button>
-      <button class="m-cancel" onclick="closeModal('adminModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- BUY MODAL -->
-<div class="overlay hidden" id="buyModal">
-  <div class="modal">
-    <h3 id="buyTitle">تأكيد الشراء</h3>
-    <p id="buyDesc" style="color:var(--muted);font-size:13px;margin-bottom:8px;"></p>
-    <div class="buy-price" id="buyPrice"></div>
-    <div style="text-align:right;margin-bottom:14px;">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">اسمك (للتأكيد)</div>
-      <input class="m-input" id="buyUsername" placeholder="username" style="text-align:right;direction:rtl;"/>
-    </div>
-    <div class="m-btns">
-      <button class="m-ok" onclick="confirmBuy()">تأكيد ✅</button>
-      <button class="m-cancel" onclick="closeModal('buyModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- PRODUCT MODAL -->
-<div class="overlay hidden" id="prodModal">
-  <div class="modal wide">
-    <h3 id="prodModalTitle" style="margin-bottom:14px;">إضافة منتج</h3>
-    <div class="prod-img-box" id="prodImgBox">
-      <span id="prodImgEmoji" style="font-size:48px;">🎁</span>
-      <img id="prodImgPrev" src="" style="display:none;"/>
-      <input type="file" id="prodImgFile" accept="image/*" style="display:none;" onchange="handleProdImg(event)"/>
-      <div class="prod-img-hint">انقر لرفع صورة</div>
-    </div>
-    <div class="prod-form">
-      <div class="pf-group"><label>الاسم</label><input class="pf-input" id="pf-name" placeholder="دور في لعبة"/></div>
-      <div class="pf-group"><label>السعر (نقاط)</label><input class="pf-input" id="pf-price" type="number" placeholder="500" dir="ltr"/></div>
-      <div class="pf-group"><label>الأيقونة</label><input class="pf-input" id="pf-icon" placeholder="🎮" style="font-size:20px;text-align:center;"/></div>
-      <div class="pf-group"><label>الحالة</label><select class="pf-input" id="pf-active"><option value="true">✅ نشط</option><option value="false">⏸ موقوف</option></select></div>
-      <div class="pf-group full"><label>الوصف</label><textarea class="pf-input" id="pf-desc" rows="2" style="resize:vertical;"></textarea></div>
-    </div>
-    <div class="m-btns" style="margin-top:12px;">
-      <button class="m-ok" onclick="saveProd()">💾 حفظ</button>
-      <button class="m-cancel" onclick="closeModal('prodModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- STAFF MODAL -->
-<div class="overlay hidden" id="staffModal">
-  <div class="modal wide">
-    <h3 id="staffModalTitle" style="margin-bottom:16px;">إضافة موظف</h3>
-    <div class="prod-form" style="margin-bottom:14px;">
-      <div class="pf-group"><label>الاسم</label><input class="pf-input" id="sf-name" placeholder="محمد"/></div>
-      <div class="pf-group"><label>اليوزرنيم</label><input class="pf-input" id="sf-user" placeholder="username" dir="ltr"/></div>
-      <div class="pf-group"><label>المسمى الوظيفي</label><input class="pf-input" id="sf-role" placeholder="مشرف شات"/></div>
-      <div class="pf-group"><label>لون الشارة</label>
-        <select class="pf-input" id="sf-color">
-          <option value="#53FC18">🟢 أخضر Kick</option>
-          <option value="#5865F2">🔵 أزرق Discord</option>
-          <option value="#FFA500">🟠 برتقالي</option>
-          <option value="#ff4040">🔴 أحمر</option>
-          <option value="#a855f7">🟣 بنفسجي</option>
-          <option value="#888">⚫ رمادي</option>
-        </select>
-      </div>
-    </div>
-    <div style="font-size:13px;font-weight:700;color:var(--kick);margin-bottom:10px;">🔑 الصلاحيات</div>
-    <div class="perm-grid">
-      <label class="perm-item"><input type="checkbox" id="perm-orders"/><span class="perm-label">🛒 الطلبات</span><span class="perm-sub">عرض وإدارة الطلبات</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-products"/><span class="perm-label">🎁 المنتجات</span><span class="perm-sub">إضافة وتعديل المنتجات</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-users"/><span class="perm-label">👥 المستخدمون</span><span class="perm-sub">عرض وإضافة نقاط</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-chats"/><span class="perm-label">💬 الدردشات</span><span class="perm-sub">الرد على الدردشات</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-staff"/><span class="perm-label">👮 الموظفون</span><span class="perm-sub">إدارة الموظفين</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-settings" checked/><span class="perm-label">📊 الرئيسية</span><span class="perm-sub">عرض الإحصائيات</span></label>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:14px;">
-      <button onclick="selPerms(true)" style="background:rgba(83,252,24,.1);color:var(--kick);border:1px solid var(--border);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;">تحديد الكل</button>
-      <button onclick="selPerms(false)" style="background:var(--card);color:var(--muted);border:1px solid var(--bw);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;">إلغاء الكل</button>
-    </div>
-    <div class="m-btns">
-      <button class="m-ok" onclick="saveStaff()">💾 حفظ</button>
-      <button class="m-cancel" onclick="closeModal('staffModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- LINK KICK MODAL -->
-<div class="overlay hidden" id="linkKickModal">
-  <div class="modal">
-    <h3>🎮 ربط حساب Kick</h3>
-    <p>أدخل اسم حسابك على Kick عشان تكسب النقاط من الشات تلقائياً</p>
-    <input class="m-input" id="linkKickInput" placeholder="username على Kick" dir="ltr"/>
-    <div class="m-err" id="linkKickErr"></div>
-    <div class="m-btns">
-      <button class="m-ok" onclick="confirmLinkKick()">ربط ✅</button>
-      <button class="m-cancel" onclick="closeModal('linkKickModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- CHAT BUBBLE -->
-<div class="chat-bubble">
-  <div class="chat-box" id="chatBox">
-    <div class="chat-box-head">
-      <div><div class="chat-box-title">💬 تواصل مع الدعم</div></div>
-      <button class="chat-box-close" onclick="toggleChat()">✕</button>
-    </div>
-    <div class="chat-name-row"><input class="chat-name-inp" id="chatName" placeholder="اسمك (اختياري)"/></div>
-    <div class="chat-msgs" id="chatMsgs">
-      <div class="cmsg support">أهلاً! كيف أقدر أساعدك؟ 👋</div>
-    </div>
-    <div class="chat-inp-row">
-      <input class="chat-inp" id="chatInp" placeholder="اكتب رسالتك..." onkeydown="if(event.key==='Enter')sendChat()"/>
-      <button class="chat-send" onclick="sendChat()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
-    </div>
-  </div>
-  <button class="chat-toggle" onclick="toggleChat()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></button>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// ═══════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════
-const W = 'https://storekick1-auth.hk983480.workers.dev'; // Worker URL
-const ADMIN_KEY = 'kickadmin2026secret';
-
-// ═══════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════
-let currentUser = null;
-let sessionToken = localStorage.getItem('sk_token') || null;
-let adminIn = false;
-let adminPass = 'admin';
-let pendingProd = null;
-let editingProdId = null;
-let pendingProdImg = null;
-let channelImg = null;
-let chatOpen = false;
-let selectedChat = null;
-let chats = {};
-let socialLinks = [];
-let staff = [];
-let streamState = { status:'offline', username:'', title:'', offlineMsg:'تابعنا على Kick!', offlineIcon:'😴', offlineBg:null, offlineColor:'#0A0A0F' };
-let ptsCfg = { welcome:100, msg:5, hour:50, sub:500, follow:50, cooldown:2, maxHr:100, goal:1500 };
-const PERM_LABELS = { orders:'🛒 الطلبات', products:'🎁 المنتجات', users:'👥 المستخدمون', chats:'💬 الدردشات', staff:'👮 الموظفون', settings:'📊 الرئيسية' };
-const SOCIAL_COLORS = { kick:'#53FC18', discord:'#5865F2', twitter:'#1DA1F2', youtube:'#FF0000', instagram:'#E1306C', tiktok:'#010101', telegram:'#2CA5E0', whatsapp:'#25D366', facebook:'#1877F2', twitch:'#9146FF', website:'#888' };
-const SOCIAL_TC = { kick:'#000', discord:'#fff', twitter:'#fff', youtube:'#fff', instagram:'#fff', tiktok:'#fff', telegram:'#fff', whatsapp:'#fff', facebook:'#fff', twitch:'#fff', website:'#fff' };
-const SOCIAL_LABELS = { kick:'Kick', discord:'Discord', twitter:'Twitter', youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok', telegram:'Telegram', whatsapp:'WhatsApp', facebook:'Facebook', twitch:'Twitch', website:'الموقع' };
-
-// ═══════════════════════════════════════════
-// NAV
-// ═══════════════════════════════════════════
-function goTo(id, btn) {
-  if (id === 'admin' && !adminIn) { openAdminLogin(); return; }
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
-  document.querySelectorAll('.nl').forEach(b => b && b.classList.remove('on'));
-  document.getElementById('page-' + id)?.classList.add('on');
-  if (btn && btn.classList) btn.classList.add('on');
-  if (id === 'store') loadStore();
-  if (id === 'points') loadPoints();
-  if (id === 'admin') { loadDashboard(); }
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...CORS },
+  });
 }
 
-// ═══════════════════════════════════════════
-// AUTH
-// ═══════════════════════════════════════════
-function loginWith(p) { document.getElementById('loginModal').classList.remove('hidden'); }
-function doLogin(provider) {
-  closeModal('loginModal');
-  if (provider === 'kick') {
-    window.location.href = `${W}/auth/kick/login?site=${encodeURIComponent(location.origin + location.pathname)}`;
-  } else {
-    window.location.href = `${W}/auth/${provider}/login`;
-  }
+async function fbGet(path) {
+  try {
+    const r = await fetch(`${FB_URL}/${path}.json`);
+    return r.ok ? r.json() : null;
+  } catch(e) { return null; }
 }
 
-async function checkAuth() {
-  // تحقق من رجوع OAuth
-  const params = new URLSearchParams(window.location.search);
-  const authResult = params.get('auth');
-  const token = params.get('token');
-  // معالجة Kick OAuth callback مباشرة
-  const kickCode  = params.get('code');
-  const kickState = params.get('state');
-  if (kickCode && kickState) {
-    history.replaceState({}, '', location.pathname);
-    try {
-      const res = await fetch(`${W}/auth/kick/exchange`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: kickCode, state: kickState }),
+async function fbSet(path, data) {
+  await fetch(`${FB_URL}/${path}.json`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
+
+    // ── DISCORD LOGIN ──
+    if (url.pathname === '/auth/discord/login') {
+      const state = crypto.randomUUID();
+      await env.KV.put('state:' + state, '1', { expirationTtl: 300 });
+      const p = new URLSearchParams({
+        client_id: env.DISCORD_CLIENT_ID,
+        redirect_uri: env.DISCORD_REDIRECT_URI,
+        response_type: 'code', scope: 'identify', state,
       });
-      const d = await res.json();
-      if (d.token) {
-        localStorage.setItem('sk_token', d.token);
-        sessionToken = d.token;
-        currentUser = { id: d.id, username: d.username, avatar: d.avatar, provider: 'kick', points: d.points };
-        updateAuthUI();
-        loadStore();
-        showToast(`أهلاً ${d.username}! 🎉`);
+      return Response.redirect('https://discord.com/oauth2/authorize?' + p, 302);
+    }
+
+    // ── DISCORD CALLBACK ──
+    if (url.pathname === '/auth/discord/callback') {
+      const code = url.searchParams.get('code');
+      const state = url.searchParams.get('state');
+      const fail = SITE_ORIGIN + '/aboodshop/?auth=failed';
+      if (!code || !state) return Response.redirect(fail, 302);
+      const valid = await env.KV.get('state:' + state);
+      if (!valid) return Response.redirect(fail, 302);
+      await env.KV.delete('state:' + state);
+      try {
+        const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: env.DISCORD_CLIENT_ID, client_secret: env.DISCORD_CLIENT_SECRET,
+            grant_type: 'authorization_code', redirect_uri: env.DISCORD_REDIRECT_URI, code,
+          }),
+        });
+        const { access_token } = await tokenRes.json();
+        const userRes = await fetch('https://discord.com/api/users/@me', {
+          headers: { Authorization: 'Bearer ' + access_token },
+        });
+        const du = await userRes.json();
+        const userId = 'discord_' + du.id;
+        const avatar = du.avatar ? `https://cdn.discordapp.com/avatars/${du.id}/${du.avatar}.png` : null;
+        let user = await fbGet('users/' + userId);
+        const pending = await fbGet('pendingPoints/' + du.username) || 0;
+        if (!user) {
+          user = {
+            id: userId, username: du.username, avatar, provider: 'discord',
+            points: 100 + pending, totalEarned: 100 + pending,
+            joinedAt: new Date().toISOString(),
+            history: [
+              { type: 'earned', title: 'نقاط ترحيبية', points: 100, date: new Date().toISOString() },
+              ...(pending > 0 ? [{ type: 'earned', title: 'نقاط من الإدارة', points: pending, date: new Date().toISOString() }] : []),
+            ],
+          };
+        } else {
+          user.username = du.username; user.avatar = avatar;
+          if (pending > 0) {
+            user.points += pending; user.totalEarned += pending;
+            user.history.unshift({ type: 'earned', title: 'نقاط من الإدارة', points: pending, date: new Date().toISOString() });
+          }
+        }
+        if (pending > 0) await fbSet('pendingPoints/' + du.username, null);
+        await fbSet('users/' + userId, user);
+        const token = crypto.randomUUID();
+        await env.KV.put('session:' + token, userId, { expirationTtl: 604800 });
+        return Response.redirect(SITE_ORIGIN + '/aboodshop/?auth=success&token=' + token, 302);
+      } catch(e) { return Response.redirect(fail, 302); }
+    }
+
+    // ── KICK MANUAL LOGIN ──
+    if (url.pathname === '/auth/kick/manual' && request.method === 'POST') {
+      const { username } = await request.json().catch(() => ({}));
+      if (!username) return json({ error: 'أدخل اسم المستخدم' }, 400);
+
+      const userId = 'kick_' + username.toLowerCase().replace(/\s+/g, '_');
+      const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=53FC18&color=000&rounded=true&bold=true`;
+
+      let user = await fbGet('users/' + userId);
+      const pending = await fbGet('pendingPoints/' + username) || 0;
+
+      if (!user) {
+        user = {
+          id: userId, username, avatar, provider: 'kick',
+          points: 100 + pending, totalEarned: 100 + pending,
+          joinedAt: new Date().toISOString(),
+          history: [
+            { type: 'earned', title: 'نقاط ترحيبية', points: 100, date: new Date().toISOString() },
+            ...(pending > 0 ? [{ type: 'earned', title: 'نقاط من الإدارة', points: pending, date: new Date().toISOString() }] : []),
+          ],
+        };
       } else {
-        showToast('❌ فشل تسجيل الدخول بـ Kick', 'err');
+        if (pending > 0) {
+          user.points += pending;
+          user.totalEarned += pending;
+          user.history.unshift({ type: 'earned', title: 'نقاط من الإدارة', points: pending, date: new Date().toISOString() });
+        }
       }
-    } catch(e) {
-      showToast('❌ خطأ في الاتصال', 'err');
-    }
-    return;
-  }
 
-  if (authResult === 'success' && token) {
-    localStorage.setItem('sk_token', token);
-    sessionToken = token;
-    history.replaceState({}, '', location.pathname);
-    // جيب بيانات المستخدم وبيّنها فوراً
-    try {
-      const res = await fetch(`${W}/auth/me?token=${sessionToken}`);
-      const d = await res.json();
-      if (d.loggedIn) {
-        currentUser = { ...d };
-        updateAuthUI();
-        loadStore();
-        showToast(`أهلاً ${d.username}! 🎉`);
+      if (pending > 0) await fbSet('pendingPoints/' + username, null);
+      await fbSet('users/' + userId, user);
+
+      const token = crypto.randomUUID();
+      await env.KV.put('session:' + token, userId, { expirationTtl: 604800 });
+
+      return json({ success: true, token, id: userId, username: user.username, avatar: user.avatar, points: user.points });
+    }
+
+    // ── KICK EXCHANGE (الموقع يرسل الـ code) ──
+    if (url.pathname === '/auth/kick/exchange' && request.method === 'POST') {
+      const { code, state } = await request.json().catch(() => ({}));
+      if (!code || !state) return json({ error: 'بيانات ناقصة' }, 400);
+
+      const verifier = await env.KV.get('state:' + state);
+      await env.KV.delete('state:' + state);
+
+      // سجّل للـ debugging
+      console.log('Kick exchange - state:', state, 'verifier found:', !!verifier);
+
+      try {
+        const tokenBody = {
+          client_id:     env.KICK_CLIENT_ID,
+          client_secret: env.KICK_CLIENT_SECRET,
+          grant_type:    'authorization_code',
+          redirect_uri:  'https://corecode2026.github.io/aboodshop/',
+          code,
+        };
+        if (verifier) tokenBody.code_verifier = verifier;
+
+        const tokenRes = await fetch('https://id.kick.com/oauth/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(tokenBody),
+        });
+        const tokenData = await tokenRes.json();
+        if (!tokenData.access_token) return json({ error: 'فشل الحصول على token' }, 400);
+
+        const userRes = await fetch('https://api.kick.com/public/v1/users', {
+          headers: { Authorization: 'Bearer ' + tokenData.access_token },
+        });
+        const kuRaw = await userRes.json();
+        const ku = Array.isArray(kuRaw.data) ? kuRaw.data[0] : kuRaw;
+        const userId   = 'kick_' + (ku.id || ku.user_id);
+        const username = ku.username || ku.name || ku.slug;
+        const avatar   = ku.profile_pic || null;
+
+        let user = await fbGet('users/' + userId);
+        const pending = await fbGet('pendingPoints/' + username) || 0;
+
+        if (!user) {
+          user = {
+            id: userId, username, avatar, provider: 'kick',
+            points: 100 + pending, totalEarned: 100 + pending,
+            joinedAt: new Date().toISOString(),
+            history: [{ type: 'earned', title: 'نقاط ترحيبية', points: 100, date: new Date().toISOString() }],
+          };
+        } else {
+          user.username = username; user.avatar = avatar;
+          if (pending > 0) { user.points += pending; user.totalEarned += pending; }
+        }
+
+        if (pending > 0) await fbSet('pendingPoints/' + username, null);
+        await fbSet('users/' + userId, user);
+
+        const token = crypto.randomUUID();
+        await env.KV.put('session:' + token, userId, { expirationTtl: 604800 });
+
+        return json({ token, id: userId, username, avatar, points: user.points });
+      } catch(e) {
+        return json({ error: 'خطأ: ' + e.message }, 500);
       }
-    } catch(e) { showToast('✅ تم تسجيل الدخول!'); }
-    return;
-  } else if (authResult === 'failed') {
-    history.replaceState({}, '', location.pathname);
-    showToast('❌ فشل تسجيل الدخول', 'err');
-  }
-
-  if (!sessionToken) return;
-  try {
-    const res = await fetch(`${W}/auth/me?token=${sessionToken}`);
-    const d = await res.json();
-    if (d.loggedIn) {
-      currentUser = { ...d };
-      updateAuthUI();
-      loadStore();
-    } else {
-      localStorage.removeItem('sk_token');
-      sessionToken = null;
     }
-  } catch(e) {}
-}
 
-function updateAuthUI() {
-  document.getElementById('btnDiscord').style.display = 'none';
-  // أظهر زر ربط Kick إذا ما ربط بعد
-  const linkBtn = document.getElementById('btnLinkKick');
-  if (linkBtn && !currentUser?.kickUsername) linkBtn.style.display = 'flex';
-  document.getElementById('btnKick').style.display = 'none';
-  document.getElementById('btnLogout').classList.remove('hidden');
-  document.getElementById('navPts').classList.remove('hidden');
-  document.getElementById('userChip').classList.remove('hidden');
-  document.getElementById('navPtsVal').textContent = currentUser.points.toLocaleString();
-  document.getElementById('userName').textContent = currentUser.username;
-  const prov = document.getElementById('userProvider');
-  prov.textContent = currentUser.provider === 'discord' ? 'Discord' : 'Kick';
-  prov.className = 'pbadge pbadge-' + currentUser.provider;
-  if (currentUser.avatar) document.getElementById('userAva').src = currentUser.avatar;
-}
+    // ── KICK LOGIN ──
+    if (url.pathname === '/auth/kick/login') {
+      const state = crypto.randomUUID();
+      const siteUrl = url.searchParams.get('site') || 'https://corecode2026.github.io/aboodshop/';
 
-async function doLogout() {
-  if (sessionToken) {
-    try { await fetch(`${W}/auth/logout`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token:sessionToken}) }); } catch(e) {}
-    localStorage.removeItem('sk_token');
-    sessionToken = null;
+      // PKCE
+      const verifier = crypto.randomUUID().replace(/-/g,'') + crypto.randomUUID().replace(/-/g,'');
+      const enc      = new TextEncoder();
+      const data     = enc.encode(verifier);
+      const digest   = await crypto.subtle.digest('SHA-256', data);
+      const b64      = btoa(String.fromCharCode(...new Uint8Array(digest)));
+      const challenge = b64.replace(/[+]/g,'-').replace(/[/]/g,'_').replace(/[=]/g,'');
+
+      await env.KV.put('state:' + state, verifier, { expirationTtl: 300 });
+
+      const redirectUri = siteUrl; // Kick يرجع للموقع مباشرة
+      const p = new URLSearchParams({
+        client_id:             env.KICK_CLIENT_ID,
+        redirect_uri:          redirectUri,
+        response_type:         'code',
+        scope:                 'user:read',
+        state,
+        code_challenge:        challenge,
+        code_challenge_method: 'S256',
+      });
+      return Response.redirect('https://id.kick.com/oauth/authorize?' + p, 302);
+    }
+
+    // ── KICK CALLBACK ──
+    if (url.pathname === '/auth/kick/callback') {
+      const code = url.searchParams.get('code');
+      const state = url.searchParams.get('state');
+      const fail = SITE_ORIGIN + '/aboodshop/?auth=failed';
+      if (!code || !state) return Response.redirect(fail, 302);
+      const valid = await env.KV.get('state:' + state);
+      if (!valid) return Response.redirect(fail, 302);
+      await env.KV.delete('state:' + state);
+      try {
+        const verifier = valid; // الـ KV يحفظ الـ verifier
+        const tokenRes = await fetch('https://id.kick.com/oauth/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id:     env.KICK_CLIENT_ID,
+            client_secret: env.KICK_CLIENT_SECRET,
+            grant_type:    'authorization_code',
+            redirect_uri:  env.KICK_REDIRECT_URI,
+            code,
+            code_verifier: verifier,
+          }),
+        });
+        const { access_token } = await tokenRes.json();
+        const userRes = await fetch('https://api.kick.com/public/v1/users', {
+          headers: { Authorization: 'Bearer ' + access_token },
+        });
+        const kuRaw = await userRes.json();
+        const ku = Array.isArray(kuRaw.data) ? kuRaw.data[0] : kuRaw;
+        const userId = 'kick_' + (ku.id || ku.user_id);
+        const username = ku.username || ku.name || ku.slug;
+        let user = await fbGet('users/' + userId);
+        const pending = await fbGet('pendingPoints/' + username) || 0;
+        if (!user) {
+          user = {
+            id: userId, username, avatar: ku.profile_pic || null, provider: 'kick',
+            points: 100 + pending, totalEarned: 100 + pending,
+            joinedAt: new Date().toISOString(),
+            history: [{ type: 'earned', title: 'نقاط ترحيبية', points: 100, date: new Date().toISOString() }],
+          };
+        } else {
+          user.username = username;
+          if (pending > 0) { user.points += pending; user.totalEarned += pending; }
+        }
+        if (pending > 0) await fbSet('pendingPoints/' + username, null);
+        await fbSet('users/' + userId, user);
+        const token = crypto.randomUUID();
+        await env.KV.put('session:' + token, userId, { expirationTtl: 604800 });
+        return Response.redirect(SITE_ORIGIN + '/aboodshop/?auth=success&token=' + token, 302);
+      } catch(e) { return Response.redirect(fail, 302); }
+    }
+
+    // ── LINK KICK ──
+    if (url.pathname === '/api/link-kick' && request.method === 'POST') {
+      const { token, kickUsername } = await request.json().catch(() => ({}));
+      if (!token || !kickUsername) return json({ error: 'بيانات ناقصة' }, 400);
+
+      const userId = await env.KV.get('session:' + token);
+      if (!userId) return json({ error: 'غير مصرح' }, 401);
+
+      const user = await fbGet('users/' + userId);
+      if (!user) return json({ error: 'مستخدم غير موجود' }, 404);
+
+      // احفظ اسم Kick بالمستخدم
+      user.kickUsername = kickUsername;
+      await fbSet('users/' + userId, user);
+
+      // انقل النقاط المعلقة إن وجدت
+      const pending = await fbGet('pendingPoints/' + kickUsername) || 0;
+      if (pending > 0) {
+        user.points      += pending;
+        user.totalEarned += pending;
+        user.history.unshift({ type: 'earned', title: 'نقاط من الشات (Kick)', points: pending, date: new Date().toISOString() });
+        await fbSet('users/' + userId, user);
+        await fbSet('pendingPoints/' + kickUsername, null);
+      }
+
+      return json({ success: true, transferred: pending });
+    }
+
+    // ── AUTH ME ──
+    if (url.pathname === '/auth/me') {
+      const token = url.searchParams.get('token');
+      if (!token) return json({ loggedIn: false });
+      const userId = await env.KV.get('session:' + token);
+      if (!userId) return json({ loggedIn: false });
+      const user = await fbGet('users/' + userId);
+      if (!user) return json({ loggedIn: false });
+      return json({ loggedIn: true, id: user.id, username: user.username, avatar: user.avatar, provider: user.provider, points: user.points });
+    }
+
+    // ── LOGOUT ──
+    if (url.pathname === '/auth/logout' && request.method === 'POST') {
+      const { token } = await request.json().catch(() => ({}));
+      if (token) await env.KV.delete('session:' + token);
+      return json({ success: true });
+    }
+
+    // ── SETTINGS ──
+    if (url.pathname === '/api/settings') {
+      if (request.method === 'GET') {
+        return json(await fbGet('settings') || {});
+      }
+      if (request.method === 'POST') {
+        if (request.headers.get('x-admin-key') !== env.ADMIN_KEY) return json({ error: 'غير مصرح' }, 403);
+        const body = await request.json();
+        const current = await fbGet('settings') || {};
+        await fbSet('settings', { ...current, ...body });
+        return json({ success: true });
+      }
+    }
+
+    // ── SOCIALS ──
+    if (url.pathname === '/api/socials') {
+      if (request.method === 'GET') return json({ socials: await fbGet('socialLinks') || [] });
+      if (request.method === 'POST') {
+        if (request.headers.get('x-admin-key') !== env.ADMIN_KEY) return json({ error: 'غير مصرح' }, 403);
+        const { socials } = await request.json();
+        await fbSet('socialLinks', socials || []);
+        return json({ success: true });
+      }
+    }
+
+    // ── PRODUCTS ──
+    if (url.pathname === '/api/products' && request.method === 'GET') {
+      const products = await fbGet('products') || [];
+      return json({ products: Array.isArray(products) ? products.filter(p => p.active) : [] });
+    }
+
+    if (url.pathname === '/api/admin/products') {
+      if (request.headers.get('x-admin-key') !== env.ADMIN_KEY) return json({ error: 'غير مصرح' }, 403);
+      if (request.method === 'GET') return json({ products: await fbGet('products') || [] });
+      if (request.method === 'POST') {
+        const body = await request.json();
+        const products = await fbGet('products') || defaultProducts();
+        const np = { id: Date.now(), ...body, active: body.active !== false };
+        products.push(np);
+        await fbSet('products', products);
+        return json({ success: true, product: np });
+      }
+    }
+
+    if (url.pathname.startsWith('/api/admin/products/')) {
+      if (request.headers.get('x-admin-key') !== env.ADMIN_KEY) return json({ error: 'غير مصرح' }, 403);
+      const id = Number(url.pathname.split('/').pop());
+      let products = await fbGet('products') || [];
+      if (request.method === 'PUT') {
+        const body = await request.json();
+        products = products.map(p => p.id === id ? { ...p, ...body } : p);
+        await fbSet('products', products);
+        return json({ success: true });
+      }
+      if (request.method === 'DELETE') {
+        await fbSet('products', products.filter(p => p.id !== id));
+        return json({ success: true });
+      }
+    }
+
+    // ── BUY ──
+    if (url.pathname === '/api/buy' && request.method === 'POST') {
+      const body = await request.json();
+      const userId = body.token ? await env.KV.get('session:' + body.token) : null;
+      if (!userId) return json({ error: 'غير مصرح' }, 401);
+      const user = await fbGet('users/' + userId);
+      if (!user) return json({ error: 'غير موجود' }, 404);
+      const products = await fbGet('products') || defaultProducts();
+      const product = products.find(p => p.id === Number(body.productId) && p.active);
+      if (!product) return json({ error: 'المنتج غير موجود' }, 404);
+      if (user.points < product.price) return json({ error: 'نقاطك غير كافية' }, 400);
+      user.points -= product.price;
+      if (!user.history) user.history = [];
+      user.history.unshift({ type: 'spent', title: 'شراء: ' + product.name, points: -product.price, date: new Date().toISOString() });
+      await fbSet('users/' + userId, user);
+      const orders = await fbGet('orders') || [];
+      orders.unshift({ id: Date.now(), userId, username: user.username, kickUsername: body.kickUsername || user.username, product: product.name, icon: product.icon, price: product.price, date: new Date().toISOString(), status: 'pending' });
+      await fbSet('orders', orders);
+      return json({ success: true, message: 'تم الشراء', remainingPoints: user.points });
+    }
+
+    // ── ORDERS ──
+    if (url.pathname === '/api/admin/orders') {
+      if (request.headers.get('x-admin-key') !== env.ADMIN_KEY) return json({ error: 'غير مصرح' }, 403);
+      return json({ orders: await fbGet('orders') || [] });
+    }
+
+    if (url.pathname.startsWith('/api/admin/orders/')) {
+      if (request.headers.get('x-admin-key') !== env.ADMIN_KEY) return json({ error: 'غير مصرح' }, 403);
+      const id = Number(url.pathname.split('/').pop());
+      let orders = await fbGet('orders') || [];
+      if (request.method === 'PUT') {
+        const body = await request.json();
+        orders = orders.map(o => o.id === id ? { ...o, ...body } : o);
+        await fbSet('orders', orders);
+        return json({ success: true });
+      }
+      if (request.method === 'DELETE') {
+        await fbSet('orders', orders.filter(o => o.id !== id));
+        return json({ success: true });
+      }
+    }
+
+    // ── POINTS ──
+    if (url.pathname === '/api/points/history') {
+      const token = url.searchParams.get('token');
+      const userId = token ? await env.KV.get('session:' + token) : null;
+      if (!userId) return json({ error: 'غير مصرح' }, 401);
+      const user = await fbGet('users/' + userId);
+      if (!user) return json({ error: 'غير موجود' }, 404);
+      return json({ points: user.points, totalEarned: user.totalEarned, history: (user.history || []).slice(0, 50) });
+    }
+
+    if (url.pathname === '/api/admin/points-add' && request.method === 'POST') {
+      if (request.headers.get('x-admin-key') !== env.ADMIN_KEY) return json({ error: 'غير مصرح' }, 403);
+      const { username, amount } = await request.json();
+      if (!username || !amount) return json({ error: 'بيانات ناقصة' }, 400);
+      const users = await fbGet('users') || {};
+      const entry = Object.entries(users).find(([, u]) => 
+        u.username?.toLowerCase() === username.toLowerCase() ||
+        u.kickUsername?.toLowerCase() === username.toLowerCase()
+      );
+      if (entry) {
+        const [uid, u] = entry;
+        u.points += Number(amount); u.totalEarned += Number(amount);
+        if (!u.history) u.history = [];
+        u.history.unshift({ type: 'earned', title: 'نقاط من الإدارة', points: Number(amount), date: new Date().toISOString() });
+        await fbSet('users/' + uid, u);
+        return json({ success: true, status: 'added', message: `تمت إضافة ${amount} نقطة لـ ${username}` });
+      } else {
+        const pending = await fbGet('pendingPoints/' + username) || 0;
+        await fbSet('pendingPoints/' + username, pending + Number(amount));
+        return json({ success: true, status: 'pending', message: `تم حفظ ${amount} نقطة لـ ${username}` });
+      }
+    }
+
+    // ── USERS ──
+    if (url.pathname === '/api/admin/users') {
+      if (request.headers.get('x-admin-key') !== env.ADMIN_KEY) return json({ error: 'غير مصرح' }, 403);
+      const users = await fbGet('users') || {};
+      return json({ users: Object.values(users) });
+    }
+
+    return json({ error: 'Not found' }, 404);
   }
-  currentUser = null;
-  document.getElementById('btnDiscord').style.display = 'flex';
-  const lkBtn = document.getElementById('btnLinkKick');
-  if (lkBtn) lkBtn.style.display = 'none';
-  document.getElementById('btnKick').style.display = 'flex';
-  document.getElementById('btnLogout').classList.add('hidden');
-  document.getElementById('navPts').classList.add('hidden');
-  document.getElementById('userChip').classList.add('hidden');
-  loadStore();
-  showToast('تم تسجيل الخروج');
-}
-
-// ═══════════════════════════════════════════
-// SETTINGS — محفوظة على Worker/Firebase
-// ═══════════════════════════════════════════
-async function loadAllSettings() {
-  try {
-    const [sRes, socRes] = await Promise.all([
-      fetch(`${W}/api/settings`),
-      fetch(`${W}/api/socials`),
-    ]);
-    const s = await sRes.json();
-    const { socials } = await socRes.json();
-
-    if (s.channelName) { setEl('navName', s.channelName); setEl('adminName', s.channelName); setEl('aboutName', s.channelName); setVal('set-name', s.channelName); }
-    if (s.kickUsername) { setEl('aboutHandle', s.kickUsername); setVal('set-kick', s.kickUsername); const c = document.getElementById('offlineCta'); if(c) c.href='https://kick.com/'+s.kickUsername; }
-    if (s.bio) { setEl('aboutBio', s.bio); setVal('set-bio', s.bio); }
-    if (s.spec) { setEl('aboutSpec', s.spec); setVal('set-spec', s.spec); }
-    if (s.sched) { setEl('aboutSched', s.sched); setVal('set-sched', s.sched); }
-    if (s.country) { setEl('aboutCountry', s.country); setVal('set-country', s.country); }
-    if (s.channelImg) { channelImg = s.channelImg; updateAvatars(s.channelImg); }
-    if (s.streamStatus)   { streamState.status = s.streamStatus; }
-    if (s.streamUsername) { streamState.username = s.streamUsername; setVal('set-stream-user', s.streamUsername); }
-    if (s.streamTitle)    { streamState.title = s.streamTitle; setVal('set-stream-title', s.streamTitle); }
-    if (s.offlineMsg)     { streamState.offlineMsg = s.offlineMsg; setVal('set-offline-msg', s.offlineMsg); }
-    if (s.offlineIcon)    { streamState.offlineIcon = s.offlineIcon; setVal('set-offline-icon', s.offlineIcon); }
-    if (s.offlineBg)      { streamState.offlineBg = s.offlineBg; }
-    if (s.offlineColor)   { streamState.offlineColor = s.offlineColor; }
-    if (s.ptsCfg)         { ptsCfg = { ...ptsCfg, ...s.ptsCfg }; applyPtsCfg(); }
-
-    renderStream();
-
-    if (socials && Array.isArray(socials)) { socialLinks = socials; renderSocials(); }
-  } catch(e) { console.log('Settings load failed:', e.message); }
-}
-
-async function saveSettings() {
-  const data = {
-    channelName:    gv('set-name'),
-    kickUsername:   gv('set-kick'),
-    bio:            gv('set-bio'),
-    spec:           gv('set-spec'),
-    sched:          gv('set-sched'),
-    country:        gv('set-country'),
-    channelImg:     channelImg || null,
-    streamStatus:   streamState.status,
-    streamUsername: gv('set-stream-user'),
-    streamTitle:    gv('set-stream-title'),
-    offlineMsg:     gv('set-offline-msg'),
-    offlineIcon:    gv('set-offline-icon'),
-    offlineBg:      streamState.offlineBg || null,
-    offlineColor:   document.getElementById('set-offline-color')?.value || '#0A0A0F',
-  };
-
-  // تحديث فوري على الواجهة
-  if(data.channelName) { setEl('navName',data.channelName); setEl('adminName',data.channelName); setEl('aboutName',data.channelName); }
-  if(data.kickUsername) { setEl('aboutHandle',data.kickUsername); const c=document.getElementById('offlineCta'); if(c)c.href='https://kick.com/'+data.kickUsername; }
-  if(data.bio) setEl('aboutBio',data.bio);
-  if(data.spec) setEl('aboutSpec',data.spec);
-  if(data.sched) setEl('aboutSched',data.sched);
-  if(data.country) setEl('aboutCountry',data.country);
-
-  // كلمة السر
-  const np = gv('set-newpass'), cp = gv('set-confirmpass');
-  if (np) { if (np !== cp) { showToast('كلمتا السر غير متطابقتين','err'); return; } adminPass = np; setVal('set-newpass',''); setVal('set-confirmpass',''); }
-
-  try {
-    await fetch(`${W}/api/settings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
-      body: JSON.stringify(data),
-    });
-    await fetch(`${W}/api/socials`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
-      body: JSON.stringify({ socials: socialLinks }),
-    });
-    renderStream();
-    showToast('✅ تم حفظ الإعدادات');
-  } catch(e) { showToast('❌ فشل الحفظ: ' + e.message, 'err'); }
-}
-
-// ═══════════════════════════════════════════
-// STREAM
-// ═══════════════════════════════════════════
-function setStream(status) {
-  streamState.status = status;
-  const btnL = document.getElementById('btn-live'), btnO = document.getElementById('btn-offline');
-  if (status === 'live') { btnL.style.background='var(--red)'; btnL.style.color='#fff'; btnO.style.background='rgba(83,252,24,.1)'; btnO.style.color='var(--kick)'; }
-  else { btnO.style.background='var(--kick)'; btnO.style.color='#000'; btnL.style.background='rgba(255,64,64,.15)'; btnL.style.color='var(--red)'; }
-  renderStream();
-  showToast(status==='live'?'🔴 البث شغال!':'😴 البث أوقف');
-}
-
-function renderStream() {
-  const liveEl = document.getElementById('streamLive'), offEl = document.getElementById('streamOffline');
-  if (!liveEl || !offEl) return;
-  if (streamState.status === 'live' && streamState.username) {
-    liveEl.style.display = 'block'; offEl.style.display = 'none';
-    const titleEl = document.getElementById('streamTitle'); if(titleEl) titleEl.textContent = streamState.title || 'البث المباشر';
-    const iframe = document.getElementById('kickIframe'); 
-    if(iframe) iframe.src = `https://player.kick.com/${streamState.username}?autoplay=true&muted=false`;
-
-  } else {
-    liveEl.style.display = 'none'; offEl.style.display = 'block';
-    const bg = document.getElementById('offlineBg');
-    if (bg) { bg.style.backgroundImage = streamState.offlineBg ? `url(${streamState.offlineBg})` : ''; bg.style.backgroundColor = streamState.offlineBg ? '' : streamState.offlineColor; }
-    const icon = document.querySelector('.offline-icon'); if(icon) icon.textContent = streamState.offlineIcon || '😴';
-    const msg = document.getElementById('offlineMsg'); if(msg) msg.textContent = streamState.offlineMsg || '';
-  }
-}
-
-function handleOfflineBg(e) {
-  const f = e.target.files[0]; if(!f) return;
-  const r = new FileReader();
-  r.onload = ev => { streamState.offlineBg = ev.target.result; renderStream(); showToast('✅ تم رفع الخلفية'); };
-  r.readAsDataURL(f);
-}
-
-// ═══════════════════════════════════════════
-// SOCIALS
-// ═══════════════════════════════════════════
-function updateSocialPH() {
-  const t = document.getElementById('newSocialType')?.value;
-  const ph = { kick:'https://kick.com/username', discord:'https://discord.gg/...', twitter:'https://x.com/username', youtube:'https://youtube.com/@channel', instagram:'https://instagram.com/username', tiktok:'https://tiktok.com/@username', telegram:'https://t.me/username', whatsapp:'https://wa.me/972...', facebook:'https://facebook.com/page', twitch:'https://twitch.tv/username', website:'https://yoursite.com' };
-  const inp = document.getElementById('newSocialUrl'); if(inp) inp.placeholder = ph[t] || 'https://...';
-}
-
-async function addSocial() {
-  const type = document.getElementById('newSocialType')?.value;
-  const url  = document.getElementById('newSocialUrl')?.value.trim();
-  if (!url) { showToast('أدخل الرابط','err'); return; }
-  socialLinks = socialLinks.filter(s => s.type !== type);
-  socialLinks.push({ type, url });
-  setVal('newSocialUrl','');
-  renderSocials();
-  showToast('✅ تمت الإضافة — اضغط حفظ للتأكيد');
-}
-
-function removeSocial(type) {
-  socialLinks = socialLinks.filter(s => s.type !== type);
-  renderSocials();
-}
-
-function renderSocials() {
-  // صفحة من أنا
-  const row = document.getElementById('socialsRow');
-  if (row) row.innerHTML = socialLinks.length ? socialLinks.map(l => {
-    const c = SOCIAL_COLORS[l.type]||'#888', tc = SOCIAL_TC[l.type]||'#fff', lbl = SOCIAL_LABELS[l.type]||l.type;
-    return `<a class="social-btn" href="${l.url}" target="_blank" style="background:${c};color:${tc};">${lbl}</a>`;
-  }).join('') : '<p style="color:var(--muted);font-size:13px;">لا توجد وسائل تواصل</p>';
-
-  // الإدارة
-  const admin = document.getElementById('socialsAdmin');
-  if (admin) admin.innerHTML = socialLinks.length ? socialLinks.map(l => {
-    const c = SOCIAL_COLORS[l.type]||'#888', tc = SOCIAL_TC[l.type]||'#fff', lbl = SOCIAL_LABELS[l.type]||l.type;
-    return `<div style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;">
-      <span style="background:${c};color:${tc};font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;">${lbl}</span>
-      <span style="flex:1;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;">${l.url}</span>
-      <button onclick="removeSocial('${l.type}')" style="background:rgba(255,64,64,.1);color:var(--red);border:1px solid rgba(255,64,64,.2);padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;">حذف</button>
-    </div>`;
-  }).join('') : '<p style="color:var(--muted);font-size:12px;">لا توجد وسائل تواصل</p>';
-}
-
-// ═══════════════════════════════════════════
-// STORE
-// ═══════════════════════════════════════════
-async function loadStore() {
-  const g = document.getElementById('storeGrid');
-  if (!g) return;
-  g.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p>';
-  try {
-    const { products } = await (await fetch(`${W}/api/products`)).json();
-    window._prods = products;
-    if (!products.length) { g.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">لا توجد منتجات</p>'; return; }
-    g.innerHTML = products.map(p => {
-      const can = currentUser && currentUser.points >= p.price;
-      const img = p.img ? `<div class="prod-img"><img src="${p.img}" alt="${p.name}"/></div>` : `<div class="prod-img">${p.icon||'🎁'}</div>`;
-      return `<div class="product-card">${img}<div class="prod-body"><div class="prod-name">${p.name}</div><div class="prod-desc">${p.desc}</div><div class="prod-price">⭐ ${p.price.toLocaleString()} نقطة</div><button class="buy-btn" ${!can?'disabled':''} onclick="openBuy(${p.id})">${!currentUser?'سجّل دخول أولاً':!can?'نقاط غير كافية':'استبدال الآن'}</button></div></div>`;
-    }).join('');
-  } catch(e) { g.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;">تعذر التحميل</p>'; }
-}
-
-function openBuy(id) {
-  if (!currentUser) { document.getElementById('loginModal').classList.remove('hidden'); return; }
-  const p = (window._prods||[]).find(x => x.id === id);
-  if (!p) return;
-  pendingProd = p;
-  setEl('buyTitle', p.name);
-  setEl('buyDesc', p.desc);
-  setEl('buyPrice', p.price.toLocaleString() + ' نقطة');
-  setVal('buyUsername', currentUser.username);
-  document.getElementById('buyModal').classList.remove('hidden');
-}
-
-async function confirmBuy() {
-  if (!pendingProd || !currentUser) return;
-  const kn = gv('buyUsername');
-  if (!kn) { showToast('أدخل اسمك','err'); return; }
-  try {
-    const res = await fetch(`${W}/api/buy`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ productId: pendingProd.id, kickUsername: kn, token: sessionToken }),
-    });
-    const d = await res.json();
-    if (d.success) {
-      currentUser.points = d.remainingPoints;
-      document.getElementById('navPtsVal').textContent = d.remainingPoints.toLocaleString();
-      closeModal('buyModal'); loadStore();
-      showToast('✅ ' + d.message);
-    } else showToast(d.error||'فشل الشراء','err');
-  } catch(e) { showToast('خطأ','err'); }
-}
-
-// ═══════════════════════════════════════════
-// POINTS
-// ═══════════════════════════════════════════
-async function loadPoints() {
-  const guest = document.getElementById('ptsGuest'), user = document.getElementById('ptsUser');
-  if (!currentUser) { if(guest) guest.style.display='block'; if(user) user.style.display='none'; return; }
-  if(guest) guest.style.display='none'; if(user) user.style.display='block';
-  try {
-    const { points, history } = await (await fetch(`${W}/api/points/history?token=${sessionToken}`)).json();
-    setEl('ptsNum', points.toLocaleString());
-    document.getElementById('progressBar').style.width = Math.min((points/ptsCfg.goal)*100,100)+'%';
-    setEl('ptsGoalLabel', 'الهدف: '+ptsCfg.goal.toLocaleString()+' نقطة');
-    document.getElementById('historyList').innerHTML = history.length
-      ? history.map(h => `<div class="history-item"><div><div class="h-title">${h.title}</div><div class="h-time">${fmtDate(h.date)}</div></div><span class="${h.type==='earned'?'pts-plus':'pts-minus'}">${h.type==='earned'?'+':''}${h.points} نق</span></div>`).join('')
-      : '<p style="color:var(--muted);text-align:center;padding:20px;">لا يوجد سجل بعد</p>';
-  } catch(e) {}
-}
-
-function fmtDate(iso) {
-  const d = Math.floor((Date.now()-new Date(iso))/1000);
-  if(d<60) return 'الآن'; if(d<3600) return `منذ ${Math.floor(d/60)} دقيقة`;
-  if(d<86400) return `منذ ${Math.floor(d/3600)} ساعة`; return `منذ ${Math.floor(d/86400)} يوم`;
-}
-
-// ═══════════════════════════════════════════
-// ADMIN
-// ═══════════════════════════════════════════
-function openAdminLogin() { setVal('aUser',''); setVal('aPass',''); setEl('aErr',''); document.getElementById('adminModal').classList.remove('hidden'); }
-function submitAdmin() {
-  if (gv('aUser')==='admin' && gv('aPass')===adminPass) {
-    adminIn=true; closeModal('adminModal'); goTo('admin',null); showToast('أهلاً بك في الإدارة 🛡️');
-  } else setEl('aErr','❌ بيانات خاطئة');
-}
-function adminLogout() { adminIn=false; goTo('home',document.querySelector('.nl')); showToast('تم الخروج من الإدارة'); }
-
-function aTab(tab, btn) {
-  document.querySelectorAll('.asub').forEach(s => s.classList.remove('on'));
-  document.querySelectorAll('.am').forEach(b => b.classList.remove('on'));
-  document.getElementById('asub-'+tab)?.classList.add('on');
-  if(btn) btn.classList.add('on');
-  if(tab==='dashboard') loadDashboard();
-  if(tab==='orders') loadOrders();
-  if(tab==='products') loadAdminProds();
-  if(tab==='users') loadUsers();
-  if(tab==='chats') renderAdminChats();
-  if(tab==='staff') renderStaff();
-  if(tab==='settings') renderSocials();
-}
-
-async function loadDashboard() {
-  try {
-    const { orders } = await (await fetch(`${W}/api/admin/orders`,{headers:{'x-admin-key':ADMIN_KEY}})).json();
-    const { users } = await (await fetch(`${W}/api/admin/users`,{headers:{'x-admin-key':ADMIN_KEY}})).json();
-    const pending = orders.filter(o=>o.status==='pending').length;
-    setEl('st-total',orders.length); setEl('st-pending',pending); setEl('st-done',orders.filter(o=>o.status==='done').length); setEl('st-users',users.length);
-    const pb = document.getElementById('pendingBadge'); if(pb){pb.textContent=pending; pending?pb.classList.remove('hidden'):pb.classList.add('hidden');}
-    document.getElementById('recentOrders').innerHTML = orders.length
-      ? `<table class="table"><thead><tr><th>المستخدم</th><th>المنتج</th><th>التاريخ</th><th>الحالة</th></tr></thead><tbody>${orders.slice(0,5).map(o=>`<tr><td style="color:var(--kick);font-weight:700;">${o.kickUsername||o.username}</td><td>${o.icon||''} ${o.product}</td><td style="color:var(--muted);font-size:12px;">${fmtDate(o.date)}</td><td><span class="sbadge ${o.status==='pending'?'s-pending':'s-done'}">${o.status==='pending'?'⏳ معلق':'✅ منجز'}</span></td></tr>`).join('')}</tbody></table>`
-      : '<div class="empty"><p>لا توجد طلبات بعد</p></div>';
-  } catch(e) {}
-}
-
-async function loadOrders() {
-  try {
-    const { orders } = await (await fetch(`${W}/api/admin/orders`,{headers:{'x-admin-key':ADMIN_KEY}})).json();
-    document.getElementById('ordersTable').innerHTML = orders.length
-      ? `<table class="table"><thead><tr><th>#</th><th>المستخدم</th><th>المنتج</th><th>السعر</th><th>التاريخ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>${orders.map((o,i)=>`<tr><td style="color:var(--muted);font-size:12px;">${orders.length-i}</td><td style="color:var(--kick);font-weight:700;">${o.kickUsername||o.username}</td><td>${o.icon||''} ${o.product}</td><td style="color:var(--kick);font-weight:700;">${(o.price||0).toLocaleString()} نق</td><td style="color:var(--muted);font-size:12px;">${fmtDate(o.date)}</td><td><span class="sbadge ${o.status==='pending'?'s-pending':'s-done'}">${o.status==='pending'?'⏳ معلق':'✅ منجز'}</span></td><td><div class="td-acts">${o.status==='pending'?`<button class="btn-sm btn-ok" onclick="markDone(${o.id})">✓</button>`:''}<button class="btn-sm btn-del" onclick="delOrder(${o.id})">🗑</button></div></td></tr>`).join('')}</tbody></table>`
-      : '<div class="empty"><p>لا توجد طلبات</p></div>';
-  } catch(e) {}
-}
-
-async function markDone(id) {
-  await fetch(`${W}/api/admin/orders/${id}`,{method:'PUT',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({status:'done'})});
-  loadOrders(); loadDashboard(); showToast('✅ تم');
-}
-async function delOrder(id) {
-  await fetch(`${W}/api/admin/orders/${id}`,{method:'DELETE',headers:{'x-admin-key':ADMIN_KEY}});
-  loadOrders(); loadDashboard(); showToast('تم الحذف');
-}
-
-// PRODUCTS ADMIN
-async function loadAdminProds() {
-  try {
-    const { products } = await (await fetch(`${W}/api/admin/products`,{headers:{'x-admin-key':ADMIN_KEY}})).json();
-    window._adminProds = products;
-    const g = document.getElementById('prodsGrid');
-    g.innerHTML = products.length ? products.map(p => {
-      const img = p.img?`<div class="pa-img"><img src="${p.img}" alt="${p.name}"/></div>`:`<div class="pa-img">${p.icon||'🎁'}</div>`;
-      return `<div class="prod-adm">${img}<div class="pa-body"><div class="pa-name">${p.name}</div><div class="pa-price">⭐ ${p.price.toLocaleString()} نق · <span class="sbadge ${p.active?'s-done':'s-off'}">${p.active?'نشط':'موقوف'}</span></div><div class="pa-acts"><button class="btn-sm btn-edit" onclick="openProdModal(${p.id})">✏️</button><button class="btn-sm btn-pause" onclick="toggleProd(${p.id},${!p.active})">${p.active?'⏸':'▶'}</button><button class="btn-sm btn-del" onclick="delProd(${p.id})">🗑</button></div></div></div>`;
-    }).join('') : '<div class="empty"><p>لا توجد منتجات</p></div>';
-  } catch(e) {}
-}
-
-function openProdModal(id) {
-  editingProdId = id; pendingProdImg = null;
-  const p = id?(window._adminProds||[]).find(x=>x.id===id):null;
-  setEl('prodModalTitle', id?'تعديل منتج':'إضافة منتج');
-  setVal('pf-name',p?p.name:''); setVal('pf-price',p?p.price:''); setVal('pf-icon',p?p.icon:'🎁'); setVal('pf-desc',p?p.desc:''); document.getElementById('pf-active').value = p?String(p.active):'true';
-  document.getElementById('prodImgEmoji').style.display='block'; document.getElementById('prodImgEmoji').textContent=p?p.icon:'🎁';
-  const prev=document.getElementById('prodImgPrev');
-  if(p&&p.img){prev.src=p.img;prev.style.display='block';document.getElementById('prodImgEmoji').style.display='none';}else{prev.src='';prev.style.display='none';}
-  document.getElementById('prodModal').classList.remove('hidden');
-}
-
-function handleProdImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{pendingProdImg=ev.target.result;document.getElementById('prodImgPrev').src=ev.target.result;document.getElementById('prodImgPrev').style.display='block';document.getElementById('prodImgEmoji').style.display='none';};r.readAsDataURL(f);}
-
-async function saveProd() {
-  const name=gv('pf-name'),price=parseInt(gv('pf-price')),icon=gv('pf-icon')||'🎁',desc=gv('pf-desc'),active=document.getElementById('pf-active').value==='true';
-  if(!name||!price){showToast('أدخل الاسم والسعر','err');return;}
-  const body={name,price,icon,desc,active};if(pendingProdImg)body.img=pendingProdImg;
-  try {
-    if(editingProdId) await fetch(`${W}/api/admin/products/${editingProdId}`,{method:'PUT',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify(body)});
-    else await fetch(`${W}/api/admin/products`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify(body)});
-    closeModal('prodModal'); loadAdminProds(); loadStore(); showToast('✅ تم حفظ المنتج');
-  } catch(e){showToast('خطأ','err');}
-}
-
-async function toggleProd(id,active){await fetch(`${W}/api/admin/products/${id}`,{method:'PUT',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({active})});loadAdminProds();loadStore();}
-async function delProd(id){if(!confirm('حذف المنتج؟'))return;await fetch(`${W}/api/admin/products/${id}`,{method:'DELETE',headers:{'x-admin-key':ADMIN_KEY}});loadAdminProds();loadStore();showToast('تم الحذف');}
-
-// USERS
-async function loadUsers() {
-  try {
-    const { users } = await (await fetch(`${W}/api/admin/users`,{headers:{'x-admin-key':ADMIN_KEY}})).json();
-    document.getElementById('usersTable').innerHTML = users.length
-      ? `<table class="table"><thead><tr><th>المستخدم</th><th>المنصة</th><th>النقاط</th><th>التسجيل</th></tr></thead><tbody>${users.map(u=>`<tr><td style="display:flex;align-items:center;gap:8px;">${u.avatar?`<img src="${u.avatar}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;"/>`:''}${u.username}</td><td><span class="pbadge pbadge-${u.provider}">${u.provider==='discord'?'Discord':'Kick'}</span></td><td style="color:var(--kick);font-weight:700;">${(u.points||0).toLocaleString()}</td><td style="color:var(--muted);font-size:12px;">${u.joinedAt?fmtDate(u.joinedAt):'-'}</td></tr>`).join('')}</tbody></table>`
-      : '<div class="empty"><p>لا يوجد مستخدمون</p></div>';
-  } catch(e) {}
-}
-
-async function addPtsManual() {
-  const u=gv('addPtsUser'),a=parseInt(gv('addPtsAmt'));
-  if(!u){showToast('أدخل اسم المستخدم','err');return;}if(!a||a<=0){showToast('أدخل عدد نقاط','err');return;}
-  try {
-    const res=await fetch(`${W}/api/admin/points-add`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({username:u,amount:a})});
-    const d=await res.json();showToast(d.status==='added'?'✅ '+d.message:'⏳ '+d.message);
-    setVal('addPtsUser','');setVal('addPtsAmt','');loadUsers();
-  } catch(e){showToast('خطأ','err');}
-}
-
-// STAFF
-function openStaffModal(id) {
-  const s = id?staff.find(x=>x.id===id):null;
-  setEl('staffModalTitle',id?'تعديل موظف':'إضافة موظف');
-  setVal('sf-name',s?s.name:'');setVal('sf-user',s?s.username:'');setVal('sf-role',s?s.roleTitle:'');
-  document.getElementById('sf-color').value=s?s.color:'#53FC18';
-  ['orders','products','users','chats','staff','settings'].forEach(p=>{const el=document.getElementById('perm-'+p);if(el)el.checked=s?s.perms.includes(p):(p==='settings');});
-  document.getElementById('staffModal').classList.remove('hidden');
-}
-function selPerms(v){['orders','products','users','chats','staff','settings'].forEach(p=>{const el=document.getElementById('perm-'+p);if(el)el.checked=v;});}
-function saveStaff() {
-  const name=gv('sf-name'),username=gv('sf-user'),roleTitle=gv('sf-role'),color=document.getElementById('sf-color').value;
-  if(!name||!username){showToast('أدخل الاسم واليوزرنيم','err');return;}
-  const perms=['orders','products','users','chats','staff','settings'].filter(p=>{const el=document.getElementById('perm-'+p);return el&&el.checked;});
-  if(!perms.length){showToast('اختر صلاحية واحدة','err');return;}
-  const existing = staff.find(x=>x.id===parseInt(document.getElementById('staffModalTitle').dataset.id||0));
-  if(existing) Object.assign(existing,{name,username,roleTitle,color,perms});
-  else staff.push({id:Date.now(),name,username,roleTitle,color,perms,joinedAt:new Date().toLocaleString('ar')});
-  closeModal('staffModal');renderStaff();showToast('✅ تم حفظ الموظف');
-}
-function delStaff(id){if(!confirm('حذف؟'))return;staff=staff.filter(x=>x.id!==id);renderStaff();showToast('تم الحذف');}
-function renderStaff() {
-  const el=document.getElementById('staffList');if(!el)return;
-  el.innerHTML=staff.length?staff.map(s=>`<div class="staff-card"><div class="staff-ava" style="border-color:${s.color};">${s.username.charAt(0).toUpperCase()}</div><div style="flex:1;"><div class="staff-name">${s.name}</div><div class="staff-user">@${s.username} · ${s.joinedAt}</div><div class="staff-role-tag" style="background:${s.color};color:${s.color==='#53FC18'||s.color==='#FFA500'?'#000':'#fff'}">${s.roleTitle||'موظف'}</div><div class="staff-perms">${s.perms.map(p=>`<span class="perm-tag">${PERM_LABELS[p]||p}</span>`).join('')}</div></div><div class="staff-acts"><button class="btn-sm btn-edit" onclick="openStaffModal(${s.id})">✏️</button><button class="btn-sm btn-del" onclick="delStaff(${s.id})">🗑</button></div></div>`).join('')
-    :'<div class="empty"><p>لا يوجد موظفون</p></div>';
-}
-
-// POINTS CONFIG
-function applyPtsCfg() {
-  setVal('pc-welcome',ptsCfg.welcome);setVal('pc-msg',ptsCfg.msg);setVal('pc-hour',ptsCfg.hour);
-  setVal('pc-sub',ptsCfg.sub);setVal('pc-follow',ptsCfg.follow);setVal('pc-cooldown',ptsCfg.cooldown);
-  setVal('pc-maxhr',ptsCfg.maxHr);setVal('pc-goal',ptsCfg.goal);
-}
-async function savePtsCfg() {
-  ptsCfg={welcome:+gv('pc-welcome'),msg:+gv('pc-msg'),hour:+gv('pc-hour'),sub:+gv('pc-sub'),follow:+gv('pc-follow'),cooldown:+gv('pc-cooldown'),maxHr:+gv('pc-maxhr'),goal:+gv('pc-goal')};
-  try {
-    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({ptsCfg})});
-    showToast('✅ تم حفظ إعدادات النقاط');
-  } catch(e){showToast('خطأ','err');}
-}
-
-// CHATS
-function toggleChat(){chatOpen=!chatOpen;document.getElementById('chatBox').classList.toggle('on',chatOpen);}
-function sendChat(){
-  const inp=document.getElementById('chatInp'),msg=inp.value.trim();if(!msg)return;
-  const sender=document.getElementById('chatName')?.value.trim()||(currentUser?currentUser.username:'زائر');
-  const area=document.getElementById('chatMsgs');
-  area.innerHTML+=`<div class="cmsg user">${msg}</div>`;inp.value='';area.scrollTop=area.scrollHeight;
-  if(!chats[sender])chats[sender]=[];chats[sender].push({from:'user',text:msg,read:false});
-  setTimeout(()=>{const r=['شكراً! سيرد الدعم قريباً 😊','تم استقبال رسالتك ✅'];const rp=r[Math.floor(Math.random()*r.length)];area.innerHTML+=`<div class="cmsg support">${rp}</div>`;area.scrollTop=area.scrollHeight;chats[sender].push({from:'admin',text:rp,read:true});},1200);
-}
-function renderAdminChats(){
-  const list=document.getElementById('aChatList'),keys=Object.keys(chats);
-  if(!keys.length){list.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">لا توجد محادثات</div>';return;}
-  list.innerHTML=keys.map(n=>{const msgs=chats[n],last=msgs[msgs.length-1],unread=msgs.some(m=>m.from==='user'&&!m.read);return `<div class="chat-item ${selectedChat===n?'on':''}" onclick="selChat('${n}')"><div class="chat-item-name">${n}${unread?'<span class="chat-unread"></span>':''}</div><div class="chat-item-prev">${last?last.text:''}</div></div>`;}).join('');
-}
-function selChat(n){
-  selectedChat=n;if(chats[n])chats[n].forEach(m=>{if(m.from==='user')m.read=true;});renderAdminChats();
-  const view=document.getElementById('aChatView'),msgs=chats[n]||[];
-  view.innerHTML=`<div class="chat-view-head"><div style="font-size:14px;font-weight:700;">${n}</div></div><div class="chat-view-msgs" id="aMsgs">${msgs.map(m=>`<div class="cvm ${m.from==='admin'?'admin':'user'}">${m.text}</div>`).join('')}</div><div class="chat-view-input"><input class="cv-inp" id="aReply" placeholder="رد على ${n}..." onkeydown="if(event.key==='Enter')aReplyFn('${n}')"/><button class="cv-send" onclick="aReplyFn('${n}')">إرسال</button></div>`;
-  const el=document.getElementById('aMsgs');if(el)el.scrollTop=el.scrollHeight;
-}
-function aReplyFn(n){const inp=document.getElementById('aReply'),txt=inp.value.trim();if(!txt)return;if(!chats[n])chats[n]=[];chats[n].push({from:'admin',text:txt,read:true});inp.value='';selChat(n);}
-
-// ═══════════════════════════════════════════
-// AVATAR & IMAGE
-// ═══════════════════════════════════════════
-function handleAva(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{channelImg=ev.target.result;updateAvatars(ev.target.result);showToast('✅ تم رفع الصورة');};r.readAsDataURL(f);}
-function updateAvatars(src){['navAva','aboutAva','adminAva','settingAva'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=`<img src="${src}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`;});}
-
-// ═══════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════
-function gv(id){return document.getElementById(id)?.value.trim()||'';}
-function setEl(id,txt){const el=document.getElementById(id);if(el)el.textContent=txt;}
-function setVal(id,val){const el=document.getElementById(id);if(el)el.value=val;}
-function closeModal(id){document.getElementById(id)?.classList.add('hidden');}
-function showToast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.style.background=type==='err'?'#ff4040':'var(--kick)';t.style.color=type==='err'?'#fff':'#000';t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3500);}
-
-// Close modals on backdrop click
-['loginModal','adminModal','buyModal','prodModal','staffModal'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('click',e=>{if(e.target.id===id)closeModal(id);});});
-document.getElementById('aPass')?.addEventListener('keydown',e=>{if(e.key==='Enter')submitAdmin();});
-document.getElementById('prodImgBox')?.addEventListener('click',()=>document.getElementById('prodImgFile')?.click());
-
-// ═══════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════
-async function init() {
-  await Promise.all([checkAuth(), loadAllSettings()]);
-  loadStore();
-  renderStream();
-}
-init();
-</script>
-</body>
-</html>
+};

@@ -856,7 +856,11 @@ function goTo(id, btn) {
 function loginWith(p) { document.getElementById('loginModal').classList.remove('hidden'); }
 function doLogin(provider) {
   closeModal('loginModal');
-  window.location.href = `${W}/auth/${provider}/login`;
+  if (provider === 'kick') {
+    window.location.href = `${W}/auth/kick/login?site=${encodeURIComponent(location.origin + location.pathname)}`;
+  } else {
+    window.location.href = `${W}/auth/${provider}/login`;
+  }
 }
 
 async function checkAuth() {
@@ -864,6 +868,34 @@ async function checkAuth() {
   const params = new URLSearchParams(window.location.search);
   const authResult = params.get('auth');
   const token = params.get('token');
+  // معالجة Kick OAuth callback مباشرة
+  const kickCode  = params.get('code');
+  const kickState = params.get('state');
+  if (kickCode && kickState) {
+    history.replaceState({}, '', location.pathname);
+    try {
+      const res = await fetch(`${W}/auth/kick/exchange`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: kickCode, state: kickState }),
+      });
+      const d = await res.json();
+      if (d.token) {
+        localStorage.setItem('sk_token', d.token);
+        sessionToken = d.token;
+        currentUser = { id: d.id, username: d.username, avatar: d.avatar, provider: 'kick', points: d.points };
+        updateAuthUI();
+        loadStore();
+        showToast(`أهلاً ${d.username}! 🎉`);
+      } else {
+        showToast('❌ فشل تسجيل الدخول بـ Kick', 'err');
+      }
+    } catch(e) {
+      showToast('❌ خطأ في الاتصال', 'err');
+    }
+    return;
+  }
+
   if (authResult === 'success' && token) {
     localStorage.setItem('sk_token', token);
     sessionToken = token;

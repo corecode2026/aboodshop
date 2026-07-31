@@ -290,7 +290,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 .toggle input:checked+.toggle-sl::before{background:var(--kick);transform:translateX(-20px);}
 
 /* ── CHAT BUBBLE ── */
-.chat-bubble{position:fixed;bottom:22px;left:22px;z-index:300;}
+.chat-bubble{position:fixed;bottom:22px;left:22px;z-index:999;}
 .chat-toggle{width:52px;height:52px;border-radius:50%;background:var(--kick);color:#000;border:none;font-size:0;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(83,252,24,.3);transition:transform .2s;}
 .chat-toggle:hover{transform:scale(1.1);}
 .chat-toggle svg{width:22px;height:22px;}
@@ -411,7 +411,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
   .prod-form{grid-template-columns:1fr;}
 
   /* ── CHAT BUBBLE ── */
-  .chat-bubble{bottom:72px;left:12px;}
+  .chat-bubble{bottom:14px;left:12px;}
   .chat-box{width:280px;}
 
   /* ── ADMIN SIDE FOOTER ── */
@@ -500,7 +500,35 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 
 /* ── Glowing Balls Background ── */
 #bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.6;}
-.nav,.wrap,main,.overlay,.drawer,.drawer-overlay,.chat-bubble,.toast{position:relative;z-index:1;}
+.nav,.wrap,main,.overlay,.drawer,.drawer-overlay,.toast{position:relative;z-index:1;}
+
+
+/* ══ FULL SCREEN PAGES ══ */
+html, body { height: 100%; overflow: hidden; }
+main.wrap { 
+  height: calc(100vh - 52px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+main.wrap::-webkit-scrollbar { width: 4px; }
+main.wrap::-webkit-scrollbar-track { background: transparent; }
+main.wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.page { min-height: calc(100vh - 100px); }
+
+
+/* ── FOOTER ── */
+.footer{
+  text-align:center;
+  padding:12px;
+  font-size:11px;
+  color:rgba(255,255,255,.2);
+  border-top:1px solid var(--border);
+  margin-top:auto;
+  letter-spacing:.5px;
+}
+.footer span{color:var(--kick);opacity:.5;}
 
 </style>
 </head>
@@ -540,11 +568,11 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 
     <button class="btn btn-kick" id="btnKick" onclick="doLogin('kick')" style="display:flex;"><svg width="16" height="16" viewBox="0 0 50 50" fill="none"><path d="M8 5H18V22L28 5H40L27 25L40 45H28L18 28V45H8V5Z" fill="#000"/></svg> تسجيل دخول</button>
     <button class="btn btn-admin" onclick="openAdminLogin()">⚙️ إدارة</button>
-    <button class="hamburger" onclick="toggleDrawer()" id="hamburgerBtn"><span></span><span></span><span></span></button>
+
   </div>
 </nav>
 
-<main class="wrap">
+<main class="wrap" id="mainWrap">
 
 <!-- HOME -->
 <section class="page on" id="page-home">
@@ -924,6 +952,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
   </div>
 </section>
 
+  <div class="footer">© 2026 <span>corecode2026</span> — جميع الحقوق محفوظة</div>
 </main>
 
 <!-- LOGIN MODAL -->
@@ -1145,6 +1174,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
       <button class="chat-send" onclick="sendChat()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
     </div>
   </div>
+  <span id="chatBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;z-index:1000;" id="chatBadge">0</span>
   <button class="chat-toggle" onclick="toggleChat()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></button>
 </div>
 
@@ -1800,15 +1830,47 @@ async function savePtsCfg() {
 
 // CHATS
 function toggleChat(){chatOpen=!chatOpen;document.getElementById('chatBox').classList.toggle('on',chatOpen);}
-function sendChat(){
+async function sendChat(){
   const inp=document.getElementById('chatInp'),msg=inp.value.trim();if(!msg)return;
   const sender=document.getElementById('chatName')?.value.trim()||(currentUser?currentUser.username:'زائر');
   const area=document.getElementById('chatMsgs');
   area.innerHTML+=`<div class="cmsg user">${msg}</div>`;inp.value='';area.scrollTop=area.scrollHeight;
-  if(!chats[sender])chats[sender]=[];chats[sender].push({from:'user',text:msg,read:false});
-  setTimeout(()=>{const r=['شكراً! سيرد الدعم قريباً 😊','تم استقبال رسالتك ✅'];const rp=r[Math.floor(Math.random()*r.length)];area.innerHTML+=`<div class="cmsg support">${rp}</div>`;area.scrollTop=area.scrollHeight;chats[sender].push({from:'admin',text:rp,read:true});},1200);
+  if(!chats[sender])chats[sender]=[];
+  const msgObj={from:'user',text:msg,read:false,time:new Date().toISOString()};
+  chats[sender].push(msgObj);
+  // حفظ على Firebase عبر Worker
+  try {
+    const res = await fetch(`${W}/api/chat/send`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({sender,msg,avatar:currentUser?.avatar||null})
+    });
+    const d = await res.json();
+    // رد تلقائي بس إذا ما في موظف رد قبل
+    if (!d.hasAdminReply) {
+      setTimeout(()=>{
+        const rp='تم استقبال رسالتك ✅ سيرد الدعم قريباً!';
+        area.innerHTML+=`<div class="cmsg support">${rp}</div>`;
+        area.scrollTop=area.scrollHeight;
+        chats[sender].push({from:'admin',text:rp,read:true,time:new Date().toISOString()});
+      },800);
+    }
+  } catch(e){
+    setTimeout(()=>{
+      const rp='تم استقبال رسالتك ✅ سيرد الدعم قريباً!';
+      area.innerHTML+=`<div class="cmsg support">${rp}</div>`;
+      area.scrollTop=area.scrollHeight;
+    },800);
+  }
 }
-function renderAdminChats(){
+async function renderAdminChats(){
+  // جيب من Firebase
+  try {
+    const res = await fetch(`${W}/api/admin/chats`,{headers:{'x-admin-key':ADMIN_KEY}});
+    const d = await res.json();
+    if(d.chats) chats = d.chats;
+  } catch(e){}
+  
   const list=document.getElementById('aChatList'),keys=Object.keys(chats);
   if(!keys.length){list.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">لا توجد محادثات</div>';return;}
   list.innerHTML=keys.map(n=>{const msgs=chats[n],last=msgs[msgs.length-1],unread=msgs.some(m=>m.from==='user'&&!m.read);return `<div class="chat-item ${selectedChat===n?'on':''}" onclick="selChat('${n}')"><div class="chat-item-name">${n}${unread?'<span class="chat-unread"></span>':''}</div><div class="chat-item-prev">${last?last.text:''}</div></div>`;}).join('');
@@ -1819,7 +1881,22 @@ function selChat(n){
   view.innerHTML=`<div class="chat-view-head"><div style="font-size:14px;font-weight:700;">${n}</div></div><div class="chat-view-msgs" id="aMsgs">${msgs.map(m=>`<div class="cvm ${m.from==='admin'?'admin':'user'}">${m.text}</div>`).join('')}</div><div class="chat-view-input"><input class="cv-inp" id="aReply" placeholder="رد على ${n}..." onkeydown="if(event.key==='Enter')aReplyFn('${n}')"/><button class="cv-send" onclick="aReplyFn('${n}')">إرسال</button></div>`;
   const el=document.getElementById('aMsgs');if(el)el.scrollTop=el.scrollHeight;
 }
-function aReplyFn(n){const inp=document.getElementById('aReply'),txt=inp.value.trim();if(!txt)return;if(!chats[n])chats[n]=[];chats[n].push({from:'admin',text:txt,read:true});inp.value='';selChat(n);}
+async function aReplyFn(n){
+  const inp=document.getElementById('aReply'),txt=inp.value.trim();
+  if(!txt)return;
+  if(!chats[n])chats[n]=[];
+  chats[n].push({from:'admin',text:txt,read:true,time:new Date().toISOString()});
+  inp.value='';
+  // حفظ الرد على Firebase
+  try {
+    await fetch(`${W}/api/admin/chat-reply`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},
+      body:JSON.stringify({sender:n,msg:txt})
+    });
+  } catch(e){}
+  selChat(n);
+}
 
 // ═══════════════════════════════════════════
 // AVATAR & IMAGE

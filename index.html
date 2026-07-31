@@ -1829,10 +1829,20 @@ async function savePtsCfg() {
 }
 
 // CHATS
-function toggleChat(){chatOpen=!chatOpen;document.getElementById('chatBox').classList.toggle('on',chatOpen);}
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chatBox').classList.toggle('on',chatOpen);
+  if (chatOpen) {
+    const sender = document.getElementById('chatName')?.value.trim() || (currentUser?currentUser.username:'زائر');
+    if (sender !== 'زائر') startChatPolling(sender);
+  } else {
+    stopChatPolling();
+  }
+}
 async function sendChat(){
   const inp=document.getElementById('chatInp'),msg=inp.value.trim();if(!msg)return;
   const sender=document.getElementById('chatName')?.value.trim()||(currentUser?currentUser.username:'زائر');
+  startChatPolling(sender);
   const area=document.getElementById('chatMsgs');
   area.innerHTML+=`<div class="cmsg user">${msg}</div>`;inp.value='';area.scrollTop=area.scrollHeight;
   if(!chats[sender])chats[sender]=[];
@@ -2197,6 +2207,39 @@ async function saveRulesToServer() {
   init();
   draw();
 })();
+
+
+// ══ CHAT POLLING — تحقق من ردود الإدارة ══
+let chatPollingInterval = null;
+let lastChatCount = 0;
+
+function startChatPolling(sender) {
+  if (chatPollingInterval) clearInterval(chatPollingInterval);
+  chatPollingInterval = setInterval(async () => {
+    try {
+      const res = await fetch(`${W}/api/chat/messages?sender=${encodeURIComponent(sender)}`);
+      const d = await res.json();
+      if (!d.msgs) return;
+      // تحقق إذا في رسائل جديدة من الإدارة
+      const adminMsgs = d.msgs.filter(m => m.from === 'admin');
+      if (adminMsgs.length > lastChatCount) {
+        lastChatCount = adminMsgs.length;
+        // أظهر الرسائل الجديدة
+        const area = document.getElementById('chatMsgs');
+        if (area) {
+          area.innerHTML = d.msgs.map(m =>
+            `<div class="cmsg ${m.from === 'admin' ? 'support' : 'user'}">${m.text}</div>`
+          ).join('');
+          area.scrollTop = area.scrollHeight;
+        }
+      }
+    } catch(e) {}
+  }, 5000); // كل 5 ثواني
+}
+
+function stopChatPolling() {
+  if (chatPollingInterval) { clearInterval(chatPollingInterval); chatPollingInterval = null; }
+}
 
 async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);

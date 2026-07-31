@@ -1932,14 +1932,25 @@ function updateDrawerUI() {
 
 // Swipe لفتح الـ Drawer
 let touchStartX = 0;
-document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive:true });
+let touchStartY = 0;
+document.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive:true });
 document.addEventListener('touchend', e => {
-  const dx = touchStartX - e.changedTouches[0].clientX;
-  // سحب من اليمين لليسار (RTL - سحب من اليسار لليمين)
-  if (dx < -80 && touchStartX < 40) toggleDrawer();
-  // إغلاق بالسحب
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+  // تجاهل السحب العمودي
+  if (dy > 60) return;
   const drawer = document.getElementById('drawer');
-  if (dx > 80 && drawer.classList.contains('on')) toggleDrawer();
+  // سحب من اليمين (RTL) لفتح القائمة — من أي مكان
+  if (dx > 50 && !drawer.classList.contains('on')) {
+    toggleDrawer();
+  }
+  // إغلاق بالسحب لليسار
+  if (dx < -50 && drawer.classList.contains('on')) {
+    toggleDrawer();
+  }
 }, { passive:true });
 
 

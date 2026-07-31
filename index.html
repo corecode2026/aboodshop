@@ -1304,9 +1304,67 @@ async function loadUsers() {
   try {
     const { users } = await (await fetch(`${W}/api/admin/users`,{headers:{'x-admin-key':ADMIN_KEY}})).json();
     document.getElementById('usersTable').innerHTML = users.length
-      ? `<table class="table"><thead><tr><th>المستخدم</th><th>المنصة</th><th>النقاط</th><th>التسجيل</th></tr></thead><tbody>${users.map(u=>`<tr><td style="display:flex;align-items:center;gap:8px;">${u.avatar?`<img src="${u.avatar}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;"/>`:''}${u.username}</td><td><span class="pbadge pbadge-${u.provider}">${u.provider==='discord'?'Discord':'Kick'}</span></td><td style="color:var(--kick);font-weight:700;">${(u.points||0).toLocaleString()}</td><td style="color:var(--muted);font-size:12px;">${u.joinedAt?fmtDate(u.joinedAt):'-'}</td></tr>`).join('')}</tbody></table>`
+      ? `<table class="table"><thead><tr><th>المستخدم</th><th>المنصة</th><th>النقاط</th><th>التسجيل</th><th>إجراءات</th></tr></thead><tbody>${users.map(u=>`<tr>
+          <td style="display:flex;align-items:center;gap:8px;">${u.avatar?`<img src="${u.avatar}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;"/>`:''}${u.username}</td>
+          <td><span class="pbadge pbadge-${u.provider}">${u.provider==='discord'?'Discord':'Kick'}</span></td>
+          <td style="color:var(--kick);font-weight:700;">${(u.points||0).toLocaleString()}</td>
+          <td style="color:var(--muted);font-size:12px;">${u.joinedAt?fmtDate(u.joinedAt):'-'}</td>
+          <td>
+            <div class="td-acts">
+              <button class="btn-sm btn-edit" onclick="openAddPts('${u.id}','${u.username}')" title="إضافة نقاط">⭐+</button>
+              <button class="btn-sm btn-pause" onclick="resetPts('${u.id}','${u.username}')" title="تصفير النقاط">⬜</button>
+              <button class="btn-sm btn-del" onclick="deleteUser('${u.id}','${u.username}')" title="حذف">🗑</button>
+            </div>
+          </td>
+        </tr>`).join('')}</tbody></table>`
       : '<div class="empty"><p>لا يوجد مستخدمون</p></div>';
   } catch(e) {}
+}
+
+function openAddPts(userId, username) {
+  const amt = prompt(`إضافة نقاط لـ ${username}:
+أدخل العدد:`);
+  if (!amt || isNaN(amt) || Number(amt) <= 0) return;
+  addPtsById(userId, username, Number(amt));
+}
+
+async function addPtsById(userId, username, amount) {
+  try {
+    const res = await fetch(`${W}/api/admin/points-add`, {
+      method:'POST', headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},
+      body: JSON.stringify({ username, amount })
+    });
+    const d = await res.json();
+    showToast(d.status==='added' ? `✅ تمت إضافة ${amount} نقطة لـ ${username}` : '⏳ '+d.message);
+    loadUsers();
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+async function resetPts(userId, username) {
+  if (!confirm(`تصفير نقاط ${username}؟`)) return;
+  try {
+    const res = await fetch(`${W}/api/admin/reset-points`, {
+      method:'POST', headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},
+      body: JSON.stringify({ userId })
+    });
+    const d = await res.json();
+    if (d.success) { showToast(`✅ تم تصفير نقاط ${username}`); loadUsers(); }
+    else showToast('فشل التصفير','err');
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+async function deleteUser(userId, username) {
+  if (!confirm(`حذف مستخدم ${username}؟
+سيتم حذف نقاطه وسجله نهائياً!`)) return;
+  try {
+    const res = await fetch(`${W}/api/admin/delete-user`, {
+      method:'POST', headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},
+      body: JSON.stringify({ userId })
+    });
+    const d = await res.json();
+    if (d.success) { showToast(`✅ تم حذف ${username}`); loadUsers(); }
+    else showToast('فشل الحذف','err');
+  } catch(e) { showToast('خطأ','err'); }
 }
 
 async function addPtsManual() {

@@ -852,7 +852,14 @@ const SOCIAL_LABELS = { kick:'Kick', discord:'Discord', twitter:'Twitter', youtu
 // NAV
 // ═══════════════════════════════════════════
 function goTo(id, btn) {
-  if (id === 'admin' && !adminIn) { openAdminLogin(); return; }
+  if (id === 'admin' && !adminIn) {
+    // تحقق من sessionStorage أولاً
+    if (sessionStorage.getItem('adminIn') === '1') {
+      adminIn = true;
+    } else {
+      openAdminLogin(); return;
+    }
+  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.nl').forEach(b => b && b.classList.remove('on'));
   document.getElementById('page-' + id)?.classList.add('on');

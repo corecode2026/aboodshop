@@ -1096,7 +1096,7 @@ async function saveSettings() {
       body: JSON.stringify({ socials: socialLinks }),
     });
     renderStream();
-    applyHeroSettings(s);
+    applyHeroSettings(data);
     showToast('✅ تم حفظ الإعدادات');
   } catch(e) { showToast('❌ فشل الحفظ: ' + e.message, 'err'); }
 }

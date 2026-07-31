@@ -647,6 +647,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
                   <option value="instagram">Instagram</option><option value="tiktok">TikTok</option>
                   <option value="telegram">Telegram</option><option value="whatsapp">WhatsApp</option>
                   <option value="facebook">Facebook</option><option value="twitch">Twitch</option>
+                  <option value="snapchat">Snapchat</option>
                   <option value="website">موقع</option>
                 </select>
               </div>
@@ -843,9 +844,9 @@ let staff = [];
 let streamState = { status:'offline', username:'', title:'', offlineMsg:'تابعنا على Kick!', offlineIcon:'😴', offlineBg:null, offlineColor:'#0A0A0F' };
 let ptsCfg = { welcome:100, msg:5, hour:50, sub:500, follow:50, cooldown:2, maxHr:100, goal:1500 };
 const PERM_LABELS = { orders:'🛒 الطلبات', products:'🎁 المنتجات', users:'👥 المستخدمون', chats:'💬 الدردشات', staff:'👮 الموظفون', settings:'📊 الرئيسية' };
-const SOCIAL_COLORS = { kick:'#53FC18', discord:'#5865F2', twitter:'#1DA1F2', youtube:'#FF0000', instagram:'#E1306C', tiktok:'#010101', telegram:'#2CA5E0', whatsapp:'#25D366', facebook:'#1877F2', twitch:'#9146FF', website:'#888' };
-const SOCIAL_TC = { kick:'#000', discord:'#fff', twitter:'#fff', youtube:'#fff', instagram:'#fff', tiktok:'#fff', telegram:'#fff', whatsapp:'#fff', facebook:'#fff', twitch:'#fff', website:'#fff' };
-const SOCIAL_LABELS = { kick:'Kick', discord:'Discord', twitter:'Twitter', youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok', telegram:'Telegram', whatsapp:'WhatsApp', facebook:'Facebook', twitch:'Twitch', website:'الموقع' };
+const SOCIAL_COLORS = { kick:'#53FC18', discord:'#5865F2', twitter:'#1DA1F2', youtube:'#FF0000', instagram:'#E1306C', tiktok:'#010101', telegram:'#2CA5E0', whatsapp:'#25D366', facebook:'#1877F2', twitch:'#9146FF', snapchat:'#FFFC00', website:'#888' };
+const SOCIAL_TC = { kick:'#000', discord:'#fff', twitter:'#fff', youtube:'#fff', instagram:'#fff', tiktok:'#fff', telegram:'#fff', whatsapp:'#fff', facebook:'#fff', twitch:'#fff', snapchat:'#000', website:'#fff' };
+const SOCIAL_LABELS = { kick:'Kick', discord:'Discord', twitter:'Twitter', youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok', telegram:'Telegram', whatsapp:'WhatsApp', facebook:'Facebook', twitch:'Twitch', snapchat:'Snapchat', website:'الموقع' };
 
 // ═══════════════════════════════════════════
 // NAV

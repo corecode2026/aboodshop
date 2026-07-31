@@ -497,12 +497,21 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
   to   { transform:rotate(360deg) translateX(80px) rotate(-360deg); }
 }
 
+
+
+
+
+/* ── Glowing Balls Background ── */
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.6;}
+.nav,.wrap,main,.overlay,.drawer,.drawer-overlay,.chat-bubble,.toast{position:relative;z-index:1;}
+
 </style>
 </head>
 <body>
 
 <!-- NAV -->
 
+<canvas id="bgCanvas"></canvas>
 <nav class="nav">
   <div class="nav-logo" onclick="goTo('home',this)">
     <div class="nav-ava" id="navAva" style="background:linear-gradient(135deg,#53FC18,#2a8c00);font-size:16px;font-weight:900;color:#000;">A</div>
@@ -2028,6 +2037,81 @@ async function saveRulesToServer() {
     });
   } catch(e) {}
 }
+
+
+// ══════ GLOWING BALLS BACKGROUND ══════
+(function() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  let balls = [];
+  const COUNT = 18;
+  const COLOR = '83,252,24';
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function createBall() {
+    return {
+      x:    Math.random() * canvas.width,
+      y:    Math.random() * canvas.height,
+      r:    1 + Math.random() * 2,
+      vx:   (Math.random() - .5) * .6,
+      vy:   (Math.random() - .5) * .6,
+      glow: 3 + Math.random() * 4,
+      alpha: .4 + Math.random() * .5,
+      pulse: Math.random() * Math.PI * 2,
+    };
+  }
+
+  function init() {
+    resize();
+    balls = Array.from({ length: COUNT }, createBall);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const t = Date.now() / 1000;
+
+    balls.forEach(b => {
+      // حرك الكرة
+      b.x += b.vx; b.y += b.vy;
+      b.pulse += .02;
+      const a = b.alpha * (.7 + .3 * Math.sin(b.pulse));
+      const g = b.glow * (1 + .4 * Math.sin(b.pulse));
+
+      // ارتد من الحواف
+      if (b.x < 0 || b.x > canvas.width)  b.vx *= -1;
+      if (b.y < 0 || b.y > canvas.height) b.vy *= -1;
+
+      // ارسم التوهج
+      const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, g * 3);
+      grad.addColorStop(0, `rgba(${COLOR},${a})`);
+      grad.addColorStop(.5, `rgba(${COLOR},${a*.3})`);
+      grad.addColorStop(1, `rgba(${COLOR},0)`);
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, g * 3, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // ارسم الكرة
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${COLOR},${a})`;
+      ctx.shadowColor = `rgba(${COLOR},1)`;
+      ctx.shadowBlur  = g;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  init();
+  draw();
+})();
 
 async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);

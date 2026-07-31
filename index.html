@@ -1227,10 +1227,12 @@ function fmtDate(iso) {
 function openAdminLogin() { setVal('aUser',''); setVal('aPass',''); setEl('aErr',''); document.getElementById('adminModal').classList.remove('hidden'); }
 function submitAdmin() {
   if (gv('aUser')==='admin' && gv('aPass')===adminPass) {
-    adminIn=true; closeModal('adminModal'); goTo('admin',null); showToast('أهلاً بك في الإدارة 🛡️');
+    adminIn=true;
+    sessionStorage.setItem('adminIn','1');
+    closeModal('adminModal'); goTo('admin',null); showToast('أهلاً بك في الإدارة 🛡️');
   } else setEl('aErr','❌ بيانات خاطئة');
 }
-function adminLogout() { adminIn=false; goTo('home',document.querySelector('.nl')); showToast('تم الخروج من الإدارة'); }
+function adminLogout() { adminIn=false; sessionStorage.removeItem('adminIn'); goTo('home',document.querySelector('.nl')); showToast('تم الخروج من الإدارة'); }
 
 function aTab(tab, btn) {
   document.querySelectorAll('.asub').forEach(s => s.classList.remove('on'));
@@ -1488,6 +1490,11 @@ async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);
   loadStore();
   renderStream();
+  // ارجع للإدارة إذا كان مسجل دخول قبل
+  if (sessionStorage.getItem('adminIn') === '1') {
+    adminIn = true;
+    goTo('admin', null);
+  }
 }
 init();
 </script>

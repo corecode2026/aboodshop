@@ -108,10 +108,12 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 .live-badge{background:rgba(255,64,64,.12);border:1px solid rgba(255,64,64,.3);color:var(--red);font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:1px;display:flex;align-items:center;gap:6px;}
 .stream-title-txt{font-size:15px;font-weight:700;flex:1;}
 .stream-viewers-txt{font-size:13px;color:var(--muted);}
-.stream-embed{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px 12px 0 0;overflow:hidden;border:1px solid var(--border);}
+.stream-wrap{display:grid;grid-template-columns:1fr 340px;gap:0;border-radius:12px;overflow:hidden;border:1px solid var(--border);height:500px;}
+.stream-embed{background:#000;overflow:hidden;}
 .stream-embed iframe{width:100%;height:100%;border:none;}
-.stream-chat{width:100%;height:280px;background:var(--card);border-radius:0 0 12px 12px;overflow:hidden;border:1px solid var(--border);border-top:none;}
+.stream-chat{background:var(--card);overflow:hidden;border-right:1px solid var(--border);}
 .stream-chat iframe{width:100%;height:100%;border:none;}
+@media(max-width:700px){.stream-wrap{grid-template-columns:1fr;height:auto;}.stream-embed{aspect-ratio:16/9;}.stream-chat{height:300px;}}
 .stream-offline{border-radius:12px;overflow:hidden;border:1px solid var(--border);}
 .offline-bg{position:relative;min-height:320px;background:var(--card2);display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center;}
 .offline-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);}
@@ -400,8 +402,10 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
         <div class="stream-title-txt" id="streamTitle">البث المباشر</div>
         <div class="stream-viewers-txt" id="streamViewers"></div>
       </div>
-      <div class="stream-embed"><iframe id="kickIframe" src="" allowfullscreen></iframe></div>
-      <div class="stream-chat"><iframe id="kickChat" src="" scrolling="yes"></iframe></div>
+      <div class="stream-wrap">
+        <div class="stream-embed"><iframe id="kickIframe" src="" allowfullscreen></iframe></div>
+        <div class="stream-chat"><iframe id="kickChat" src="" scrolling="yes"></iframe></div>
+      </div>
     </div>
     <div id="streamOffline" class="stream-offline">
       <div class="offline-bg" id="offlineBg">

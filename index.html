@@ -2,6 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>متجر القناة</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"/>
@@ -377,12 +379,25 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 
 <!-- HOME -->
 <section class="page on" id="page-home">
-  <div class="hero">
-    <div class="live-dot"><span class="live-ring"></span> LIVE</div>
-    <h1>أهلاً بك في<br><span class="green">متجر القناة</span></h1>
-    <p>اكسب نقاط من التفاعل مع البث واستبدلها بجوائز حصرية!</p>
-    <div class="hero-cta">
-      <button class="btn-secondary" onclick="goTo('store',null)">تصفح المتجر</button>
+  <div class="hero" style="display:flex;align-items:center;gap:32px;flex-wrap:wrap;">
+    <div id="heroAvaWrap" style="flex-shrink:0;display:none;">
+      <img id="heroAva" src="" style="width:120px;height:120px;border-radius:50%;border:3px solid var(--kick);object-fit:cover;box-shadow:0 0 24px rgba(83,252,24,.3);"/>
+    </div>
+    <div style="flex:1;min-width:200px;">
+      <div class="live-dot" style="margin-bottom:14px;"><span class="live-ring"></span> LIVE</div>
+      <h1 id="heroTitle">أهلاً بك في<br><span class="green">متجر القناة</span></h1>
+      <p id="heroDesc" style="margin-bottom:20px;">اكسب نقاط من التفاعل مع البث واستبدلها بجوائز حصرية!</p>
+      <div class="hero-cta">
+        <a id="heroDiscordBtn" href="#" target="_blank" class="btn btn-discord" style="display:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057c.001.02.011.04.027.053a19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+          انضم للديسكورد
+        </a>
+        <a id="heroWatchBtn" href="#" target="_blank" class="btn btn-kick" style="display:none;">
+          <svg width="14" height="14" viewBox="0 0 50 50" fill="none"><path d="M8 5H18V22L28 5H40L27 25L40 45H28L18 28V45H8V5Z" fill="#000"/></svg>
+          مشاهدة البث
+        </a>
+        <button class="btn-secondary" onclick="goTo('store',null)">تصفح المتجر</button>
+      </div>
     </div>
   </div>
   <div class="stats">
@@ -606,6 +621,19 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
           </div>
 
         </div>
+        <div class="settings-box">
+          <div class="settings-box-title">🖼️ صورة البطاقة الرئيسية</div>
+          <div class="img-upload-row">
+            <div style="width:72px;height:72px;border-radius:50%;border:3px solid var(--border);background:var(--card2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;" id="heroAvaPreview">🎮</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;margin-bottom:6px;">صورة البطاقة الرئيسية</div>
+              <div class="file-wrap"><button class="btn-secondary" style="font-size:12px;padding:6px 12px;">📁 رفع صورة</button><input type="file" accept="image/*" onchange="handleHeroAva(event)"/></div>
+            </div>
+          </div>
+          <div class="set-row"><div><div class="set-label">رابط الديسكورد للزر</div><div class="set-desc">يظهر زر "انضم للديسكورد" في البطاقة</div></div><input class="set-input" id="set-hero-discord" placeholder="https://discord.gg/..." dir="ltr"/></div>
+          <div class="set-row"><div><div class="set-label">رابط مشاهدة البث</div><div class="set-desc">يظهر زر "مشاهدة البث" في البطاقة</div></div><input class="set-input" id="set-hero-watch" placeholder="https://kick.com/..." dir="ltr"/></div>
+        </div>
+
         <div class="settings-box">
           <div class="settings-box-title">🏪 معلومات القناة</div>
           <div class="set-row"><div><div class="set-label">اسم القناة</div></div><input class="set-input" id="set-name" value="القناة"/></div>
@@ -1016,6 +1044,7 @@ async function loadAllSettings() {
     if (s.ptsCfg)         { ptsCfg = { ...ptsCfg, ...s.ptsCfg }; applyPtsCfg(); }
 
     renderStream();
+    applyHeroSettings(s);
 
     if (socials && Array.isArray(socials)) { socialLinks = socials; renderSocials(); }
   } catch(e) { console.log('Settings load failed:', e.message); }
@@ -1038,6 +1067,9 @@ async function saveSettings() {
     offlineIcon:    gv('set-offline-icon'),
     offlineBg:      streamState.offlineBg || null,
     offlineColor:   document.getElementById('set-offline-color')?.value || '#0A0A0F',
+    heroAva:        window._heroAva || null,
+    heroDiscord:    gv('set-hero-discord'),
+    heroWatch:      gv('set-hero-watch'),
   };
 
   // تحديث فوري على الواجهة
@@ -1064,6 +1096,7 @@ async function saveSettings() {
       body: JSON.stringify({ socials: socialLinks }),
     });
     renderStream();
+    applyHeroSettings(s);
     showToast('✅ تم حفظ الإعدادات');
   } catch(e) { showToast('❌ فشل الحفظ: ' + e.message, 'err'); }
 }
@@ -1502,6 +1535,47 @@ document.getElementById('prodImgBox')?.addEventListener('click',()=>document.get
 // ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
+
+function handleHeroAva(e) {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    const src = ev.target.result;
+    window._heroAva = src;
+    const img = document.getElementById('heroAva');
+    const wrap = document.getElementById('heroAvaWrap');
+    const prev = document.getElementById('heroAvaPreview');
+    if(img) img.src = src;
+    if(wrap) wrap.style.display = 'block';
+    if(prev) prev.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`;
+    showToast('تم رفع الصورة');
+  };
+  r.readAsDataURL(f);
+}
+
+function applyHeroSettings(s) {
+  if (!s) return;
+  if (s.heroAva && !s.heroAva.includes('REMOVED')) {
+    window._heroAva = s.heroAva;
+    const img = document.getElementById('heroAva');
+    const wrap = document.getElementById('heroAvaWrap');
+    const prev = document.getElementById('heroAvaPreview');
+    if(img) img.src = s.heroAva;
+    if(wrap) wrap.style.display = 'block';
+    if(prev) prev.innerHTML = `<img src="${s.heroAva}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`;
+  }
+  if (s.heroDiscord) {
+    setVal('set-hero-discord', s.heroDiscord);
+    const btn = document.getElementById('heroDiscordBtn');
+    if(btn) { btn.href = s.heroDiscord; btn.style.display = 'flex'; }
+  }
+  if (s.heroWatch) {
+    setVal('set-hero-watch', s.heroWatch);
+    const btn = document.getElementById('heroWatchBtn');
+    if(btn) { btn.href = s.heroWatch; btn.style.display = 'flex'; }
+  }
+}
+
 async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);
   loadStore();

@@ -619,8 +619,8 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
           <div class="settings-box-title">📡 البث المباشر</div>
           <div class="set-row"><div><div class="set-label">حالة البث</div></div>
             <div style="display:flex;gap:8px;">
-              <button id="btn-live" onclick="setStream('live')" style="background:rgba(255,64,64,.15);color:var(--red);border:1px solid rgba(255,64,64,.3);padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;">🔴 شغّل</button>
-              <button id="btn-offline" onclick="setStream('offline')" style="background:rgba(83,252,24,.1);color:var(--kick);border:1px solid var(--border);padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;">😴 أوقف</button>
+              <button id="btn-live" onclick="setStream('live')" style="background:var(--kick);color:#000;border:1px solid var(--kick);padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;">🔴 شغّل</button>
+              <button id="btn-offline" onclick="setStream('offline')" style="background:rgba(255,64,64,.15);color:var(--red);border:1px solid rgba(255,64,64,.3);padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;">😴 أوقف</button>
             </div>
           </div>
           <div class="set-row"><div><div class="set-label">يوزرنيم Kick للبث</div></div><input class="set-input" id="set-stream-user" placeholder="username" dir="ltr"/></div>
@@ -1067,8 +1067,8 @@ async function saveSettings() {
 function setStream(status) {
   streamState.status = status;
   const btnL = document.getElementById('btn-live'), btnO = document.getElementById('btn-offline');
-  if (status === 'live') { btnL.style.background='var(--red)'; btnL.style.color='#fff'; btnO.style.background='rgba(83,252,24,.1)'; btnO.style.color='var(--kick)'; }
-  else { btnO.style.background='var(--kick)'; btnO.style.color='#000'; btnL.style.background='rgba(255,64,64,.15)'; btnL.style.color='var(--red)'; }
+  if (status === 'live') { btnL.style.background='rgba(83,252,24,1)'; btnL.style.color='#000'; btnO.style.background='rgba(255,64,64,.15)'; btnO.style.color='var(--red)'; }
+  else { btnO.style.background='rgba(255,64,64,.15)'; btnO.style.color='var(--red)'; btnL.style.background='var(--kick)'; btnL.style.color='#000'; }
   renderStream();
   showToast(status==='live'?'🔴 البث شغال!':'😴 البث أوقف');
 }

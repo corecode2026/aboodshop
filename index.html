@@ -435,12 +435,9 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 
 
 /* ══════ DRAWER MENU ══════ */
-.drawer-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99997;
-  opacity:0;visibility:hidden;transition:all .3s;
-}
-.drawer-overlay.on{opacity:1;visibility:visible;}
+
 .drawer{
+  display:none;
   position:fixed;right:0;top:0;bottom:0;width:75%;max-width:280px;
   background:var(--card);border-left:1px solid var(--border);
   z-index:99998;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
@@ -501,7 +498,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 
 /* ── Glowing Balls Background ── */
 #bgCanvas{display:none!important;}
-.nav{position:sticky;top:0;z-index:9000!important;}.wrap,main,.overlay,.drawer,.drawer-overlay,.toast{position:relative;z-index:1;}
+.nav{position:sticky;top:0;z-index:9000!important;}.wrap,main,.overlay,.toast{position:relative;z-index:1;}
 
 
 
@@ -987,12 +984,12 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 
 
 <!-- DRAWER MENU -->
-<div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()" style="position:fixed!important;inset:0!important;z-index:99997!important;"></div>
 <div class="drawer" id="drawer" style="position:fixed!important;top:0!important;right:0!important;bottom:0!important;height:100vh!important;z-index:99998!important;">
-  <div class="drawer-head">
+  <div class="drawer-head" style="display:flex;justify-content:space-between;align-items:flex-start;">
     <div class="drawer-ava" id="drawerAva">🎮</div>
-    <div class="drawer-name" id="drawerName">القناة</div>
-    <div class="drawer-sub" id="drawerSub">اختر الصفحة</div>
+    <div><div class="drawer-name" id="drawerName">القناة</div>
+    <div class="drawer-sub" id="drawerSub">اختر الصفحة</div></div>
+    <button onclick="toggleDrawer()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0;line-height:1;">✕</button>
   </div>
   <div class="drawer-links">
     <button class="dl on" onclick="drawerGoTo('home')">
@@ -1906,11 +1903,22 @@ function applyHeroSettings(s) {
 
 // ══════ DRAWER ══════
 function toggleDrawer() {
-  const drawer  = document.getElementById('drawer');
-  const overlay = document.getElementById('drawerOverlay');
-  drawer.classList.toggle('on');
-  overlay.classList.toggle('on');
-  document.body.style.overflow = drawer.classList.contains('on') ? 'hidden' : '';
+  const drawer = document.getElementById('drawer');
+  const isOpen = drawer.classList.toggle('on');
+  
+  let overlay = document.getElementById('drawerOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'drawerOverlay';
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', toggleDrawer);
+  }
+  
+  if (isOpen) {
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99996;background:rgba(0,0,0,0.01);display:block;';
+  } else {
+    overlay.style.display = 'none';
+  }
 }
 
 function drawerGoTo(page) {
@@ -1944,28 +1952,8 @@ function updateDrawerUI() {
   }
 }
 
-// Swipe لفتح الـ Drawer
-let touchStartX = 0;
-let touchStartY = 0;
-document.addEventListener('touchstart', e => {
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-}, { passive:true });
-document.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-  // تجاهل السحب العمودي
-  if (dy > 60) return;
-  const drawer = document.getElementById('drawer');
-  // سحب من اليمين (RTL) لفتح القائمة — من أي مكان
-  if (dx > 50 && !drawer.classList.contains('on')) {
-    toggleDrawer();
-  }
-  // إغلاق بالسحب لليسار
-  if (dx < -50 && drawer.classList.contains('on')) {
-    toggleDrawer();
-  }
-}, { passive:true });
+
+
 
 
 

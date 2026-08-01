@@ -616,7 +616,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 <!-- NAV -->
 
 
-<div id="loadScreen" style="opacity:0;">
+<div id="loadScreen">
   <canvas id="loadCanvas"></canvas>
   <div class="ls-content">
     <div class="ls-avatar-wrap">
@@ -1391,7 +1391,9 @@ async function loadAllSettings() {
     applyHeroSettings(s);
     showAndHideLoadScreen();
 
-    if (socials && Array.isArray(socials)) { socialLinks = socials; renderSocials(); }
+    if (socials && Array.isArray(socials)) { socialLinks = socials; renderSocials(); localStorage.setItem('sk_socials_cache', JSON.stringify(socials)); }
+    // احفظ بالـ cache
+    localStorage.setItem('sk_settings_cache', JSON.stringify(s));
   } catch(e) { console.log('Settings load failed:', e.message); }
 }
 
@@ -2369,19 +2371,21 @@ function renderSecretCodes() {
   } else {
     sessionStorage.setItem('visited','1');
     window._showLoadScreen = true;
+    // أخفِ بعد 3 ثواني كحد أقصى
+    setTimeout(()=>{
+      if(!ls||!ls.parentNode)return;
+      ls.classList.add('hide');
+      setTimeout(()=>{if(ls&&ls.parentNode)ls.parentNode.removeChild(ls);},650);
+    }, 3000);
   }
 })();
 
 function showAndHideLoadScreen() {
+  // الشاشة تظهر من البداية — هنا بس نخفيها بعد تحميل الإعدادات
   const ls = document.getElementById('loadScreen');
   if (!ls || !window._showLoadScreen) return;
-  // أظهر بعد تحميل الإعدادات
-  ls.style.opacity = '1';
-  ls.style.transition = 'opacity .3s';
-  setTimeout(()=>{
-    ls.classList.add('hide');
-    setTimeout(()=>{if(ls&&ls.parentNode)ls.parentNode.removeChild(ls);},650);
-  }, 2500);
+  ls.classList.add('hide');
+  setTimeout(()=>{if(ls&&ls.parentNode)ls.parentNode.removeChild(ls);},650);
 }
 
 function updateLoadingScreen(name, img) {
@@ -2391,6 +2395,41 @@ function updateLoadingScreen(name, img) {
     const wrap = document.getElementById('lsAvaContent');
     if(wrap) wrap.innerHTML = `<img src="${img}" alt=""/>`;
   }
+}
+
+
+// ══ SETTINGS CACHE ══
+function applySettings(s) {
+  if (!s) return;
+  if (s.adminPass) adminPass = s.adminPass;
+  if (s.channelName) { setEl('navName',s.channelName); setEl('adminName',s.channelName); setEl('aboutName',s.channelName); setEl('drawerName',s.channelName); setVal('set-name',s.channelName); updateLoadingScreen(s.channelName, s.channelImg); }
+  if (s.kickUsername) { setEl('aboutHandle',s.kickUsername); setVal('set-kick',s.kickUsername); const c=document.getElementById('offlineCta'); if(c)c.href='https://kick.com/'+s.kickUsername; }
+  if (s.bio) { setEl('aboutBio',s.bio); setVal('set-bio',s.bio); }
+  if (s.spec) { setEl('aboutSpec',s.spec); setVal('set-spec',s.spec); }
+  if (s.sched) { setEl('aboutSched',s.sched); setVal('set-sched',s.sched); }
+  if (s.country) { setEl('aboutCountry',s.country); setVal('set-country',s.country); }
+  if (s.channelImg && !s.channelImg.includes('REMOVED')) { channelImg=s.channelImg; updateAvatars(s.channelImg); }
+  if (s.streamStatus) streamState.status=s.streamStatus;
+  if (s.streamUsername) { streamState.username=s.streamUsername; setVal('set-stream-user',s.streamUsername); }
+  if (s.streamTitle) { streamState.title=s.streamTitle; setVal('set-stream-title',s.streamTitle); }
+  if (s.offlineMsg) { streamState.offlineMsg=s.offlineMsg; setVal('set-offline-msg',s.offlineMsg); }
+  if (s.offlineIcon) { streamState.offlineIcon=s.offlineIcon; setVal('set-offline-icon',s.offlineIcon); }
+  if (s.offlineBg) streamState.offlineBg=s.offlineBg;
+  if (s.offlineColor) streamState.offlineColor=s.offlineColor;
+  if (s.ptsCfg) ptsCfg={...ptsCfg,...s.ptsCfg};
+  renderStream();
+  applyHeroSettings(s);
+}
+
+// حمّل من cache أولاً (فوري)
+const cachedSettings = localStorage.getItem('sk_settings_cache');
+if (cachedSettings) {
+  try { applySettings(JSON.parse(cachedSettings)); } catch(e) {}
+}
+
+const cachedSocials = localStorage.getItem('sk_socials_cache');
+if (cachedSocials) {
+  try { const s=JSON.parse(cachedSocials); if(s&&s.length){socialLinks=s;renderSocials();} } catch(e) {}
 }
 
 async function init() {

@@ -1903,22 +1903,35 @@ function applyHeroSettings(s) {
 
 // ══════ DRAWER ══════
 function toggleDrawer() {
-  const drawer = document.getElementById('drawer');
-  const isOpen = drawer.classList.toggle('on');
+  // فقط على الموبايل
+  if (window.innerWidth > 768) return;
   
-  let overlay = document.getElementById('drawerOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'drawerOverlay';
-    document.body.appendChild(overlay);
-    overlay.addEventListener('click', toggleDrawer);
-  }
+  const drawer = document.getElementById('drawer');
+  const isOpen = !drawer.classList.contains('on');
   
   if (isOpen) {
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:99996;background:rgba(0,0,0,0.01);display:block;';
+    drawer.style.transform = 'translateX(0)';
+    drawer.classList.add('on');
+    // overlay للإغلاق
+    let overlay = document.getElementById('drawerOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'drawerOverlay';
+      document.body.appendChild(overlay);
+    }
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99996;background:rgba(0,0,0,.4);display:block;';
+    overlay.onclick = closeDrawer;
   } else {
-    overlay.style.display = 'none';
+    closeDrawer();
   }
+}
+
+function closeDrawer() {
+  const drawer = document.getElementById('drawer');
+  drawer.classList.remove('on');
+  drawer.style.transform = 'translateX(100%)';
+  const overlay = document.getElementById('drawerOverlay');
+  if (overlay) overlay.style.display = 'none';
 }
 
 function drawerGoTo(page) {
@@ -1928,7 +1941,7 @@ function drawerGoTo(page) {
   // انتقل للصفحة
   goTo(page, null);
   // أغلق الـ drawer
-  setTimeout(() => toggleDrawer(), 150);
+  setTimeout(() => closeDrawer(), 150);
 }
 
 function updateDrawerUI() {

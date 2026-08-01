@@ -804,6 +804,24 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
           <div class="set-row"><div><div class="set-label">حد أقصى في الساعة</div></div><div style="display:flex;align-items:center;gap:6px;"><input class="set-input" id="pc-maxhr" type="number" value="100" style="width:80px;min-width:80px;" dir="ltr"/><span style="font-size:12px;color:var(--muted);">نقطة</span></div></div>
           <div class="set-row"><div><div class="set-label">هدف النقاط</div></div><div style="display:flex;align-items:center;gap:6px;"><input class="set-input" id="pc-goal" type="number" value="1500" style="width:80px;min-width:80px;" dir="ltr"/><span style="font-size:12px;color:var(--muted);">نقطة</span></div></div>
         </div>
+
+        <div class="settings-box" style="margin-top:14px;">
+          <div class="settings-box-title">🎫 الكلمات السرية</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">اكتب كلمة سرية واعلنها بالبث — من يكتبها بالشات يكسب نقاط!</div>
+          <div id="secretCodesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+          <div style="background:var(--card2);border-radius:10px;padding:12px;border:1px dashed var(--border);">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+              <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;">الكلمة السرية</div>
+                <input class="pf-input" id="sc-word" placeholder="FIRE2026" dir="ltr" style="text-transform:uppercase;"/></div>
+              <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;">النقاط</div>
+                <input class="pf-input" id="sc-pts" type="number" placeholder="200" dir="ltr"/></div>
+              <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;">عدد الاستخدامات</div>
+                <input class="pf-input" id="sc-uses" type="number" placeholder="100" dir="ltr"/></div>
+            </div>
+            <button class="btn btn-kick" onclick="addSecretCode()" style="font-size:12px;padding:6px 14px;">+ إنشاء كلمة سرية</button>
+          </div>
+        </div>
+
         <button class="btn btn-kick" onclick="savePtsCfg()">💾 حفظ إعدادات النقاط</button>
       </div>
       <!-- SETTINGS -->
@@ -2121,6 +2139,64 @@ function checkMobile() {
 }
 window.addEventListener('resize', checkMobile);
 checkMobile();
+
+
+// ══ الكلمات السرية ══
+let secretCodes = [];
+
+async function loadSecretCodes() {
+  try {
+    const res = await fetch(`${W}/api/secret-codes`);
+    const d = await res.json();
+    if (d.codes) { secretCodes = d.codes; renderSecretCodes(); }
+  } catch(e) {}
+}
+
+async function addSecretCode() {
+  const word = document.getElementById('sc-word')?.value.trim().toUpperCase();
+  const pts  = Number(document.getElementById('sc-pts')?.value);
+  const uses = Number(document.getElementById('sc-uses')?.value) || 999;
+  if (!word || !pts) { showToast('أدخل الكلمة والنقاط','err'); return; }
+  if (secretCodes.find(c => c.word === word)) { showToast('الكلمة موجودة مسبقاً','err'); return; }
+  secretCodes.push({ word, pts, uses, usedBy: [], createdAt: new Date().toLocaleString('ar') });
+  await saveSecretCodes();
+  document.getElementById('sc-word').value = '';
+  document.getElementById('sc-pts').value = '';
+  document.getElementById('sc-uses').value = '';
+  renderSecretCodes();
+  showToast('✅ تم إنشاء الكلمة: ' + word);
+}
+
+async function deleteSecretCode(word) {
+  secretCodes = secretCodes.filter(c => c.word !== word);
+  await saveSecretCodes();
+  renderSecretCodes();
+  showToast('تم حذف الكلمة');
+}
+
+async function saveSecretCodes() {
+  try {
+    await fetch(`${W}/api/secret-codes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+      body: JSON.stringify({ codes: secretCodes })
+    });
+  } catch(e) {}
+}
+
+function renderSecretCodes() {
+  const el = document.getElementById('secretCodesList');
+  if (!el) return;
+  el.innerHTML = secretCodes.length ? secretCodes.map(c => `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;">
+      <div style="background:var(--kick);color:#000;font-family:monospace;font-weight:900;font-size:13px;padding:3px 10px;border-radius:5px;letter-spacing:2px;">${c.word}</div>
+      <div style="flex:1;">
+        <div style="font-size:12px;font-weight:700;">⭐ ${c.pts} نقطة</div>
+        <div style="font-size:11px;color:var(--muted);">استُخدم ${(c.usedBy||[]).length}/${c.uses} مرة</div>
+      </div>
+      <button onclick="deleteSecretCode('${c.word}')" style="background:rgba(255,64,64,.1);color:var(--red);border:1px solid rgba(255,64,64,.2);padding:4px 8px;border-radius:5px;font-size:11px;cursor:pointer;font-family:'Cairo',sans-serif;">حذف</button>
+    </div>`).join('') : '<p style="color:var(--muted);font-size:12px;">لا توجد كلمات سرية</p>';
+}
 
 async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);

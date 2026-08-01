@@ -537,12 +537,12 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 <!-- NAV -->
 
 <nav class="nav">
-  <div class="nav-logo" onclick="goTo('home',this)">
+  <button onclick="toggleDrawer()" id="hamburgerBtn" style="display:none;flex-direction:column;gap:5px;border:1px solid var(--border);background:var(--card2);padding:8px;cursor:pointer;border-radius:8px;flex-shrink:0;"><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span></button>
+  <div class="nav-logo" id="navLogo" onclick="goTo('home',this)">
     <div class="nav-ava" id="navAva" style="background:linear-gradient(135deg,#53FC18,#2a8c00);font-size:16px;font-weight:900;color:#000;">A</div>
     <span class="kick-tag">KICK</span>
     <span class="nav-name" id="navName">القناة</span>
   </div>
-  <button onclick="toggleDrawer()" id="hamburgerBtn" style="display:none;flex-direction:column;gap:5px;border:1px solid var(--border);background:var(--card2);padding:8px;cursor:pointer;border-radius:8px;flex-shrink:0;"><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span></button>
   <div class="nav-links">
     <button class="nl on" onclick="goTo('home',this)">الرئيسية</button>
     <button class="nl" onclick="goTo('about',this)">من أنا</button>
@@ -987,8 +987,8 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 
 
 <!-- DRAWER MENU -->
-<div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
-<div class="drawer" id="drawer">
+<div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()" style="position:fixed!important;inset:0!important;z-index:99997!important;"></div>
+<div class="drawer" id="drawer" style="position:fixed!important;top:0!important;right:0!important;bottom:0!important;height:100vh!important;z-index:99998!important;">
   <div class="drawer-head">
     <div class="drawer-ava" id="drawerAva">🎮</div>
     <div class="drawer-name" id="drawerName">القناة</div>
@@ -2100,6 +2100,15 @@ function stopChatPolling() {
 
 
 // أظهر الـ hamburger على الموبايل
+
+function hideMobileLogo() {
+  const logo = document.getElementById('navLogo');
+  if (!logo) return;
+  logo.style.display = window.innerWidth <= 768 ? 'none' : 'flex';
+}
+window.addEventListener('resize', hideMobileLogo);
+hideMobileLogo();
+
 function checkMobile() {
   const btn = document.getElementById('hamburgerBtn');
   if (!btn) return;

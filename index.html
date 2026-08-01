@@ -1274,6 +1274,7 @@ async function loadAllSettings() {
     const s = await sRes.json();
     const { socials } = await socRes.json();
 
+    if (s.adminPass) { adminPass = s.adminPass; }
     if (s.channelName) { setEl('navName', s.channelName); setEl('adminName', s.channelName); setEl('aboutName', s.channelName); setEl('drawerName', s.channelName); setVal('set-name', s.channelName); }
     if (s.kickUsername) { setEl('aboutHandle', s.kickUsername); setVal('set-kick', s.kickUsername); const c = document.getElementById('offlineCta'); if(c) c.href='https://kick.com/'+s.kickUsername; }
     if (s.bio) { setEl('aboutBio', s.bio); setVal('set-bio', s.bio); }

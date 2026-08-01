@@ -1629,11 +1629,26 @@ function openAdminLogin() {
   am.style.display = 'flex';
 }
 function submitAdmin() {
-  if (gv('aUser')==='admin' && gv('aPass')===adminPass) {
+  const user = gv('aUser'), pass = gv('aPass');
+  // تحقق من المدير الرئيسي
+  if (user==='admin' && pass===adminPass) {
     adminIn=true;
     sessionStorage.setItem('adminIn','1');
+    sessionStorage.setItem('adminRole','owner');
     closeModal('adminModal'); goTo('admin',null); showToast('أهلاً بك في الإدارة 🛡️');
-  } else setEl('aErr','❌ بيانات خاطئة');
+    return;
+  }
+  // تحقق من الموظفين
+  const staffMember = staff.find(s => s.username === user && s.pass === pass);
+  if (staffMember) {
+    adminIn=true;
+    sessionStorage.setItem('adminIn','1');
+    sessionStorage.setItem('adminRole','staff');
+    sessionStorage.setItem('adminStaffId', staffMember.id);
+    closeModal('adminModal'); goTo('admin',null); showToast(`أهلاً ${staffMember.name}! 👮`);
+    return;
+  }
+  setEl('aErr','❌ بيانات خاطئة');
 }
 function adminLogout() { adminIn=false; sessionStorage.removeItem('adminIn'); goTo('home',document.querySelector('.nl')); showToast('تم الخروج من الإدارة'); }
 
@@ -1648,7 +1663,7 @@ function aTab(tab, btn) {
   if(tab==='products') loadAdminProds();
   if(tab==='users') loadUsers();
   if(tab==='chats') renderAdminChats();
-  if(tab==='staff') renderStaff();
+  if(tab==='staff') loadStaff();
   if(tab==='settings') renderSocials();
   if(tab==='pts-cfg') loadSecretCodes();
 }
@@ -1814,17 +1829,84 @@ function openStaffModal(id) {
   document.getElementById('staffModal').classList.remove('hidden');
 }
 function selPerms(v){['orders','products','users','chats','staff','settings'].forEach(p=>{const el=document.getElementById('perm-'+p);if(el)el.checked=v;});}
-function saveStaff() {
-  const name=gv('sf-name'),username=gv('sf-user'),roleTitle=gv('sf-role'),color=document.getElementById('sf-color').value;
+
+async function loadStaff() {
+  try {
+    const res = await fetch(`${W}/api/admin/staff`,{headers:{'x-admin-key':ADMIN_KEY}});
+    const d = await res.json();
+    if(d.staff) staff = d.staff;
+  } catch(e){}
+  renderStaff();
+}
+
+
+async function loadStaff() {
+  try {
+    const res = await fetch(`${W}/api/admin/staff`,{headers:{'x-admin-key':ADMIN_KEY}});
+    const d = await res.json();
+    if(d.staff) staff = d.staff;
+  } catch(e) {}
+  renderStaff();
+}
+
+async function saveStaff() {
+  const name=gv('sf-name'),username=gv('sf-user'),roleTitle=gv('sf-role'),color=document.getElementById('sf-color').value,password=gv('sf-pass');
+  const pass=gv('sf-pass');
   if(!name||!username){showToast('أدخل الاسم واليوزرنيم','err');return;}
   const perms=['orders','products','users','chats','staff','settings'].filter(p=>{const el=document.getElementById('perm-'+p);return el&&el.checked;});
   if(!perms.length){showToast('اختر صلاحية واحدة','err');return;}
   const existing = staff.find(x=>x.id===parseInt(document.getElementById('staffModalTitle').dataset.id||0));
-  if(existing) Object.assign(existing,{name,username,roleTitle,color,perms});
-  else staff.push({id:Date.now(),name,username,roleTitle,color,perms,joinedAt:new Date().toLocaleString('ar')});
+  if(existing) {
+    Object.assign(existing,{name,username,roleTitle,color,perms});
+    if(pass) existing.pass = pass;
+  } else {
+    if(!pass){showToast('أدخل كلمة السر','err');return;}
+    staff.push({id:Date.now(),name,username,roleTitle,color,perms,pass,joinedAt:new Date().toLocaleString('ar')});
+  }
+  await saveStaffToServer();
   closeModal('staffModal');renderStaff();showToast('✅ تم حفظ الموظف');
 }
-function delStaff(id){if(!confirm('حذف؟'))return;staff=staff.filter(x=>x.id!==id);renderStaff();showToast('تم الحذف');}
+
+async function delStaff(id){
+  if(!confirm('حذف؟'))return;
+  staff=staff.filter(x=>x.id!==id);
+  await saveStaffToServer();
+  renderStaff();showToast('تم الحذف');
+}
+
+async function saveStaffToServer() {
+  try {
+    await fetch(`${W}/api/admin/staff`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},
+      body:JSON.stringify({staff})
+    });
+  } catch(e){}
+}
+
+async function loadStaff() {
+  try {
+    const res = await fetch(`${W}/api/admin/staff`,{headers:{'x-admin-key':ADMIN_KEY}});
+    const d = await res.json();
+    if(d.staff) { staff=d.staff; renderStaff(); }
+  } catch(e){}
+}
+async function loadStaff() {
+  try {
+    const res = await fetch(`${W}/api/admin/staff`,{headers:{'x-admin-key':ADMIN_KEY}});
+    // جرب مع admin key أولاً
+    if (res.ok) { const d=await res.json(); if(d.staff)staff=d.staff; }
+  } catch(e) {}
+  // إذا فشل جرب بدون (للقراءة العامة)
+  if (!staff.length) {
+    try {
+      const res2 = await fetch(`${W}/api/staff`);
+      if(res2.ok){const d=await res2.json();if(d.staff)staff=d.staff;}
+    } catch(e){}
+  }
+  renderStaff();
+}
+
 function renderStaff() {
   const el=document.getElementById('staffList');if(!el)return;
   el.innerHTML=staff.length?staff.map(s=>`<div class="staff-card"><div class="staff-ava" style="border-color:${s.color};">${s.username.charAt(0).toUpperCase()}</div><div style="flex:1;"><div class="staff-name">${s.name}</div><div class="staff-user">@${s.username} · ${s.joinedAt}</div><div class="staff-role-tag" style="background:${s.color};color:${s.color==='#53FC18'||s.color==='#FFA500'?'#000':'#fff'}">${s.roleTitle||'موظف'}</div><div class="staff-perms">${s.perms.map(p=>`<span class="perm-tag">${PERM_LABELS[p]||p}</span>`).join('')}</div></div><div class="staff-acts"><button class="btn-sm btn-edit" onclick="openStaffModal(${s.id})">✏️</button><button class="btn-sm btn-del" onclick="delStaff(${s.id})">🗑</button></div></div>`).join('')
@@ -2436,6 +2518,7 @@ async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);
   loadStore();
   renderStream();
+  loadStaff();
   loadRules();
 
   // ارجع للإدارة إذا كان مسجل دخول
@@ -2523,6 +2606,10 @@ init();
       <div class="pf-group"><label>الاسم</label><input class="pf-input" id="sf-name" placeholder="محمد"/></div>
       <div class="pf-group"><label>اليوزرنيم</label><input class="pf-input" id="sf-user" placeholder="username" dir="ltr"/></div>
       <div class="pf-group"><label>المسمى الوظيفي</label><input class="pf-input" id="sf-role" placeholder="مشرف شات"/></div>
+      <div class="pf-group"><label>كلمة السر</label><input class="pf-input" id="sf-pass" type="password" placeholder="••••••" dir="ltr"/></div>
+      <div class="pf-group"><label>كلمة السر</label><input class="pf-input" id="sf-pass" type="password" placeholder="••••••" dir="ltr"/></div>
+      <div class="pf-group"><label>كلمة السر</label><input class="pf-input" id="sf-pass" type="password" placeholder="••••••" dir="ltr"/></div>
+      <div class="pf-group"><label>كلمة السر</label><input class="pf-input" id="sf-pass" type="password" placeholder="••••••" dir="ltr"/></div>
       <div class="pf-group"><label>لون الشارة</label>
         <select class="pf-input" id="sf-color">
           <option value="#53FC18">🟢 أخضر Kick</option>

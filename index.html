@@ -436,16 +436,16 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 
 /* ══════ DRAWER MENU ══════ */
 .drawer-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;
+  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99997;
   opacity:0;visibility:hidden;transition:all .3s;
 }
 .drawer-overlay.on{opacity:1;visibility:visible;}
 .drawer{
   position:fixed;right:0;top:0;bottom:0;width:75%;max-width:280px;
   background:var(--card);border-left:1px solid var(--border);
-  z-index:401;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  z-index:99998;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
   display:flex;flex-direction:column;
-  padding:0;overflow:hidden;
+  padding:0;overflow:hidden;overflow-y:auto;
 }
 .drawer.on{transform:translateX(0);}
 .drawer-head{
@@ -476,10 +476,11 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 .drawer-auth{display:flex;flex-direction:column;gap:8px;}
 .hamburger{
   display:none;flex-direction:column;gap:5px;
-  border:none;background:transparent;padding:6px;cursor:pointer;
+  border:1px solid var(--border);background:var(--card2);
+  padding:8px;cursor:pointer;border-radius:8px;
 }
 .hamburger span{
-  display:block;width:22px;height:2px;background:var(--text);
+  display:block;width:20px;height:2px;background:var(--kick);
   border-radius:2px;transition:all .3s;
 }
 
@@ -541,7 +542,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
     <span class="kick-tag">KICK</span>
     <span class="nav-name" id="navName">القناة</span>
   </div>
-  <button class="hamburger" onclick="toggleDrawer()" id="hamburgerBtn" style="margin-right:4px;"><span></span><span></span><span></span></button>
+  <button onclick="toggleDrawer()" id="hamburgerBtn" style="display:none;flex-direction:column;gap:5px;border:1px solid var(--border);background:var(--card2);padding:8px;cursor:pointer;border-radius:8px;flex-shrink:0;"><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span></button>
   <div class="nav-links">
     <button class="nl on" onclick="goTo('home',this)">الرئيسية</button>
     <button class="nl" onclick="goTo('about',this)">من أنا</button>
@@ -2096,6 +2097,20 @@ function startChatPolling(sender) {
 function stopChatPolling() {
   if (chatPollingInterval) { clearInterval(chatPollingInterval); chatPollingInterval = null; }
 }
+
+
+// أظهر الـ hamburger على الموبايل
+function checkMobile() {
+  const btn = document.getElementById('hamburgerBtn');
+  if (!btn) return;
+  if (window.innerWidth <= 768) {
+    btn.style.display = 'flex';
+  } else {
+    btn.style.display = 'none';
+  }
+}
+window.addEventListener('resize', checkMobile);
+checkMobile();
 
 async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);

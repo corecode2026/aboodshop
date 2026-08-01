@@ -759,8 +759,17 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
       </div>
       <!-- USERS -->
       <div class="asub" id="asub-users">
-        <div class="section-head"><div class="section-title">المستخدمون</div></div>
-        <div class="settings-box" style="margin-bottom:16px;">
+        <div class="section-head">
+          <div class="section-title">المستخدمون <span id="usersCount" style="font-size:13px;color:var(--kick);font-weight:700;"></span></div>
+        </div>
+
+        <!-- بحث -->
+        <div style="display:flex;gap:8px;margin-bottom:14px;">
+          <input class="pf-input" id="userSearch" placeholder="🔍 ابحث عن مستخدم..." oninput="filterUsers()" style="flex:1;"/>
+        </div>
+
+        <!-- إضافة نقاط -->
+        <div class="settings-box" style="margin-bottom:14px;">
           <div class="settings-box-title">⭐ إضافة نقاط يدوياً</div>
           <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
             <div><div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">اسم المستخدم</div><input class="pf-input" id="addPtsUser" placeholder="username" dir="ltr"/></div>
@@ -768,6 +777,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
             <button class="btn btn-kick" onclick="addPtsManual()" style="height:36px;padding:0 14px;">إضافة</button>
           </div>
         </div>
+
         <div id="usersTable"></div>
       </div>
       <!-- STAFF -->

@@ -15,7 +15,7 @@
   --border:rgba(83,252,24,0.15);--bw:rgba(255,255,255,0.08);
   --text:#F0F0F0;--muted:#888;--red:#ff4040;--orange:#FFA500;
 }
-body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;direction:rtl;}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;direction:rtl;}
 .green{color:var(--kick);}
 .hidden{display:none!important;}
 a{text-decoration:none;color:inherit;}
@@ -51,7 +51,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 
 /* ── LAYOUT ── */
 .wrap{max-width:920px;margin:0 auto;padding:28px 20px;}
-.page{display:none;}.page.on{display:block;}
+
 
 /* ── BUTTONS ── */
 .btn-primary{background:var(--kick);color:#000;padding:10px 22px;border-radius:8px;font-weight:700;font-size:14px;border:none;}
@@ -160,7 +160,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 .pts-minus{color:#ff5555;font-size:14px;font-weight:800;}
 
 /* ── ADMIN ── */
-.admin-layout{display:flex;min-height:calc(100vh - 120px);}
+.admin-layout{display:flex;min-height:500px;}
 .admin-side{width:210px;flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:14px 0 0 14px;padding:18px 0;display:flex;flex-direction:column;}
 .admin-side-top{padding:0 14px 14px;border-bottom:1px solid var(--border);margin-bottom:10px;display:flex;align-items:center;gap:10px;}
 .admin-ava{width:38px;height:38px;border-radius:50%;border:2px solid var(--kick);background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;flex-shrink:0;}
@@ -247,9 +247,9 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 .points-cfg{display:flex;flex-direction:column;gap:12px;}
 
 /* ── MODALS ── */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:200;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:9999;}
 .overlay.hidden{display:none!important;}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px;max-width:420px;width:92%;text-align:center;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px;max-width:420px;width:92%;text-align:center;margin:auto;position:relative;}
 .modal.wide{max-width:540px;text-align:right;}
 .modal h3{font-size:18px;font-weight:800;margin-bottom:8px;}
 .modal p{font-size:13px;color:var(--muted);margin-bottom:20px;}
@@ -320,7 +320,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
   /* ── NAV ── */
   .nav{padding:8px 12px;gap:6px;}
   .nav-links{display:none;}
-  .nav-name{display:none;}
+  .nav-name{display:none!important;}
   .kick-tag{display:none;}
   .nav-logo{gap:6px;}
   .nav-ava{width:30px;height:30px;}
@@ -517,6 +517,17 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
   letter-spacing:.5px;
 }
 .footer span{color:var(--kick);opacity:.5;}
+
+
+
+
+
+
+
+
+/* ══ PAGES ══ */
+.page { display: none; }
+.page.on { display: block; }
 
 </style>
 </head>
@@ -886,7 +897,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
 
 <!-- TOURNAMENTS -->
 <section class="page" id="page-tournaments">
-  <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;">
+  <div style="padding:40px 0;display:flex;align-items:center;justify-content:center;">
     <div style="text-align:center;padding:40px 20px;">
 
       <!-- خلفية متحركة -->
@@ -939,27 +950,11 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
   </div>
 </section>
 
-  <div class="footer">© 2026 <span>corecode2026</span> — جميع الحقوق محفوظة</div>
 </main>
-
-<!-- LOGIN MODAL -->
-<div class="overlay hidden" id="loginModal">
-  <div class="modal">
-    <h3>🔐 تسجيل الدخول</h3>
-    <p>اختر طريقة تسجيل الدخول</p>
-    <div class="login-opts">
-      <button class="login-opt" style="background:var(--discord);color:#fff;" onclick="doLogin('discord')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057c.001.02.011.04.027.053a19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
-        تسجيل بـ Discord
-      </button>
-
-    </div>
-    <button class="m-cancel" onclick="closeModal('loginModal')" style="width:100%;padding:10px;border-radius:8px;font-weight:700;font-size:14px;border:none;">إلغاء</button>
-  </div>
-</div>
+<div class="footer" style="position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);text-align:center;padding:8px;font-size:11px;color:rgba(255,255,255,.2);z-index:50;">© 2026 <span style="color:var(--kick);opacity:.5;">corecode2026</span> — جميع الحقوق محفوظة</div>
 
 <!-- ADMIN LOGIN -->
-<div class="overlay hidden" id="adminModal">
+<div class="overlay hidden" id="adminModal" style="position:fixed!important;inset:0!important;z-index:99999!important;display:none;align-items:center;justify-content:center;">
   <div class="modal">
     <h3>⚙️ دخول الإدارة</h3>
     <p>أدخل بيانات المدير</p>
@@ -969,87 +964,6 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
     <div class="m-btns">
       <button class="m-ok" onclick="submitAdmin()">دخول</button>
       <button class="m-cancel" onclick="closeModal('adminModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- BUY MODAL -->
-<div class="overlay hidden" id="buyModal">
-  <div class="modal">
-    <h3 id="buyTitle">تأكيد الشراء</h3>
-    <p id="buyDesc" style="color:var(--muted);font-size:13px;margin-bottom:8px;"></p>
-    <div class="buy-price" id="buyPrice"></div>
-    <div style="text-align:right;margin-bottom:14px;">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">اسمك (للتأكيد)</div>
-      <input class="m-input" id="buyUsername" placeholder="username" style="text-align:right;direction:rtl;"/>
-    </div>
-    <div class="m-btns">
-      <button class="m-ok" onclick="confirmBuy()">تأكيد ✅</button>
-      <button class="m-cancel" onclick="closeModal('buyModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- PRODUCT MODAL -->
-<div class="overlay hidden" id="prodModal">
-  <div class="modal wide">
-    <h3 id="prodModalTitle" style="margin-bottom:14px;">إضافة منتج</h3>
-    <div class="prod-img-box" id="prodImgBox">
-      <span id="prodImgEmoji" style="font-size:48px;">🎁</span>
-      <img id="prodImgPrev" src="" style="display:none;"/>
-      <input type="file" id="prodImgFile" accept="image/*" style="display:none;" onchange="handleProdImg(event)"/>
-      <div class="prod-img-hint">انقر لرفع صورة</div>
-    </div>
-    <div class="prod-form">
-      <div class="pf-group"><label>الاسم</label><input class="pf-input" id="pf-name" placeholder="دور في لعبة"/></div>
-      <div class="pf-group"><label>السعر (نقاط)</label><input class="pf-input" id="pf-price" type="number" placeholder="500" dir="ltr"/></div>
-      <div class="pf-group"><label>الأيقونة</label><input class="pf-input" id="pf-icon" placeholder="🎮" style="font-size:20px;text-align:center;"/></div>
-      <div class="pf-group"><label>الحالة</label><select class="pf-input" id="pf-active"><option value="true">✅ نشط</option><option value="false">⏸ موقوف</option></select></div>
-      <div class="pf-group"><label>الكمية المتاحة</label><input class="pf-input" id="pf-qty" type="number" placeholder="∞ بلا حد" dir="ltr" min="0"/></div>
-      <div class="pf-group full"><label>الوصف</label><textarea class="pf-input" id="pf-desc" rows="2" style="resize:vertical;"></textarea></div>
-    </div>
-    <div class="m-btns" style="margin-top:12px;">
-      <button class="m-ok" onclick="saveProd()">💾 حفظ</button>
-      <button class="m-cancel" onclick="closeModal('prodModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- STAFF MODAL -->
-<div class="overlay hidden" id="staffModal">
-  <div class="modal wide">
-    <h3 id="staffModalTitle" style="margin-bottom:16px;">إضافة موظف</h3>
-    <div class="prod-form" style="margin-bottom:14px;">
-      <div class="pf-group"><label>الاسم</label><input class="pf-input" id="sf-name" placeholder="محمد"/></div>
-      <div class="pf-group"><label>اليوزرنيم</label><input class="pf-input" id="sf-user" placeholder="username" dir="ltr"/></div>
-      <div class="pf-group"><label>المسمى الوظيفي</label><input class="pf-input" id="sf-role" placeholder="مشرف شات"/></div>
-      <div class="pf-group"><label>لون الشارة</label>
-        <select class="pf-input" id="sf-color">
-          <option value="#53FC18">🟢 أخضر Kick</option>
-          <option value="#5865F2">🔵 أزرق Discord</option>
-          <option value="#FFA500">🟠 برتقالي</option>
-          <option value="#ff4040">🔴 أحمر</option>
-          <option value="#a855f7">🟣 بنفسجي</option>
-          <option value="#888">⚫ رمادي</option>
-        </select>
-      </div>
-    </div>
-    <div style="font-size:13px;font-weight:700;color:var(--kick);margin-bottom:10px;">🔑 الصلاحيات</div>
-    <div class="perm-grid">
-      <label class="perm-item"><input type="checkbox" id="perm-orders"/><span class="perm-label">🛒 الطلبات</span><span class="perm-sub">عرض وإدارة الطلبات</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-products"/><span class="perm-label">🎁 المنتجات</span><span class="perm-sub">إضافة وتعديل المنتجات</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-users"/><span class="perm-label">👥 المستخدمون</span><span class="perm-sub">عرض وإضافة نقاط</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-chats"/><span class="perm-label">💬 الدردشات</span><span class="perm-sub">الرد على الدردشات</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-staff"/><span class="perm-label">👮 الموظفون</span><span class="perm-sub">إدارة الموظفين</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-settings" checked/><span class="perm-label">📊 الرئيسية</span><span class="perm-sub">عرض الإحصائيات</span></label>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:14px;">
-      <button onclick="selPerms(true)" style="background:rgba(83,252,24,.1);color:var(--kick);border:1px solid var(--border);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;">تحديد الكل</button>
-      <button onclick="selPerms(false)" style="background:var(--card);color:var(--muted);border:1px solid var(--bw);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;">إلغاء الكل</button>
-    </div>
-    <div class="m-btns">
-      <button class="m-ok" onclick="saveStaff()">💾 حفظ</button>
-      <button class="m-cancel" onclick="closeModal('staffModal')">إلغاء</button>
     </div>
   </div>
 </div>
@@ -1125,25 +1039,6 @@ input,select,textarea{font-family:'Cairo',sans-serif;}
   </div>
 </div>
 
-
-<!-- RULE MODAL -->
-<div class="overlay hidden" id="ruleModal">
-  <div class="modal wide">
-    <h3 id="ruleModalTitle" style="margin-bottom:16px;">إضافة قانون</h3>
-    <div class="pf-group full" style="margin-bottom:12px;">
-      <label style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px;display:block;">عنوان القانون</label>
-      <input class="pf-input" id="rf-title" placeholder="مثال: احترام الجميع"/>
-    </div>
-    <div class="pf-group full" style="margin-bottom:16px;">
-      <label style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px;display:block;">وصف القانون</label>
-      <textarea class="pf-input" id="rf-desc" rows="3" placeholder="اشرح القانون بالتفصيل..." style="resize:vertical;"></textarea>
-    </div>
-    <div class="m-btns">
-      <button class="m-ok" onclick="saveRule()">💾 حفظ</button>
-      <button class="m-cancel" onclick="closeModal('ruleModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
 
 <!-- CHAT BUBBLE -->
 <div class="chat-bubble">
@@ -1597,7 +1492,9 @@ function openAdminLogin() {
     return;
   }
   setVal('aUser',''); setVal('aPass',''); setEl('aErr','');
-  document.getElementById('adminModal').classList.remove('hidden');
+  const am = document.getElementById('adminModal');
+  am.classList.remove('hidden');
+  am.style.display = 'flex';
 }
 function submitAdmin() {
   if (gv('aUser')==='admin' && gv('aPass')===adminPass) {
@@ -1948,7 +1845,10 @@ function updateAvatars(src){['navAva','aboutAva','adminAva','settingAva','drawer
 function gv(id){return document.getElementById(id)?.value.trim()||'';}
 function setEl(id,txt){const el=document.getElementById(id);if(el)el.textContent=txt;}
 function setVal(id,val){const el=document.getElementById(id);if(el)el.value=val;}
-function closeModal(id){document.getElementById(id)?.classList.add('hidden');}
+function closeModal(id){
+  const el = document.getElementById(id);
+  if(el){ el.classList.add('hidden'); el.style.display='none'; }
+}
 function showToast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.style.background=type==='err'?'#ff4040':'var(--kick)';t.style.color=type==='err'?'#fff':'#000';t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3500);}
 
 // Close modals on backdrop click
@@ -2216,6 +2116,127 @@ async function init() {
 }
 init();
 </script>
+
+
+<!-- LOGIN MODAL -->
+<div class="overlay hidden" id="loginModal">
+  <div class="modal">
+    <h3>🔐 تسجيل الدخول</h3>
+    <p>اختر طريقة تسجيل الدخول</p>
+    <div class="login-opts">
+      <button class="login-opt" style="background:var(--discord);color:#fff;" onclick="doLogin('discord')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057c.001.02.011.04.027.053a19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+        تسجيل بـ Discord
+      </button>
+
+    </div>
+    <button class="m-cancel" onclick="closeModal('loginModal')" style="width:100%;padding:10px;border-radius:8px;font-weight:700;font-size:14px;border:none;">إلغاء</button>
+  </div>
+</div>
+
+
+<!-- BUY MODAL -->
+<div class="overlay hidden" id="buyModal">
+  <div class="modal">
+    <h3 id="buyTitle">تأكيد الشراء</h3>
+    <p id="buyDesc" style="color:var(--muted);font-size:13px;margin-bottom:8px;"></p>
+    <div class="buy-price" id="buyPrice"></div>
+    <div style="text-align:right;margin-bottom:14px;">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">اسمك (للتأكيد)</div>
+      <input class="m-input" id="buyUsername" placeholder="username" style="text-align:right;direction:rtl;"/>
+    </div>
+    <div class="m-btns">
+      <button class="m-ok" onclick="confirmBuy()">تأكيد ✅</button>
+      <button class="m-cancel" onclick="closeModal('buyModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- PRODUCT MODAL -->
+<div class="overlay hidden" id="prodModal">
+  <div class="modal wide">
+    <h3 id="prodModalTitle" style="margin-bottom:14px;">إضافة منتج</h3>
+    <div class="prod-img-box" id="prodImgBox">
+      <span id="prodImgEmoji" style="font-size:48px;">🎁</span>
+      <img id="prodImgPrev" src="" style="display:none;"/>
+      <input type="file" id="prodImgFile" accept="image/*" style="display:none;" onchange="handleProdImg(event)"/>
+      <div class="prod-img-hint">انقر لرفع صورة</div>
+    </div>
+    <div class="prod-form">
+      <div class="pf-group"><label>الاسم</label><input class="pf-input" id="pf-name" placeholder="دور في لعبة"/></div>
+      <div class="pf-group"><label>السعر (نقاط)</label><input class="pf-input" id="pf-price" type="number" placeholder="500" dir="ltr"/></div>
+      <div class="pf-group"><label>الأيقونة</label><input class="pf-input" id="pf-icon" placeholder="🎮" style="font-size:20px;text-align:center;"/></div>
+      <div class="pf-group"><label>الحالة</label><select class="pf-input" id="pf-active"><option value="true">✅ نشط</option><option value="false">⏸ موقوف</option></select></div>
+      <div class="pf-group"><label>الكمية المتاحة</label><input class="pf-input" id="pf-qty" type="number" placeholder="∞ بلا حد" dir="ltr" min="0"/></div>
+      <div class="pf-group full"><label>الوصف</label><textarea class="pf-input" id="pf-desc" rows="2" style="resize:vertical;"></textarea></div>
+    </div>
+    <div class="m-btns" style="margin-top:12px;">
+      <button class="m-ok" onclick="saveProd()">💾 حفظ</button>
+      <button class="m-cancel" onclick="closeModal('prodModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- STAFF MODAL -->
+<div class="overlay hidden" id="staffModal">
+  <div class="modal wide">
+    <h3 id="staffModalTitle" style="margin-bottom:16px;">إضافة موظف</h3>
+    <div class="prod-form" style="margin-bottom:14px;">
+      <div class="pf-group"><label>الاسم</label><input class="pf-input" id="sf-name" placeholder="محمد"/></div>
+      <div class="pf-group"><label>اليوزرنيم</label><input class="pf-input" id="sf-user" placeholder="username" dir="ltr"/></div>
+      <div class="pf-group"><label>المسمى الوظيفي</label><input class="pf-input" id="sf-role" placeholder="مشرف شات"/></div>
+      <div class="pf-group"><label>لون الشارة</label>
+        <select class="pf-input" id="sf-color">
+          <option value="#53FC18">🟢 أخضر Kick</option>
+          <option value="#5865F2">🔵 أزرق Discord</option>
+          <option value="#FFA500">🟠 برتقالي</option>
+          <option value="#ff4040">🔴 أحمر</option>
+          <option value="#a855f7">🟣 بنفسجي</option>
+          <option value="#888">⚫ رمادي</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:var(--kick);margin-bottom:10px;">🔑 الصلاحيات</div>
+    <div class="perm-grid">
+      <label class="perm-item"><input type="checkbox" id="perm-orders"/><span class="perm-label">🛒 الطلبات</span><span class="perm-sub">عرض وإدارة الطلبات</span></label>
+      <label class="perm-item"><input type="checkbox" id="perm-products"/><span class="perm-label">🎁 المنتجات</span><span class="perm-sub">إضافة وتعديل المنتجات</span></label>
+      <label class="perm-item"><input type="checkbox" id="perm-users"/><span class="perm-label">👥 المستخدمون</span><span class="perm-sub">عرض وإضافة نقاط</span></label>
+      <label class="perm-item"><input type="checkbox" id="perm-chats"/><span class="perm-label">💬 الدردشات</span><span class="perm-sub">الرد على الدردشات</span></label>
+      <label class="perm-item"><input type="checkbox" id="perm-staff"/><span class="perm-label">👮 الموظفون</span><span class="perm-sub">إدارة الموظفين</span></label>
+      <label class="perm-item"><input type="checkbox" id="perm-settings" checked/><span class="perm-label">📊 الرئيسية</span><span class="perm-sub">عرض الإحصائيات</span></label>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button onclick="selPerms(true)" style="background:rgba(83,252,24,.1);color:var(--kick);border:1px solid var(--border);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;">تحديد الكل</button>
+      <button onclick="selPerms(false)" style="background:var(--card);color:var(--muted);border:1px solid var(--bw);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;">إلغاء الكل</button>
+    </div>
+    <div class="m-btns">
+      <button class="m-ok" onclick="saveStaff()">💾 حفظ</button>
+      <button class="m-cancel" onclick="closeModal('staffModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- RULE MODAL -->
+<div class="overlay hidden" id="ruleModal">
+  <div class="modal wide">
+    <h3 id="ruleModalTitle" style="margin-bottom:16px;">إضافة قانون</h3>
+    <div class="pf-group full" style="margin-bottom:12px;">
+      <label style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px;display:block;">عنوان القانون</label>
+      <input class="pf-input" id="rf-title" placeholder="مثال: احترام الجميع"/>
+    </div>
+    <div class="pf-group full" style="margin-bottom:16px;">
+      <label style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px;display:block;">وصف القانون</label>
+      <textarea class="pf-input" id="rf-desc" rows="3" placeholder="اشرح القانون بالتفصيل..." style="resize:vertical;"></textarea>
+    </div>
+    <div class="m-btns">
+      <button class="m-ok" onclick="saveRule()">💾 حفظ</button>
+      <button class="m-cancel" onclick="closeModal('ruleModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
 
 
 </body>

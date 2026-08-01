@@ -2361,13 +2361,20 @@ function renderSecretCodes() {
   draw();
   window.addEventListener('resize',resize);
 
-  // إخفاء بعد 2.8 ثانية
-  setTimeout(()=>{
-    const ls = document.getElementById('loadScreen');
-    if(!ls)return;
-    ls.classList.add('hide');
-    setTimeout(()=>{if(ls.parentNode)ls.parentNode.removeChild(ls);},650);
-  }, 2800);
+  // أظهر بس لو مو refresh — استخدم sessionStorage
+  const ls = document.getElementById('loadScreen');
+  if (sessionStorage.getItem('visited')) {
+    // تحديث صفحة — أخفِ فوراً
+    if(ls) { ls.style.display='none'; ls.remove(); }
+  } else {
+    // أول زيارة — أظهر وبعدها سجّل
+    sessionStorage.setItem('visited','1');
+    setTimeout(()=>{
+      if(!ls)return;
+      ls.classList.add('hide');
+      setTimeout(()=>{if(ls&&ls.parentNode)ls.parentNode.removeChild(ls);},650);
+    }, 2800);
+  }
 })();
 
 function updateLoadingScreen(name, img) {

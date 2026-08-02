@@ -1063,15 +1063,15 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 
 
 /* ══ CROP MODAL ══ */
-#cropModal { position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px; }
-.crop-container { position:relative;width:300px;height:300px;border-radius:50%;overflow:hidden;border:3px solid var(--kick);box-shadow:0 0 30px rgba(83,252,24,.3); }
+#cropModal { position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:16px;overflow-y:auto; }
+.crop-container { position:relative;width:min(280px,80vw);height:min(280px,80vw);border-radius:50%;overflow:hidden;border:3px solid var(--kick);box-shadow:0 0 30px rgba(83,252,24,.3);flex-shrink:0; }
 .crop-container img { position:absolute;cursor:grab;user-select:none;transform-origin:center; }
 .crop-container img:active { cursor:grabbing; }
 .crop-ring { position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(83,252,24,.5);pointer-events:none;z-index:2; }
-.crop-controls { display:flex;flex-direction:column;align-items:center;gap:12px;width:300px; }
+.crop-controls { display:flex;flex-direction:column;align-items:center;gap:10px;width:min(300px,90vw); }
 .crop-slider { width:100%;accent-color:var(--kick); }
-.crop-btns { display:flex;gap:10px;width:100%; }
-.crop-btns button { flex:1;padding:11px;border-radius:10px;font-weight:700;font-size:14px;font-family:"Cairo",sans-serif;cursor:pointer;border:none; }
+.crop-btns { display:flex;gap:8px;width:100%;flex-wrap:wrap; }
+.crop-btns button { flex:1;min-width:80px;padding:11px 8px;border-radius:10px;font-weight:700;font-size:13px;font-family:"Cairo",sans-serif;cursor:pointer;border:none; }
 
 </style>
 </head>
@@ -1093,15 +1093,15 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 body.ready .page.on { opacity:1; }
 
 /* ══ CROP MODAL ══ */
-#cropModal { position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px; }
-.crop-container { position:relative;width:300px;height:300px;border-radius:50%;overflow:hidden;border:3px solid var(--kick);box-shadow:0 0 30px rgba(83,252,24,.3); }
+#cropModal { position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:16px;overflow-y:auto; }
+.crop-container { position:relative;width:min(280px,80vw);height:min(280px,80vw);border-radius:50%;overflow:hidden;border:3px solid var(--kick);box-shadow:0 0 30px rgba(83,252,24,.3);flex-shrink:0; }
 .crop-container img { position:absolute;cursor:grab;user-select:none;transform-origin:center; }
 .crop-container img:active { cursor:grabbing; }
 .crop-ring { position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(83,252,24,.5);pointer-events:none;z-index:2; }
-.crop-controls { display:flex;flex-direction:column;align-items:center;gap:12px;width:300px; }
+.crop-controls { display:flex;flex-direction:column;align-items:center;gap:10px;width:min(300px,90vw); }
 .crop-slider { width:100%;accent-color:var(--kick); }
-.crop-btns { display:flex;gap:10px;width:100%; }
-.crop-btns button { flex:1;padding:11px;border-radius:10px;font-weight:700;font-size:14px;font-family:"Cairo",sans-serif;cursor:pointer;border:none; }
+.crop-btns { display:flex;gap:8px;width:100%;flex-wrap:wrap; }
+.crop-btns button { flex:1;min-width:80px;padding:11px 8px;border-radius:10px;font-weight:700;font-size:13px;font-family:"Cairo",sans-serif;cursor:pointer;border:none; }
 
 </style>
 <script>
@@ -3569,25 +3569,27 @@ function updateCrop() {
   const img = document.getElementById('cropImg');
   const zoom = parseInt(document.getElementById('cropZoom').value);
   cropState.scale = zoom/100;
-  img.style.width  = (300 * cropState.scale) + 'px';
-  img.style.height = (300 * cropState.scale) + 'px';
+  const csize = document.querySelector('.crop-container')?.offsetWidth || 280;
+  img.style.width  = (csize * cropState.scale) + 'px';
+  img.style.height = (csize * cropState.scale) + 'px';
   img.style.left   = cropState.x + 'px';
   img.style.top    = cropState.y + 'px';
 }
 
 async function confirmCrop() {
   const img = document.getElementById('cropImg');
+  const size = Math.min(280, window.innerWidth * 0.8);
   const canvas = document.createElement('canvas');
-  canvas.width = 300; canvas.height = 300;
+  canvas.width = size; canvas.height = size;
   const ctx = canvas.getContext('2d');
   
   const scale = cropState.scale;
-  const drawW = 300 * scale;
-  const drawH = 300 * scale;
+  const drawW = size * scale;
+  const drawH = size * scale;
   
   // ارسم دائرة
   ctx.beginPath();
-  ctx.arc(150, 150, 150, 0, Math.PI*2);
+  ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
   ctx.clip();
   ctx.drawImage(img, cropState.x, cropState.y, drawW, drawH);
   

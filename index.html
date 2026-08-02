@@ -1620,14 +1620,6 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 
 
 
-<!-- STAFF LOGIN MODAL -->
-<div class="overlay hidden" id="staffLoginModal" style="position:fixed!important;inset:0!important;z-index:99999!important;display:none;align-items:center;justify-content:center;">
-  <div class="modal">
-    <h3>👮 دخول الموظف</h3>
-    <p>أدخل بيانات حسابك كموظف</p>
-    <input class="m-input" id="staffLoginUser" placeholder="اليوزرنيم" dir="ltr"/>
-    <input class="m-input" id="staffLoginPass" type="password" placeholder="كلمة السر" dir="ltr"/>
-    <div class="m-err" id="staffLoginErr"></div>
     <div class="m-btns">
       <button class="m-ok" onclick="submitStaffLogin()">دخول</button>
       <button class="m-cancel" onclick="closeModal('staffLoginModal')">إلغاء</button>
@@ -3023,16 +3015,15 @@ function getActionIcon(action) {
 
 // ══ STAFF / ADMIN LOGIN CHOICE ══
 function openLoginChoice() {
-  // لو مسجل دخول مسبقاً
   if (sessionStorage.getItem('adminIn') === '1') { adminIn=true; goTo('admin',null); return; }
   if (sessionStorage.getItem('staffIn')) {
-    const s = JSON.parse(sessionStorage.getItem('staffIn'));
+    const s=JSON.parse(sessionStorage.getItem('staffIn'));
     currentStaff=s; isStaffMode=true; adminIn=true;
-    goTo('admin',null); return;
+    goTo('admin',null);
+    applyStaffPermissions(s.perms||[]);
+    return;
   }
-  // اعرض modal اختيار
-  document.getElementById('staffLoginModal').style.display='flex';
-  document.getElementById('staffLoginModal').classList.remove('hidden');
+  openAdminLogin();
 }
 
 async function submitStaffLogin() {

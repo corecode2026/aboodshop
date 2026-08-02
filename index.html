@@ -1069,6 +1069,11 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
   </div>
 </div>
 
+<style>
+#page-home, #page-about, #page-store, #page-rules, #page-points { opacity:0; transition:opacity .25s; }
+body.ready #page-home.on, body.ready #page-about.on, body.ready #page-store.on, 
+body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
+</style>
 <nav class="nav">
   <button onclick="toggleDrawer()" id="hamburgerBtn" style="display:none;flex-direction:column;gap:5px;border:1px solid var(--border);background:var(--card2);padding:8px;cursor:pointer;border-radius:8px;flex-shrink:0;"><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span></button>
   <div class="nav-logo" id="navLogo" onclick="goTo('home',this)">
@@ -2966,11 +2971,12 @@ const cachedSettings = localStorage.getItem('sk_settings_cache');
 if (cachedSettings) {
   try { applySettings(JSON.parse(cachedSettings)); } catch(e) {}
 }
-
 const cachedSocials = localStorage.getItem('sk_socials_cache');
 if (cachedSocials) {
   try { const s=JSON.parse(cachedSocials); if(s&&s.length){socialLinks=s;renderSocials();} } catch(e) {}
 }
+// أظهر المحتوى فوراً بعد الـ cache
+document.body.classList.add('ready');
 
 
 // ══ ACTIVITY LOG ══

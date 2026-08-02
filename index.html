@@ -3011,8 +3011,12 @@ function openLoginChoice() {
   if (sessionStorage.getItem('staffIn')) {
     const s=JSON.parse(sessionStorage.getItem('staffIn'));
     currentStaff=s; isStaffMode=true; adminIn=true;
+    // حدّث اسم الموظف في القائمة
+    setEl('adminName', s.name||s.username);
+    const roleEl = document.querySelector('.admin-role');
+    if(roleEl) roleEl.textContent = s.roleTitle||'موظف';
     goTo('admin',null);
-    applyStaffPermissions(s.perms||[]);
+    setTimeout(()=>applyStaffPermissions(s.perms||[]), 200);
     return;
   }
   openAdminLogin();
@@ -3064,25 +3068,43 @@ async function submitStaffLogin() {
 }
 
 const PERM_TAB_MAP = {
-  orders:'orders', products:'products', users:'users',
-  chats:'chats', staff:'staff', settings:'settings',
-  'pts-cfg':'settings', logs:'settings', 'rules-admin':'settings'
+  'dashboard':'dashboard',
+  'orders':'orders',
+  'chats':'chats',
+  'products':'products',
+  'users':'users',
+  'staff':'staff',
+  'pts-cfg':'settings',
+  'rules-admin':'settings',
+  'logs':'settings',
+  'settings':'settings'
 };
 
 function applyStaffPermissions(perms) {
-  if (!perms) return;
+  if (!perms || !isStaffMode) return;
+  
   document.querySelectorAll('.am').forEach(btn => {
-    const onclick = btn.getAttribute('onclick') || '';
-    const tabMatch = onclick.match(/aTab\('([^']+)'/);
-    if (!tabMatch) return;
-    const tab = tabMatch[1];
-    if (tab === 'dashboard') { btn.style.display=''; return; }
+    const onclickAttr = btn.getAttribute('onclick') || '';
+    const match = onclickAttr.match(/aTab\('([^']+)'/);
+    if (!match) return;
+    const tab = match[1];
+    
+    if (tab === 'dashboard') {
+      btn.style.display = '';
+      return;
+    }
+    
     const needed = PERM_TAB_MAP[tab];
-    btn.style.display = (!needed || perms.includes(needed)) ? '' : 'none';
+    const allowed = !needed || needed === 'dashboard' || perms.includes(needed);
+    btn.style.display = allowed ? '' : 'none';
   });
-  // افتح أول تبويب مسموح
-  const firstAllowed = ['orders','products','users','chats','staff','settings'].find(p => perms.includes(p));
-  if (firstAllowed) aTab(firstAllowed, null);
+  
+  // افتح أول تبويب مسموح تلقائياً
+  const tabOrder = ['orders','chats','products','users','staff','settings'];
+  const firstTab = tabOrder.find(t => perms.includes(t));
+  if (firstTab) {
+    setTimeout(() => aTab(firstTab, null), 100);
+  }
 }
 
 async function init() {

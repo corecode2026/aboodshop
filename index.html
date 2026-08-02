@@ -3069,30 +3069,6 @@ async function submitStaffLogin() {
   }
 }
 
-const PERM_TAB_MAP = {
-  'dashboard':'dashboard',
-  'orders':'orders',
-  'chats':'chats',
-  'products':'products',
-  'users':'users',
-  'staff':'staff',
-  'pts-cfg':'settings',
-  'rules-admin':'settings',
-  'logs':'settings',
-  'settings':'settings'
-};
-
-function applyStaffPermissions(perms) {
-  // تحقق من isStaffMode أو sessionStorage
-  const staffData = sessionStorage.getItem('staffIn');
-  const staffMode = isStaffMode || !!staffData;
-  if (!perms || !staffMode) return;
-
-  console.log('Applying permissions:', perms);
-
-  document.querySelectorAll('.am[data-tab]').forEach(btn => {
-    const tab = btn.getAttribute('data-tab');
-    if (tab === 'dashboard') { btn.style.display=''; return; }
     const needed = PERM_TAB_MAP[tab];
     const allowed = !needed || perms.includes(needed);
     btn.style.display = allowed ? '' : 'none';
@@ -3103,6 +3079,43 @@ function applyStaffPermissions(perms) {
   const tabOrder = ['orders','chats','products','users','staff','settings'];
   const firstTab = tabOrder.find(t => perms.includes(t));
   if (firstTab) setTimeout(() => aTab(firstTab, null), 150);
+}
+
+
+// ══ STAFF PERMISSIONS ══
+const PERM_TAB_MAP = {
+  'orders':'orders',
+  'chats':'chats', 
+  'products':'products',
+  'users':'users',
+  'staff':'staff',
+  'pts-cfg':'settings',
+  'rules-admin':'settings',
+  'logs':'settings',
+  'settings':'settings'
+};
+
+function applyStaffPermissions(perms) {
+  if (!perms) return;
+  const staffPerms = Array.isArray(perms) ? perms : [];
+  
+  // أخفِ/أظهر كل زر حسب الصلاحية
+  document.querySelectorAll('.am[data-tab]').forEach(function(btn) {
+    var tab = btn.getAttribute('data-tab');
+    if (tab === 'dashboard') { btn.style.display=''; return; }
+    var needed = PERM_TAB_MAP[tab];
+    if (!needed) { btn.style.display=''; return; }
+    btn.style.display = staffPerms.indexOf(needed) !== -1 ? '' : 'none';
+  });
+
+  // افتح أول تبويب مسموح
+  var tabOrder = ['orders','chats','products','users','staff','settings'];
+  for (var i=0; i<tabOrder.length; i++) {
+    if (staffPerms.indexOf(tabOrder[i]) !== -1) {
+      (function(t){ setTimeout(function(){ aTab(t,null); }, 200); })(tabOrder[i]);
+      break;
+    }
+  }
 }
 
 async function init() {

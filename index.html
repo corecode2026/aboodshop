@@ -2964,14 +2964,16 @@ if (cachedSocials) {
 
 // ══ ACTIVITY LOG ══
 async function logActivity(action, details='') {
-  const name = isStaffMode ? (currentStaff?.name || currentStaff?.username || 'موظف') : 'المدير';
+  const name = isStaffMode && currentStaff 
+    ? (currentStaff.name || currentStaff.username || 'موظف') 
+    : 'المدير';
   try {
     await fetch(`${W}/api/admin/log`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
       body: JSON.stringify({ staffName: name, action, details })
     });
-  } catch(e) {}
+  } catch(e) { console.log('log error:', e); }
 }
 
 async function loadActivityLogs() {
@@ -3081,13 +3083,20 @@ const PERM_TAB_MAP = {
 };
 
 function applyStaffPermissions(perms) {
-  if (!perms || !isStaffMode) return;
+  // تحقق من isStaffMode أو sessionStorage
+  const staffData = sessionStorage.getItem('staffIn');
+  const staffMode = isStaffMode || !!staffData;
+  if (!perms || !staffMode) return;
+
+  console.log('Applying permissions:', perms);
 
   document.querySelectorAll('.am[data-tab]').forEach(btn => {
     const tab = btn.getAttribute('data-tab');
     if (tab === 'dashboard') { btn.style.display=''; return; }
     const needed = PERM_TAB_MAP[tab];
-    btn.style.display = (!needed || perms.includes(needed)) ? '' : 'none';
+    const allowed = !needed || perms.includes(needed);
+    btn.style.display = allowed ? '' : 'none';
+    console.log('Tab:', tab, '| Needed:', needed, '| Allowed:', allowed);
   });
 
   // افتح أول تبويب مسموح

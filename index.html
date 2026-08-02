@@ -1693,8 +1693,9 @@ body.ready .page.on { opacity:1; }
         <div id="levelBadge" style="font-size:22px;"></div>
       </div>
       <div class="progress-wrap"><div class="progress-bar" id="levelBar" style="width:0%;"></div></div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:5px;">
-        <span id="levelCurrent"></span><span id="levelRequired"></span>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:7px;">
+        <span id="levelCurrent" style="color:var(--kick);font-weight:700;"></span>
+        <span id="levelRequired" style="color:var(--muted);"></span>
       </div>
     </div>
 
@@ -3924,9 +3925,9 @@ function updateProfileLevel(points) {
     const nextEl = document.getElementById('levelNext');
     if(nextEl) nextEl.innerHTML = 'المستوى القادم: <strong style="color:'+getLevelColor(nextLevel.level)+'">Lv'+nextLevel.level+'</strong> — مكافأة: <strong style="color:var(--kick)">'+nextLevel.reward+' نقطة</strong>';
     const curEl = document.getElementById('levelCurrent');
-    if(curEl) curEl.textContent = (points - level.threshold).toLocaleString() + ' / ' + (nextLevel.threshold - level.threshold).toLocaleString();
+    if(curEl) curEl.textContent = '⭐ نقاطك: ' + points.toLocaleString();
     const reqEl = document.getElementById('levelRequired');
-    if(reqEl) reqEl.textContent = 'متبقي: ' + (nextLevel.threshold - points).toLocaleString() + ' نقطة';
+    if(reqEl) reqEl.textContent = 'متبقي للمستوى القادم: ' + (nextLevel.threshold - points).toLocaleString() + ' نقطة';
     const badge = document.getElementById('levelBadge');
     if(badge) { badge.textContent = 'Lv'+nextLevel.level; badge.style.color=getLevelColor(nextLevel.level); badge.style.fontSize='20px'; badge.style.fontWeight='900'; }
   } else {

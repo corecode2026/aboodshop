@@ -2038,7 +2038,13 @@ function updateAuthUI() {
   const prov = document.getElementById('userProvider');
   prov.textContent = currentUser.provider === 'discord' ? 'Discord' : 'Kick';
   prov.className = 'pbadge pbadge-' + currentUser.provider;
-  if (currentUser.avatar) { document.getElementById('userAva').src = currentUser.avatar; updateProfileAvatar(currentUser.avatar); }
+  if (currentUser.avatar) {
+    document.getElementById('userAva').src = currentUser.avatar;
+    updateProfileAvatar(currentUser.avatar);
+    // حدّث navAva
+    const navAva = document.getElementById('navAva');
+    if(navAva) navAva.innerHTML = '<img src="'+currentUser.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>';
+  }
   updateDrawerUI();
 }
 

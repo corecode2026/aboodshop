@@ -1988,11 +1988,13 @@ async function loadStore() {
     g.innerHTML = products.map(p => {
       const can = currentUser && currentUser.points >= p.price;
       const outOfStock = p.qty !== null && p.qty !== undefined && p.qty <= 0;
-      const img = p.img ? `<div class="prod-img"><img src="${p.img}" alt="${p.name}"/></div>` : `<div class="prod-img">${p.icon||'🎁'}</div>`;
-      const qtyBadge = p.qty != null ? `<span style="font-size:11px;color:${p.qty<=0?'var(--red)':'var(--muted)'};margin-right:6px;">${p.qty<=0?'نفذت الكمية ❌':'متبقي: '+p.qty}</span>` : '';
+      const img = p.img ? '<div class="prod-img"><img src="'+p.img+'" alt="'+p.name+'"/></div>' : '<div class="prod-img">'+(p.icon||'🎁')+'</div>';
+      const qtyBadge = p.qty != null ? (p.qty <= 0 ? '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.25);color:var(--red);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">✕ نفذت الكمية</span>' : '<span style="font-size:11px;color:var(--muted);">متبقي: '+p.qty+'</span>') : '';
       const btnDisabled = !can || outOfStock;
       const btnText = outOfStock ? 'نفذت الكمية' : !currentUser ? 'سجّل دخول أولاً' : !can ? 'نقاط غير كافية' : 'استبدال الآن';
-      return `<div class="product-card">${img}<div class="prod-body"><div class="prod-name">${p.name}</div><div class="prod-desc">${p.desc}</div><div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:10px;""><div class="prod-price">⭐ ${p.price.toLocaleString()} نقطة</div>${qtyBadge}</div><button class="buy-btn" ${btnDisabled?'disabled':''} onclick="openBuy(${p.id})">${btnText}</button></div></div>`;
+      const cardStyle = outOfStock ? 'opacity:.7;' : '';
+      const buyBtn = '<button class="buy-btn" '+(btnDisabled?'disabled':'')+' onclick="'+(outOfStock?'':'openBuy('+p.id+')')+'">'+btnText+'</button>';
+      return '<div class="product-card" style="'+cardStyle+'">'+img+'<div class="prod-body"><div class="prod-name">'+p.name+'</div><div class="prod-desc">'+p.desc+'</div><div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;"><div class="prod-price">⭐ '+p.price.toLocaleString()+' نقطة</div>'+qtyBadge+'</div>'+buyBtn+'</div></div>';
     }).join('');
   } catch(e) { g.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;">تعذر التحميل</p>'; }
 }

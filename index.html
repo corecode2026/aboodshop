@@ -2462,7 +2462,7 @@ function aTab(tab, btn) {
   if(tab==='chats') renderAdminChats();
   if(tab==='staff') loadStaff();
   if(tab==='settings') renderSocials();
-  if(tab==='pts-cfg') loadSecretCodes();
+  if(tab==='pts-cfg') { loadSecretCodes(); loadDailySettings(); loadLevelsFromCache(); }
   if(tab==='logs') loadActivityLogs();
 }
 

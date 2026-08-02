@@ -1061,6 +1061,18 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
   .stats { grid-template-columns:1fr 1fr; }
 }
 
+
+/* ══ CROP MODAL ══ */
+#cropModal { position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px; }
+.crop-container { position:relative;width:300px;height:300px;border-radius:50%;overflow:hidden;border:3px solid var(--kick);box-shadow:0 0 30px rgba(83,252,24,.3); }
+.crop-container img { position:absolute;cursor:grab;user-select:none;transform-origin:center; }
+.crop-container img:active { cursor:grabbing; }
+.crop-ring { position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(83,252,24,.5);pointer-events:none;z-index:2; }
+.crop-controls { display:flex;flex-direction:column;align-items:center;gap:12px;width:300px; }
+.crop-slider { width:100%;accent-color:var(--kick); }
+.crop-btns { display:flex;gap:10px;width:100%; }
+.crop-btns button { flex:1;padding:11px;border-radius:10px;font-weight:700;font-size:14px;font-family:"Cairo",sans-serif;cursor:pointer;border:none; }
+
 </style>
 </head>
 <body>
@@ -1080,6 +1092,18 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 #page-home, #page-about, #page-store, #page-rules, #page-points { opacity:0; transition:opacity .25s; }
 body.ready #page-home.on, body.ready #page-about.on, body.ready #page-store.on, 
 body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
+
+/* ══ CROP MODAL ══ */
+#cropModal { position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px; }
+.crop-container { position:relative;width:300px;height:300px;border-radius:50%;overflow:hidden;border:3px solid var(--kick);box-shadow:0 0 30px rgba(83,252,24,.3); }
+.crop-container img { position:absolute;cursor:grab;user-select:none;transform-origin:center; }
+.crop-container img:active { cursor:grabbing; }
+.crop-ring { position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(83,252,24,.5);pointer-events:none;z-index:2; }
+.crop-controls { display:flex;flex-direction:column;align-items:center;gap:12px;width:300px; }
+.crop-slider { width:100%;accent-color:var(--kick); }
+.crop-btns { display:flex;gap:10px;width:100%; }
+.crop-btns button { flex:1;padding:11px;border-radius:10px;font-weight:700;font-size:14px;font-family:"Cairo",sans-serif;cursor:pointer;border:none; }
+
 </style>
 <script>
 (function(){
@@ -1736,6 +1760,28 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
 
 
 
+
+
+<!-- CROP MODAL -->
+<div id="cropModal">
+  <div style="font-size:14px;font-weight:700;color:var(--muted);margin-bottom:4px;">اضبط الصورة</div>
+  <div class="crop-container" id="cropContainer">
+    <img id="cropImg" draggable="false"/>
+    <div class="crop-ring"></div>
+  </div>
+  <div class="crop-controls">
+    <div style="display:flex;align-items:center;gap:10px;width:100%;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      <input type="range" class="crop-slider" id="cropZoom" min="100" max="300" value="100" oninput="updateCrop()"/>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+    </div>
+    <div class="crop-btns">
+      <button onclick="removeCrop()" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2)!important;">🗑 شيل الصورة</button>
+      <button onclick="cancelCrop()" style="background:var(--surface2);color:var(--muted);">إلغاء</button>
+      <button onclick="confirmCrop()" style="background:var(--kick);color:#000;">حفظ</button>
+    </div>
+  </div>
+</div>
 
 <!-- CHAT BUBBLE -->
 <div class="chat-bubble">
@@ -3360,40 +3406,104 @@ function updateProfileAvatar(src) {
   }
 }
 
-async function handleProfileImg(e) {
+function handleProfileImg(e) {
   const f = e.target.files[0]; if(!f) return;
   const r = new FileReader();
-  r.onload = async ev => {
-    // اضغط الصورة
-    const image = new Image();
-    image.onload = async () => {
-      const canvas = document.createElement('canvas');
-      const MAX = 300;
-      let w=image.width, h=image.height;
-      if(w>h){if(w>MAX){h=Math.round(h*(MAX/w));w=MAX;}}else{if(h>MAX){w=Math.round(w*(MAX/h));h=MAX;}}
-      canvas.width=w; canvas.height=h;
-      canvas.getContext('2d').drawImage(image,0,0,w,h);
-      const compressed = canvas.toDataURL('image/jpeg',0.7);
-      
-      updateProfileAvatar(compressed);
-      
-      // احفظ على Firebase
-      try {
-        await fetch(`${W}/api/profile/avatar`,{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({token:sessionToken, avatar:compressed})
-        });
-        currentUser.avatar = compressed;
-        // حدّث الصورة في الـ Nav
-        const userAva = document.getElementById('userAva');
-        if(userAva) userAva.src = compressed;
-        showToast('✅ تم تحديث الصورة');
-      } catch(err) { showToast('خطأ في الرفع','err'); }
-    };
-    image.src = ev.target.result;
-  };
+  r.onload = ev => openCropModal(ev.target.result);
   r.readAsDataURL(f);
+}
+
+
+// ══ CROP TOOL ══
+let cropState = { x:0, y:0, scale:1, dragging:false, startX:0, startY:0, imgW:0, imgH:0 };
+
+function openCropModal(src) {
+  const modal = document.getElementById('cropModal');
+  const img   = document.getElementById('cropImg');
+  modal.style.display = 'flex';
+  img.src = src;
+  img.onload = () => {
+    cropState = { x:0, y:0, scale:1, dragging:false, startX:0, startY:0, imgW:img.naturalWidth, imgH:img.naturalHeight };
+    document.getElementById('cropZoom').value = 100;
+    updateCrop();
+  };
+
+  // أحداث السحب
+  img.onmousedown  = e => { e.preventDefault(); cropState.dragging=true; cropState.startX=e.clientX-cropState.x; cropState.startY=e.clientY-cropState.y; };
+  img.ontouchstart = e => { cropState.dragging=true; cropState.startX=e.touches[0].clientX-cropState.x; cropState.startY=e.touches[0].clientY-cropState.y; };
+  document.onmousemove  = e => { if(!cropState.dragging) return; cropState.x=e.clientX-cropState.startX; cropState.y=e.clientY-cropState.startY; updateCrop(); };
+  document.ontouchmove  = e => { if(!cropState.dragging) return; cropState.x=e.touches[0].clientX-cropState.startX; cropState.y=e.touches[0].clientY-cropState.startY; updateCrop(); };
+  document.onmouseup    = () => cropState.dragging=false;
+  document.ontouchend   = () => cropState.dragging=false;
+}
+
+function updateCrop() {
+  const img = document.getElementById('cropImg');
+  const zoom = parseInt(document.getElementById('cropZoom').value);
+  cropState.scale = zoom/100;
+  img.style.width  = (300 * cropState.scale) + 'px';
+  img.style.height = (300 * cropState.scale) + 'px';
+  img.style.left   = cropState.x + 'px';
+  img.style.top    = cropState.y + 'px';
+}
+
+async function confirmCrop() {
+  const img = document.getElementById('cropImg');
+  const canvas = document.createElement('canvas');
+  canvas.width = 300; canvas.height = 300;
+  const ctx = canvas.getContext('2d');
+  
+  const scale = cropState.scale;
+  const drawW = 300 * scale;
+  const drawH = 300 * scale;
+  
+  // ارسم دائرة
+  ctx.beginPath();
+  ctx.arc(150, 150, 150, 0, Math.PI*2);
+  ctx.clip();
+  ctx.drawImage(img, cropState.x, cropState.y, drawW, drawH);
+  
+  const cropped = canvas.toDataURL('image/jpeg', 0.8);
+  document.getElementById('cropModal').style.display = 'none';
+  
+  updateProfileAvatar(cropped);
+  
+  // احفظ
+  try {
+    await fetch(`${W}/api/profile/avatar`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:sessionToken, avatar:cropped})
+    });
+    if(currentUser) currentUser.avatar = cropped;
+    const userAva = document.getElementById('userAva');
+    if(userAva) userAva.src = cropped;
+    showToast('✅ تم تحديث الصورة');
+  } catch(e) { showToast('خطأ في الحفظ','err'); }
+}
+
+function cancelCrop() {
+  document.getElementById('cropModal').style.display = 'none';
+}
+
+async function removeCrop() {
+  document.getElementById('cropModal').style.display = 'none';
+  updateProfileAvatar(null);
+  const img = document.getElementById('profileAvaImg');
+  const ph  = document.getElementById('profileAvaPlaceholder');
+  if(img) { img.src=''; img.style.display='none'; }
+  if(ph)  ph.style.display='block';
+  try {
+    await fetch(`${W}/api/profile/avatar`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:sessionToken, avatar:''})
+    });
+    if(currentUser) currentUser.avatar = '';
+    const userAva = document.getElementById('userAva');
+    if(userAva) userAva.src = '';
+    showToast('تم حذف الصورة');
+  } catch(e){}
 }
 
 async function init() {

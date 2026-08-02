@@ -1100,7 +1100,7 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
     <button class="btn btn-ghost hidden" id="btnLogout" onclick="doLogout()" style="color:var(--red);border-color:rgba(255,59,92,.3);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> خروج</button>
 
     <button class="btn btn-kick" id="btnKick" onclick="doLogin('kick')" style="display:flex;"><svg width="16" height="16" viewBox="0 0 50 50" fill="none"><path d="M8 5H18V22L28 5H40L27 25L40 45H28L18 28V45H8V5Z" fill="#000"/></svg> تسجيل دخول</button>
-    <button class="btn btn-admin" onclick="openAdminLogin()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> إدارة</button>
+    <button class="btn btn-admin" onclick="openLoginChoice()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> إدارة</button>
 
   </div>
 </nav>
@@ -1618,6 +1618,25 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
   </div>
 </div>
 
+
+
+<!-- STAFF LOGIN MODAL -->
+<div class="overlay hidden" id="staffLoginModal" style="position:fixed!important;inset:0!important;z-index:99999!important;display:none;align-items:center;justify-content:center;">
+  <div class="modal">
+    <h3>👮 دخول الموظف</h3>
+    <p>أدخل بيانات حسابك كموظف</p>
+    <input class="m-input" id="staffLoginUser" placeholder="اليوزرنيم" dir="ltr"/>
+    <input class="m-input" id="staffLoginPass" type="password" placeholder="كلمة السر" dir="ltr"/>
+    <div class="m-err" id="staffLoginErr"></div>
+    <div class="m-btns">
+      <button class="m-ok" onclick="submitStaffLogin()">دخول</button>
+      <button class="m-cancel" onclick="closeModal('staffLoginModal')">إلغاء</button>
+    </div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border2);text-align:center;">
+      <button onclick="closeModal('staffLoginModal');openAdminLogin();" style="font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Cairo',sans-serif;">دخول كمدير ←</button>
+    </div>
+  </div>
+</div>
 
 <!-- CHAT BUBBLE -->
 <div class="chat-bubble">
@@ -3001,6 +3020,92 @@ function getActionIcon(action) {
   return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>';
 }
 
+
+// ══ STAFF / ADMIN LOGIN CHOICE ══
+function openLoginChoice() {
+  // لو مسجل دخول مسبقاً
+  if (sessionStorage.getItem('adminIn') === '1') { adminIn=true; goTo('admin',null); return; }
+  if (sessionStorage.getItem('staffIn')) {
+    const s = JSON.parse(sessionStorage.getItem('staffIn'));
+    currentStaff=s; isStaffMode=true; adminIn=true;
+    goTo('admin',null); return;
+  }
+  // اعرض modal اختيار
+  document.getElementById('staffLoginModal').style.display='flex';
+  document.getElementById('staffLoginModal').classList.remove('hidden');
+}
+
+async function submitStaffLogin() {
+  const user = gv('staffLoginUser');
+  const pass = gv('staffLoginPass');
+  if (!user || !pass) { setEl('staffLoginErr','❌ أدخل البيانات'); return; }
+
+  // تحقق من كلمة السر المدير أولاً
+  if (user === 'admin' && pass === adminPass) {
+    adminIn=true; isStaffMode=false; currentStaff=null;
+    sessionStorage.setItem('adminIn','1');
+    closeModal('staffLoginModal');
+    const sm=document.getElementById('staffLoginModal');if(sm)sm.style.display='none';
+    goTo('admin',null);
+    logActivity('تسجيل دخول','دخل كمدير');
+    showToast('أهلاً بك في الإدارة 🛡️');
+    return;
+  }
+
+  // تحقق من الموظفين
+  try {
+    const res = await fetch(`${W}/api/auth/staff/login`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:user,password:pass})
+    });
+    const d = await res.json();
+    if (d.success) {
+      currentStaff = { username:d.username, name:d.username, roleTitle:d.roleTitle, perms:d.perms };
+      isStaffMode = true;
+      adminIn = true;
+      sessionStorage.setItem('staffIn', JSON.stringify(currentStaff));
+      closeModal('staffLoginModal');
+      const sm=document.getElementById('staffLoginModal');if(sm)sm.style.display='none';
+      goTo('admin',null);
+      logActivity('تسجيل دخول','دخل كموظف: '+d.roleTitle);
+      showToast('أهلاً '+d.username+' 👋');
+      // أخفِ الأقسام الممنوعة
+      applyStaffPermissions(d.perms);
+    } else {
+      setEl('staffLoginErr','❌ بيانات خاطئة');
+    }
+  } catch(e) {
+    setEl('staffLoginErr','❌ خطأ في الاتصال');
+  }
+}
+
+function applyStaffPermissions(perms) {
+  // أخفِ أزرار القائمة الجانبية حسب الصلاحيات
+  const permMap = {
+    'orders':   ['asub-orders'],
+    'products': ['asub-products'],
+    'users':    ['asub-users'],
+    'chats':    ['asub-chats'],
+    'staff':    ['asub-staff'],
+    'settings': ['asub-settings','asub-pts-cfg','asub-rules-admin','asub-logs'],
+  };
+
+  // أخفِ كل أزرار القائمة لو موظف
+  document.querySelectorAll('.am').forEach(btn => {
+    const onclick = btn.getAttribute('onclick') || '';
+    const tabMatch = onclick.match(/aTab\('([^']+)'/);
+    if (!tabMatch) return;
+    const tab = tabMatch[1];
+    if (tab === 'dashboard') return; // دايماً ظاهر
+
+    const needed = { orders:'orders', products:'products', users:'users', chats:'chats', staff:'staff', settings:'settings', 'pts-cfg':'settings', logs:'settings', 'rules-admin':'settings' }[tab];
+    if (needed && !perms.includes(needed)) {
+      btn.style.display = 'none';
+    }
+  });
+}
+
 async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);
   loadStore();
@@ -3009,7 +3114,12 @@ async function init() {
   loadRules();
 
   // ارجع للإدارة إذا كان مسجل دخول
-  if (sessionStorage.getItem('adminIn') === '1') {
+  if (sessionStorage.getItem('staffIn')) {
+    const s=JSON.parse(sessionStorage.getItem('staffIn'));
+    currentStaff=s; isStaffMode=true; adminIn=true;
+    goTo('admin',null);
+    applyStaffPermissions(s.perms||[]);
+  } else if (sessionStorage.getItem('adminIn') === '1') {
     adminIn = true;
     goTo('admin', null);
   } else {

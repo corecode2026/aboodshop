@@ -3830,13 +3830,19 @@ function loadDailySettings() {
 // ══════════════════════════════════════════
 // LEVELS SYSTEM
 // ══════════════════════════════════════════
-let levelsConfig = [
-  { name:'مبتدئ', emoji:'🌱', threshold:0, reward:0 },
-  { name:'نشيط', emoji:'⚡', threshold:500, reward:50 },
-  { name:'متميز', emoji:'🌟', threshold:1500, reward:100 },
-  { name:'محترف', emoji:'💎', threshold:3000, reward:200 },
-  { name:'أسطورة', emoji:'👑', threshold:6000, reward:500 },
-];
+// نظام 1-100: كل مستوى = level * 200 نقطة، مكافأة = level * 10
+function generateDefaultLevels() {
+  const levels = [];
+  for (let i = 1; i <= 100; i++) {
+    levels.push({
+      level: i,
+      threshold: i === 1 ? 0 : Math.round((i-1) * (i-1) * 50),
+      reward: i === 1 ? 0 : Math.round(i * 10),
+    });
+  }
+  return levels;
+}
+let levelsConfig = generateDefaultLevels();
 
 function getUserLevel(points) {
   let level = levelsConfig[0];
@@ -3847,45 +3853,54 @@ function getUserLevel(points) {
 }
 
 function getNextLevel(points) {
-  for (let i = 0; i < levelsConfig.length; i++) {
-    if (levelsConfig[i].threshold > points) return levelsConfig[i];
-  }
-  return null;
+  const cur = getUserLevel(points);
+  const nextIdx = levelsConfig.findIndex(l => l.level === cur.level) + 1;
+  return nextIdx < levelsConfig.length ? levelsConfig[nextIdx] : null;
+}
+
+function getLevelColor(lvl) {
+  if (lvl >= 90) return '#FFD700';
+  if (lvl >= 70) return '#ff4040';
+  if (lvl >= 50) return '#a855f7';
+  if (lvl >= 30) return '#5B8DEF';
+  if (lvl >= 10) return '#53FC18';
+  return '#888';
 }
 
 function renderLevelsAdmin() {
   const el = document.getElementById('levelsAdmin');
   if(!el) return;
-  el.innerHTML = levelsConfig.map((l,i) => `
-    <div style="display:grid;grid-template-columns:40px 1fr 1fr 1fr auto;gap:8px;align-items:center;background:var(--surface2);padding:10px 12px;border-radius:10px;border:1px solid var(--border2);">
-      <input value="${l.emoji}" oninput="levelsConfig[${i}].emoji=this.value" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:6px;border-radius:6px;font-size:16px;text-align:center;width:100%;" maxlength="2"/>
-      <div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">الاسم</div>
-        <input value="${l.name}" oninput="levelsConfig[${i}].name=this.value" class="pf-input" placeholder="مبتدئ"/>
-      </div>
-      <div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">النقاط المطلوبة</div>
-        <input value="${l.threshold}" type="number" oninput="levelsConfig[${i}].threshold=+this.value" class="pf-input" placeholder="500" dir="ltr" ${i===0?'disabled':''}/>
-      </div>
-      <div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">مكافأة الوصول</div>
-        <input value="${l.reward}" type="number" oninput="levelsConfig[${i}].reward=+this.value" class="pf-input" placeholder="100" dir="ltr" ${i===0?'disabled':''}/>
-      </div>
-      ${i>0?`<button onclick="removeLevel(${i})" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;font-family:'Cairo',sans-serif;">✕</button>`:'<div></div>'}
+  // أظهر كل المستويات بجدول مضغوط
+  el.innerHTML = `
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">المستويات من 1-100 — عدّل النقاط المطلوبة والمكافأة لكل مستوى</div>
+    <div style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+      ${levelsConfig.map((l,i) => `
+        <div style="display:grid;grid-template-columns:36px 1fr 1fr;gap:8px;align-items:center;background:var(--surface2);padding:8px 12px;border-radius:8px;border:1px solid ${getLevelColor(l.level)}22;">
+          <div style="font-size:13px;font-weight:900;color:${getLevelColor(l.level)};text-align:center;">Lv${l.level}</div>
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:2px;">نقاط الوصول</div>
+            <input value="${l.threshold}" type="number" oninput="levelsConfig[${i}].threshold=+this.value" class="pf-input" dir="ltr" style="padding:5px 8px;font-size:12px;" ${l.level===1?'disabled':''}/>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:2px;">مكافأة (نقطة)</div>
+            <input value="${l.reward}" type="number" oninput="levelsConfig[${i}].reward=+this.value" class="pf-input" dir="ltr" style="padding:5px 8px;font-size:12px;" ${l.level===1?'disabled':''}/>
+          </div>
+        </div>
+      `).join('')}
     </div>
-  `).join('');
+    <button onclick="resetLevels()" style="margin-top:10px;background:var(--surface2);color:var(--muted);border:1px solid var(--border2);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">↺ إعادة تعيين للافتراضي</button>
+  `;
 }
 
-function addLevel() {
-  levelsConfig.push({ name:'مستوى جديد', emoji:'⭐', threshold:levelsConfig[levelsConfig.length-1].threshold+1000, reward:0 });
+function resetLevels() {
+  if(!confirm('إعادة تعيين كل المستويات للافتراضي؟')) return;
+  levelsConfig = generateDefaultLevels();
   renderLevelsAdmin();
+  showToast('تم الإعادة للافتراضي');
 }
 
-function removeLevel(i) {
-  if(levelsConfig.length<=1)return;
-  levelsConfig.splice(i,1);
-  renderLevelsAdmin();
-}
+function addLevel() { /* غير مستخدم في نظام 1-100 */ }
+function removeLevel(i) { /* غير مستخدم */ }
 
 function updateProfileLevel(points) {
   const level = getUserLevel(points);
@@ -3893,27 +3908,27 @@ function updateProfileLevel(points) {
 
   // حدّث في الملف الشخصي
   const levelEl = document.getElementById('profileLevel');
-  if(levelEl) levelEl.textContent = level.emoji + ' ' + level.name;
+  if(levelEl) { levelEl.textContent = 'Lv' + level.level; levelEl.style.color = getLevelColor(level.level); }
 
   // شريط التقدم
   const box = document.getElementById('levelProgressBox');
   if(box) box.style.display = 'block';
 
   const nameEl = document.getElementById('levelName');
-  if(nameEl) nameEl.textContent = level.emoji + ' ' + level.name;
+  if(nameEl) { nameEl.textContent = 'المستوى ' + level.level; nameEl.style.color = getLevelColor(level.level); }
 
   if(nextLevel) {
     const progress = Math.min(100, Math.round(((points - level.threshold) / (nextLevel.threshold - level.threshold)) * 100));
     const bar = document.getElementById('levelBar');
     if(bar) setTimeout(()=>bar.style.width=progress+'%', 300);
     const nextEl = document.getElementById('levelNext');
-    if(nextEl) nextEl.textContent = 'المستوى القادم: ' + nextLevel.emoji + ' ' + nextLevel.name;
+    if(nextEl) nextEl.innerHTML = 'المستوى القادم: <strong style="color:'+getLevelColor(nextLevel.level)+'">Lv'+nextLevel.level+'</strong> — مكافأة: <strong style="color:var(--kick)">'+nextLevel.reward+' نقطة</strong>';
     const curEl = document.getElementById('levelCurrent');
     if(curEl) curEl.textContent = (points - level.threshold).toLocaleString() + ' / ' + (nextLevel.threshold - level.threshold).toLocaleString();
     const reqEl = document.getElementById('levelRequired');
     if(reqEl) reqEl.textContent = 'متبقي: ' + (nextLevel.threshold - points).toLocaleString() + ' نقطة';
     const badge = document.getElementById('levelBadge');
-    if(badge) badge.textContent = nextLevel.emoji;
+    if(badge) { badge.textContent = 'Lv'+nextLevel.level; badge.style.color=getLevelColor(nextLevel.level); badge.style.fontSize='20px'; badge.style.fontWeight='900'; }
   } else {
     const nextEl = document.getElementById('levelNext');
     if(nextEl) nextEl.textContent = '🏆 وصلت أعلى مستوى!';

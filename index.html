@@ -1055,25 +1055,6 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 }
 
 </style>
-<script>
-// تطبيق فوري للـ cache قبل أي شي
-(function(){
-  try {
-    var s = JSON.parse(localStorage.getItem('sk_settings_cache') || '{}');
-    if (s.channelName) {
-      var els = ['navName','aboutName','adminName','drawerName'];
-      els.forEach(function(id){ var el=document.getElementById(id); if(el)el.textContent=s.channelName; });
-    }
-    if (s.channelImg && !s.channelImg.includes('REMOVED')) {
-      var avas = ['navAva','aboutAva','adminAva','drawerAva','settingAva'];
-      avas.forEach(function(id){
-        var el=document.getElementById(id);
-        if(el)el.innerHTML='<img src="'+s.channelImg+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>';
-      });
-    }
-  } catch(e){}
-})();
-</script>
 </head>
 <body>
 
@@ -1093,6 +1074,25 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 body.ready #page-home.on, body.ready #page-about.on, body.ready #page-store.on, 
 body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
 </style>
+<script>
+(function(){
+  try {
+    var s = JSON.parse(localStorage.getItem('sk_settings_cache') || 'null');
+    if (!s) return;
+    if (s.channelName) {
+      ['navName','aboutName','adminName','drawerName'].forEach(function(id){
+        var el=document.getElementById(id); if(el)el.textContent=s.channelName;
+      });
+    }
+    if (s.channelImg && s.channelImg.indexOf('REMOVED')===-1) {
+      ['navAva','aboutAva','adminAva','drawerAva','settingAva'].forEach(function(id){
+        var el=document.getElementById(id);
+        if(el)el.innerHTML='<img src="'+s.channelImg+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>';
+      });
+    }
+  } catch(e){}
+})();
+</script>
 <nav class="nav">
   <button onclick="toggleDrawer()" id="hamburgerBtn" style="display:none;flex-direction:column;gap:5px;border:1px solid var(--border);background:var(--card2);padding:8px;cursor:pointer;border-radius:8px;flex-shrink:0;"><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span></button>
   <div class="nav-logo" id="navLogo" onclick="goTo('home',this)">

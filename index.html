@@ -2330,11 +2330,11 @@ async function addPtsManual() {
 // STAFF
 function openStaffModal(id) {
   const sm=document.getElementById('staffModal');if(sm)sm.style.display='flex';
-  const s = id?staff.find(x=>x.id===id):null;
+  const s = id?staff.find(x=>String(x.id)===String(id)):null;
   setEl('staffModalTitle',id?'تعديل موظف':'إضافة موظف');
   setVal('sf-name',s?s.name:'');setVal('sf-user',s?s.username:'');setVal('sf-role',s?s.roleTitle:'');
   document.getElementById('sf-color').value=s?s.color:'#53FC18';
-  ['orders','products','users','chats','staff','settings'].forEach(p=>{const el=document.getElementById('perm-'+p);if(el)el.checked=s?s.perms.includes(p):(p==='settings');});
+  ['orders','products','users','chats','staff','settings'].forEach(p=>{const el=document.getElementById('perm-'+p);if(el)el.checked=s?(s.perms||[]).includes(p):false;});
   sm.classList.remove('hidden');
 }
 function selPerms(v){['orders','products','users','chats','staff','settings'].forEach(p=>{const el=document.getElementById('perm-'+p);if(el)el.checked=v;});}
@@ -2419,7 +2419,7 @@ async function loadStaff() {
 
 function renderStaff() {
   const el=document.getElementById('staffList');if(!el)return;
-  el.innerHTML=staff.length?staff.map(s=>`<div class="staff-card"><div class="staff-ava" style="border-color:${s.color};">${s.username.charAt(0).toUpperCase()}</div><div style="flex:1;"><div class="staff-name">${s.name}</div><div class="staff-user">@${s.username} · ${s.joinedAt}</div><div class="staff-role-tag" style="background:${s.color};color:${s.color==='#53FC18'||s.color==='#FFA500'?'#000':'#fff'}">${s.roleTitle||'موظف'}</div><div class="staff-perms">${s.perms.map(p=>`<span class="perm-tag">${PERM_LABELS[p]||p}</span>`).join('')}</div></div><div class="staff-acts"><button class="btn-sm btn-edit" onclick="openStaffModal(${s.id})">✏️</button><button class="btn-sm btn-del" onclick="delStaff(${s.id})">🗑</button></div></div>`).join('')
+  el.innerHTML=staff.length?staff.map(s=>`<div class="staff-card"><div class="staff-ava" style="border-color:${s.color};">${s.username.charAt(0).toUpperCase()}</div><div style="flex:1;"><div class="staff-name">${s.name}</div><div class="staff-user">@${s.username} · ${s.joinedAt}</div><div class="staff-role-tag" style="background:${s.color};color:${s.color==='#53FC18'||s.color==='#FFA500'?'#000':'#fff'}">${s.roleTitle||'موظف'}</div><div class="staff-perms">${s.perms.map(p=>`<span class="perm-tag">${PERM_LABELS[p]||p}</span>`).join('')}</div></div><div class="staff-acts"><button class="btn-sm btn-edit" onclick="openStaffModal('${s.id}')">✏️</button><button class="btn-sm btn-del" onclick="delStaff(${s.id})">🗑</button></div></div>`).join('')
     :'<div class="empty"><p>لا يوجد موظفون</p></div>';
 }
 

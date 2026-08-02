@@ -2641,12 +2641,15 @@ async function deleteUser(userId, username) {
   } catch(e) { showToast('خطأ','err'); }
 }
 
-async function addPtsManual() {
-  const u=gv('addPtsUser'),a=parseInt(gv('addPtsAmt'));
-  if(!u){showToast('أدخل اسم المستخدم','err');return;}if(!a||a<=0){showToast('أدخل عدد نقاط','err');return;}
+async function addPtsManual(dir=1) {
+  const u=gv('addPtsUser'), a=Math.abs(parseInt(gv('addPtsAmt')));
+  if(!u){showToast('أدخل اسم المستخدم','err');return;}
+  if(!a||a<=0){showToast('أدخل عدد نقاط','err');return;}
+  const finalAmt = a * dir;
   try {
-    const res=await fetch(`${W}/api/admin/points-add`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({username:u,amount:a})});
-    const d=await res.json();showToast(d.status==='added'?'✅ '+d.message:'⏳ '+d.message);
+    const res=await fetch(`${W}/api/admin/points-add`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({username:u,amount:finalAmt})});
+    const d=await res.json();
+    showToast(dir>0?`✅ تم إضافة ${a} نقطة لـ ${u}`:`✅ تم خصم ${a} نقطة من ${u}`);
     setVal('addPtsUser','');setVal('addPtsAmt','');loadUsers();
   } catch(e){showToast('خطأ','err');}
 }

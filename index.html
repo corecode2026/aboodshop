@@ -2090,26 +2090,57 @@ function openAdminLogin() {
   am.classList.remove('hidden');
   am.style.display = 'flex';
 }
-function submitAdmin() {
+async function submitAdmin() {
   const user = gv('aUser'), pass = gv('aPass');
+  setEl('aErr','');
+
   // تحقق من المدير الرئيسي
   if (user==='admin' && pass===adminPass) {
-    adminIn=true;
+    adminIn=true; isStaffMode=false; currentStaff=null;
     sessionStorage.setItem('adminIn','1');
-    sessionStorage.setItem('adminRole','owner');
-    closeModal('adminModal'); goTo('admin',null); showToast('أهلاً بك في الإدارة 🛡️');
+    sessionStorage.removeItem('staffIn');
+    const am=document.getElementById('adminModal'); if(am)am.style.display='none';
+    closeModal('adminModal');
+    goTo('admin',null);
+    logActivity('تسجيل دخول','دخل كمدير رئيسي');
+    showToast('أهلاً بك في الإدارة 🛡️');
     return;
   }
-  // تحقق من الموظفين
-  const staffMember = staff.find(s => s.username === user && s.password === pass);
-  if (staffMember) {
-    adminIn=true;
-    sessionStorage.setItem('adminIn','1');
-    sessionStorage.setItem('adminRole','staff');
-    sessionStorage.setItem('adminStaffId', staffMember.id);
-    closeModal('adminModal'); goTo('admin',null); showToast(`أهلاً ${staffMember.name}! 👮`);
-    return;
-  }
+
+  // تحقق من الموظفين عبر الـ Worker (من Firebase)
+  try {
+    const res = await fetch(`${W}/api/staff/login`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:user, password:pass})
+    });
+    const d = await res.json();
+    if (d.success && d.staff) {
+      const s = d.staff;
+      isStaffMode = true;
+      adminIn = true;
+      currentStaff = {
+        id: s.id,
+        username: s.username,
+        name: s.name || s.username,
+        roleTitle: s.roleTitle || 'موظف',
+        perms: s.perms || []
+      };
+      sessionStorage.setItem('staffIn', JSON.stringify(currentStaff));
+      sessionStorage.removeItem('adminIn');
+      const am=document.getElementById('adminModal'); if(am)am.style.display='none';
+      closeModal('adminModal');
+      setEl('adminName', currentStaff.name);
+      const roleEl = document.querySelector('.admin-role');
+      if(roleEl) roleEl.textContent = currentStaff.roleTitle;
+      await logActivity('تسجيل دخول', 'دخل كموظف: '+currentStaff.roleTitle);
+      goTo('admin',null);
+      setTimeout(()=>applyStaffPermissions(currentStaff.perms), 300);
+      showToast('أهلاً '+currentStaff.name+' 👮');
+      return;
+    }
+  } catch(e) {}
+
   setEl('aErr','❌ بيانات خاطئة');
 }
 function adminLogout() {

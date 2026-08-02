@@ -3622,6 +3622,11 @@ async function removeCrop() {
 // DAILY CHECK-IN
 // ══════════════════════════════════════════
 let dailyConfig = [50,75,100,150,200,250,500]; // نقاط افتراضية لكل يوم
+// حمّل من cache فوراً
+try {
+  const _cached = JSON.parse(localStorage.getItem('sk_settings_cache')||'{}');
+  if (_cached.dailyPts && Array.isArray(_cached.dailyPts)) dailyConfig = _cached.dailyPts;
+} catch(e){}
 
 async function loadDaily() {
   // جيب إعدادات النقاط اليومية
@@ -3630,6 +3635,9 @@ async function loadDaily() {
     const d = await res.json();
     if (d.dailyPts && Array.isArray(d.dailyPts)) dailyConfig = d.dailyPts;
   } catch(e){}
+
+  // أظهر الشبكة فوراً من الـ config المحلي
+  renderDailyDays(0, false);
 
   if (!currentUser) {
     document.getElementById('dailyGuest').style.display='block';

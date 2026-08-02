@@ -2318,7 +2318,8 @@ async function saveStaff() {
   if(!name||!username){showToast('أدخل الاسم واليوزرنيم','err');return;}
   const perms=['orders','products','users','chats','staff','settings'].filter(p=>{const el=document.getElementById('perm-'+p);return el&&el.checked;});
   if(!perms.length){showToast('اختر صلاحية واحدة','err');return;}
-  const s = id ? staff.find(x=>String(x.id)===String(id)) : null;
+  const editingId = document.getElementById('staffModal').dataset.editId;
+  const existing = editingId ? staff.find(x=>String(x.id)===String(editingId)) : null;
   if(existing) {
     Object.assign(existing,{name,username,roleTitle,color,perms});
     if(password) existing.password = password;

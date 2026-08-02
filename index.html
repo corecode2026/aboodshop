@@ -1616,6 +1616,9 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
           <div style="position:absolute;bottom:0;left:0;background:var(--kick);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--bg);" onclick="document.getElementById('profileImgInput').click()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </div>
+          <div id="profileDeleteBtn" style="position:absolute;bottom:0;right:0;background:var(--red);width:28px;height:28px;border-radius:50%;display:none;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--bg);" onclick="removeProfileAvatar()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          </div>
           <input type="file" id="profileImgInput" accept="image/*" style="display:none;" onchange="handleProfileImg(event)"/>
         </div>
 
@@ -3397,13 +3400,41 @@ async function loadTop5() {
 }
 
 function updateProfileAvatar(src) {
-  const img = document.getElementById('profileAvaImg');
-  const ph  = document.getElementById('profileAvaPlaceholder');
-  if (src && img) {
+  const img    = document.getElementById('profileAvaImg');
+  const ph     = document.getElementById('profileAvaPlaceholder');
+  const delBtn = document.getElementById('profileDeleteBtn');
+  if (src && src.length > 5 && img) {
     img.src = src;
     img.style.display = 'block';
     if(ph) ph.style.display = 'none';
+    if(delBtn) delBtn.style.display = 'flex';
+  } else {
+    if(img) { img.src=''; img.style.display='none'; }
+    if(ph) ph.style.display = 'block';
+    if(delBtn) delBtn.style.display = 'none';
   }
+}
+
+
+async function removeProfileAvatar() {
+  if (!confirm('حذف الصورة؟')) return;
+  const img = document.getElementById('profileAvaImg');
+  const ph  = document.getElementById('profileAvaPlaceholder');
+  const delBtn = document.getElementById('profileDeleteBtn');
+  if(img) { img.src=''; img.style.display='none'; }
+  if(ph)  ph.style.display='block';
+  if(delBtn) delBtn.style.display='none';
+  try {
+    await fetch(`${W}/api/profile/avatar`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:sessionToken, avatar:''})
+    });
+    if(currentUser) currentUser.avatar = '';
+    const userAva = document.getElementById('userAva');
+    if(userAva) { userAva.src=''; }
+    showToast('تم حذف الصورة');
+  } catch(e) { showToast('خطأ','err'); }
 }
 
 function handleProfileImg(e) {

@@ -2352,14 +2352,6 @@ async function loadStaff() {
 }
 
 
-async function loadStaff() {
-  try {
-    const res = await fetch(`${W}/api/admin/staff`,{headers:{'x-admin-key':ADMIN_KEY}});
-    const d = await res.json();
-    if(d.staff) staff = d.staff;
-  } catch(e) {}
-  renderStaff();
-}
 
 async function saveStaff() {
   const name=gv('sf-name'),username=gv('sf-user'),roleTitle=gv('sf-role'),color=document.getElementById('sf-color').value;
@@ -2397,28 +2389,6 @@ async function saveStaffToServer() {
   } catch(e){}
 }
 
-async function loadStaff() {
-  try {
-    const res = await fetch(`${W}/api/admin/staff`,{headers:{'x-admin-key':ADMIN_KEY}});
-    const d = await res.json();
-    if(d.staff) { staff=d.staff; renderStaff(); }
-  } catch(e){}
-}
-async function loadStaff() {
-  try {
-    const res = await fetch(`${W}/api/admin/staff`,{headers:{'x-admin-key':ADMIN_KEY}});
-    // جرب مع admin key أولاً
-    if (res.ok) { const d=await res.json(); if(d.staff)staff=d.staff; }
-  } catch(e) {}
-  // إذا فشل جرب بدون (للقراءة العامة)
-  if (!staff.length) {
-    try {
-      const res2 = await fetch(`${W}/api/staff`);
-      if(res2.ok){const d=await res2.json();if(d.staff)staff=d.staff;}
-    } catch(e){}
-  }
-  renderStaff();
-}
 
 function renderStaff() {
   const el=document.getElementById('staffList');if(!el)return;

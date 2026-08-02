@@ -1697,7 +1697,13 @@ function goTo(id, btn) {
   if (btn && btn.classList) btn.classList.add('on');
   if (id === 'store') loadStore();
   if (id === 'points') loadPoints();
-  if (id === 'admin') { loadDashboard(); }
+  if (id === 'admin') {
+    loadDashboard();
+    // طبّق صلاحيات الموظف
+    if (isStaffMode && currentStaff && currentStaff.perms) {
+      setTimeout(()=>applyStaffPermissions(currentStaff.perms), 100);
+    }
+  }
 }
 
 // ═══════════════════════════════════════════

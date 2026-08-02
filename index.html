@@ -2612,12 +2612,21 @@ async function addPtsManual() {
 
 // STAFF
 function openStaffModal(id) {
-  const sm=document.getElementById('staffModal');if(sm)sm.style.display='flex';
-  const s = id?staff.find(x=>String(x.id)===String(id)):null;
+  const sm=document.getElementById('staffModal');
+  if(!sm) return;
+  sm.style.display='flex';
+  sm.dataset.editId = id || '';
+  const s = id ? staff.find(x=>String(x.id)===String(id)) : null;
   setEl('staffModalTitle',id?'تعديل موظف':'إضافة موظف');
-  setVal('sf-name',s?s.name:'');setVal('sf-user',s?s.username:'');setVal('sf-role',s?s.roleTitle:'');
+  setVal('sf-name',s?s.name:'');
+  setVal('sf-user',s?s.username:'');
+  setVal('sf-role',s?s.roleTitle:'');
+  setVal('sf-pass','');
   document.getElementById('sf-color').value=s?s.color:'#53FC18';
-  ['orders','products','users','chats','staff','settings'].forEach(p=>{const el=document.getElementById('perm-'+p);if(el)el.checked=s?(s.perms||[]).includes(p):false;});
+  ['orders','products','users','chats','staff','settings'].forEach(p=>{
+    const el=document.getElementById('perm-'+p);
+    if(el) el.checked=s?(s.perms||[]).includes(p):false;
+  });
   sm.classList.remove('hidden');
 }
 function selPerms(v){['orders','products','users','chats','staff','settings'].forEach(p=>{const el=document.getElementById('perm-'+p);if(el)el.checked=v;});}
@@ -2688,7 +2697,10 @@ async function savePtsCfg() {
 
   ptsCfg={welcome:+gv('pc-welcome'),msg:+gv('pc-msg'),hour:+gv('pc-hour'),sub:+gv('pc-sub'),follow:+gv('pc-follow'),cooldown:+gv('pc-cooldown'),maxHr:+gv('pc-maxhr'),goal:+gv('pc-goal')};
   try {
-    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({ptsCfg})});
+    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({ptsCfg, dailyPts})});
+    // حدّث الـ cache
+    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyPts=dailyPts; c.ptsCfg=ptsCfg; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
+    dailyConfig = dailyPts;
     showToast('✅ تم حفظ إعدادات النقاط');
   } catch(e){showToast('خطأ','err');}
 }

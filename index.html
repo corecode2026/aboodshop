@@ -1064,7 +1064,7 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
       <div class="ls-ring ls-ring-1"></div>
       <div id="lsAvaContent"><div class="ls-placeholder"></div></div>
     </div>
-    <div class="ls-name" id="lsNameEl">القناة</div>
+    <div class="ls-name" id="lsNameEl"></div>
     <div class="ls-bar-wrap"><div class="ls-bar"></div></div>
   </div>
 </div>
@@ -1078,8 +1078,7 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
   <button onclick="toggleDrawer()" id="hamburgerBtn" style="display:none;flex-direction:column;gap:5px;border:1px solid var(--border);background:var(--card2);padding:8px;cursor:pointer;border-radius:8px;flex-shrink:0;"><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span></button>
   <div class="nav-logo" id="navLogo" onclick="goTo('home',this)">
     <div class="nav-ava" id="navAva" style="background:linear-gradient(135deg,#53FC18,#2a8c00);font-size:16px;font-weight:900;color:#000;">A</div>
-    <span class="kick-tag">KICK</span>
-    <span class="nav-name" id="navName">القناة</span>
+
   </div>
   <div class="nav-links">
     <button class="nl on" onclick="goTo('home',this)">الرئيسية</button>
@@ -1180,7 +1179,7 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
     <div class="about-ava" id="aboutAva">🎮</div>
     <div>
       <div class="about-tag">الستريمر</div>
-      <div class="about-name" id="aboutName">القناة</div>
+      <div class="about-name" id="aboutName"></div>
       <div class="about-handle">kick.com/<span class="green" id="aboutHandle">username</span></div>
     </div>
   </div>
@@ -1244,7 +1243,7 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
     <div class="admin-side">
       <div class="admin-side-top">
         <div class="admin-ava" id="adminAva">🎮</div>
-        <div><div class="admin-name" id="adminName">القناة</div><div class="admin-role">⚙️ Admin</div></div>
+        <div><div class="admin-name" id="adminName"></div><div class="admin-role">⚙️ Admin</div></div>
       </div>
       <div class="admin-menu">
         <button class="am on" onclick="aTab('dashboard',this)" data-tab="dashboard"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></span> الرئيسية</button>
@@ -1572,7 +1571,7 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
 <div class="drawer" id="drawer" style="position:fixed!important;top:0!important;right:0!important;bottom:0!important;height:100vh!important;z-index:99998!important;transform:translateX(100%);transition:transform .3s;">
   <div class="drawer-head" style="display:flex;justify-content:space-between;align-items:flex-start;">
     <div class="drawer-ava" id="drawerAva">🎮</div>
-    <div><div class="drawer-name" id="drawerName">القناة</div>
+    <div><div class="drawer-name" id="drawerName"></div>
     <div class="drawer-sub" id="drawerSub">اختر الصفحة</div></div>
     <button onclick="toggleDrawer()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0;line-height:1;">✕</button>
   </div>

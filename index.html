@@ -2543,7 +2543,7 @@ function showToast(msg,type='ok'){const t=document.getElementById('toast');t.tex
   }
 });
 document.getElementById('aPass')?.addEventListener('keydown',e=>{if(e.key==='Enter')submitAdmin();});
-document.getElementById('prodImgBox')?.addEventListener('click',()=>document.getElementById('prodImgFile')?.click());
+
 
 // ═══════════════════════════════════════════
 // INIT
@@ -2974,7 +2974,7 @@ init();
 <div class="overlay hidden" id="prodModal" style="position:fixed!important;inset:0!important;z-index:99999!important;display:none;align-items:center;justify-content:center;">
   <div class="modal wide">
     <h3 id="prodModalTitle" style="margin-bottom:14px;">إضافة منتج</h3>
-    <div class="prod-img-box" id="prodImgBox">
+    <div class="prod-img-box" id="prodImgBox" onclick="document.getElementById('prodImgFile').click()" style="cursor:pointer;">
       <span id="prodImgEmoji" style="font-size:48px;">🎁</span>
       <img id="prodImgPrev" src="" style="display:none;"/>
       <input type="file" id="prodImgFile" accept="image/*" style="display:none;" onchange="handleProdImg(event)"/>

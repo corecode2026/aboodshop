@@ -2147,6 +2147,7 @@ function adminLogout() {
   logActivity('تسجيل خروج', 'خرج من لوحة الإدارة');
   adminIn=false; isStaffMode=false; currentStaff=null;
   sessionStorage.removeItem('adminIn');
+  sessionStorage.removeItem('staffIn');
   sessionStorage.removeItem('staffSession');
   goTo('home',document.querySelector('.nl'));
   showToast('تم الخروج من الإدارة');

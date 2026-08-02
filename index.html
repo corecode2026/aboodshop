@@ -1089,9 +1089,8 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 </div>
 
 <style>
-#page-home, #page-about, #page-store, #page-rules, #page-points { opacity:0; transition:opacity .25s; }
-body.ready #page-home.on, body.ready #page-about.on, body.ready #page-store.on, 
-body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
+.page { opacity:0; transition:opacity .25s; }
+body.ready .page.on { opacity:1; }
 
 /* ══ CROP MODAL ══ */
 #cropModal { position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px; }

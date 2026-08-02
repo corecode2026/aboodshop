@@ -1139,7 +1139,7 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
     <button class="nl" onclick="goTo('points',this)">النقاط</button>
     <button class="nl" onclick="goTo('tournaments',this)">البطولات</button>
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
-    <button class="nl" onclick="goTo('daily',this)">يومي</button>
+    <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
   </div>
   <div class="nav-right">
     <div class="pts-chip hidden" id="navPts">⭐ <span id="navPtsVal">0</span> نقطة</div>
@@ -1804,7 +1804,7 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
     </button>
     <button class="dl" onclick="drawerGoTo('daily')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      يومي
+      التسجيل اليومي
     </button>
   </div>
   <div class="drawer-foot">
@@ -3631,8 +3631,6 @@ async function loadDaily() {
     if (d.dailyPts && Array.isArray(d.dailyPts)) dailyConfig = d.dailyPts;
   } catch(e){}
 
-  renderDailyDays();
-
   if (!currentUser) {
     document.getElementById('dailyGuest').style.display='block';
     document.getElementById('dailyHero').style.opacity='.4';
@@ -3658,6 +3656,7 @@ async function loadDaily() {
     const timer = document.getElementById('dailyTimer');
     const msg = document.getElementById('dailyMsg');
 
+    renderDailyDays(streak, d.claimedToday);
     if (d.claimedToday) {
       btn.disabled = true;
       btn.textContent = '✅ سجّلت اليوم';
@@ -3671,6 +3670,7 @@ async function loadDaily() {
       timer.style.display='block';
       msg.innerHTML = '<span style="color:var(--kick);">✓ كسبت '+todayPts+' نقطة اليوم!</span>';
     } else {
+      renderDailyDays(streak, false);
       btn.disabled = false;
       btn.textContent = '🎁 سجّل حضورك';
       btn.style.background = '';
@@ -3685,17 +3685,31 @@ async function loadDaily() {
   renderDailyDays();
 }
 
-function renderDailyDays() {
+function renderDailyDays(streak=0, claimedToday=false) {
   const el = document.getElementById('dailyDaysGrid');
   if (!el) return;
   const labels = ['١','٢','٣','٤','٥','٦','٧+'];
-  el.innerHTML = dailyConfig.map((pts,i) => `
-    <div style="text-align:center;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px 4px;transition:.2s;">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">يوم ${labels[i]||i+1}</div>
-      <div style="font-size:16px;font-weight:900;color:var(--kick);">${pts}</div>
-      <div style="font-size:10px;color:var(--muted);">نقطة</div>
-    </div>
-  `).join('');
+  el.innerHTML = dailyConfig.map((pts,i) => {
+    const done = claimedToday ? i < streak : i < streak;
+    const isToday = claimedToday ? i === streak-1 : i === streak;
+    let bg, border, numColor, badge='';
+    if (done) {
+      bg='rgba(83,252,24,.12)'; border='var(--kick)'; numColor='var(--kick)';
+      badge='<div style="font-size:14px;line-height:1;">✓</div>';
+    } else if (isToday && !claimedToday) {
+      bg='rgba(83,252,24,.06)'; border='rgba(83,252,24,.4)'; numColor='var(--kick)';
+      badge='<div style="width:6px;height:6px;background:var(--kick);border-radius:50%;margin:0 auto 2px;animation:pulse 1.4s infinite;"></div>';
+    } else {
+      bg='var(--surface)'; border='var(--border2)'; numColor='var(--muted)';
+      badge='';
+    }
+    return `<div style="text-align:center;background:${bg};border:1px solid ${border};border-radius:10px;padding:10px 4px;transition:.3s;">
+      ${badge}
+      <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">يوم ${labels[i]||i+1}</div>
+      <div style="font-size:15px;font-weight:900;color:${numColor};">${pts}</div>
+      <div style="font-size:10px;color:var(--muted);">نق</div>
+    </div>`;
+  }).join('');
 }
 
 let dailyTimerInterval = null;
@@ -3728,6 +3742,7 @@ async function claimDaily() {
     const d = await res.json();
     if(d.success) {
       showToast('🎉 كسبت '+d.points+' نقطة! سلسلة: '+d.streak+' يوم');
+      renderDailyDays(d.streak, true);
       if(currentUser) currentUser.points=(currentUser.points||0)+d.points;
       const ptsEl=document.getElementById('userPts'); if(ptsEl) ptsEl.textContent=(currentUser.points).toLocaleString()+' نقطة';
       loadDaily();

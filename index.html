@@ -1699,9 +1699,12 @@ function goTo(id, btn) {
   if (id === 'points') loadPoints();
   if (id === 'admin') {
     loadDashboard();
-    // طبّق صلاحيات الموظف
+    // طبّق صلاحيات الموظف فقط
     if (isStaffMode && currentStaff && currentStaff.perms) {
       setTimeout(()=>applyStaffPermissions(currentStaff.perms), 100);
+    } else {
+      // مدير — أظهر كل الأزرار
+      document.querySelectorAll('.am[data-tab]').forEach(b=>b.style.display='');
     }
   }
 }
@@ -3095,19 +3098,20 @@ const PERM_TAB_MAP = {
 };
 
 function applyStaffPermissions(perms) {
+  // لا تطبق على المدير الرئيسي
+  if (!isStaffMode || !currentStaff) {
+    // أرجع كل الأزرار
+    document.querySelectorAll('.am[data-tab]').forEach(function(btn){ btn.style.display=''; });
+    return;
+  }
   if (!perms) return;
   const staffPerms = Array.isArray(perms) ? perms : [];
   
   document.querySelectorAll('.am[data-tab]').forEach(function(btn) {
     var tab = btn.getAttribute('data-tab');
-    // الرئيسية دايماً ظاهرة
     if (tab === 'dashboard') { btn.style.display = ''; return; }
-    
     var needed = PERM_TAB_MAP[tab];
-    // لو ما في صلاحية محددة أخفِه إذا موظف
     if (!needed) { btn.style.display = 'none'; return; }
-    
-    // أظهر بس لو عنده الصلاحية
     btn.style.display = (staffPerms.indexOf(needed) !== -1) ? '' : 'none';
   });
 

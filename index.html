@@ -1114,6 +1114,7 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
     <button class="nl" onclick="goTo('rules',this)">القوانين</button>
     <button class="nl" onclick="goTo('points',this)">النقاط</button>
     <button class="nl" onclick="goTo('tournaments',this)">البطولات</button>
+    <button class="nl" onclick="goTo('profile',this)">ملفي</button>
   </div>
   <div class="nav-right">
     <div class="pts-chip hidden" id="navPts">⭐ <span id="navPtsVal">0</span> نقطة</div>
@@ -1560,6 +1561,85 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
   </div>
 </section>
 
+
+<!-- PROFILE PAGE -->
+<section class="page" id="page-profile">
+  <!-- حالة غير مسجل -->
+  <div id="profileGuest" style="text-align:center;padding:80px 0;">
+    <div style="width:72px;height:72px;border-radius:50%;background:var(--surface);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    </div>
+    <p style="color:var(--muted);font-size:15px;margin-bottom:24px;">سجّل دخول لترى ملفك الشخصي</p>
+    <button class="btn btn-kick" onclick="doLogin('kick')">
+      <svg width="14" height="14" viewBox="0 0 50 50" fill="none"><path d="M8 5H18V22L28 5H40L27 25L40 45H28L18 28V45H8V5Z" fill="#000"/></svg>
+      تسجيل دخول
+    </button>
+  </div>
+
+  <!-- حالة مسجل -->
+  <div id="profileUser" style="display:none;">
+    <!-- Hero الملف -->
+    <div style="background:linear-gradient(135deg,rgba(83,252,24,.06),transparent);border:1px solid var(--border);border-radius:var(--radius-xl);padding:36px;margin-bottom:20px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-60px;left:-60px;width:250px;height:250px;background:radial-gradient(circle,rgba(83,252,24,.06),transparent 70%);pointer-events:none;"></div>
+      
+      <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+        <!-- الصورة -->
+        <div style="position:relative;flex-shrink:0;">
+          <div id="profileAvaWrap" style="width:100px;height:100px;border-radius:50%;border:3px solid var(--kick);background:var(--surface2);overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(83,252,24,.3);cursor:pointer;" onclick="document.getElementById('profileImgInput').click()">
+            <img id="profileAvaImg" src="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:none;"/>
+            <svg id="profileAvaPlaceholder" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <div style="position:absolute;bottom:0;left:0;background:var(--kick);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--bg);" onclick="document.getElementById('profileImgInput').click()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <input type="file" id="profileImgInput" accept="image/*" style="display:none;" onchange="handleProfileImg(event)"/>
+        </div>
+
+        <!-- المعلومات -->
+        <div style="flex:1;min-width:180px;">
+          <div style="font-size:11px;font-weight:700;color:var(--kick);letter-spacing:2px;margin-bottom:6px;">PROFILE</div>
+          <div id="profileUsername" style="font-size:24px;font-weight:900;margin-bottom:5px;"></div>
+          <div id="profileProvider" style="margin-bottom:14px;"></div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;">
+            <div style="text-align:center;">
+              <div id="profilePoints" style="font-size:26px;font-weight:900;color:var(--kick);line-height:1;"></div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px;font-weight:600;">نقطة</div>
+            </div>
+            <div style="width:1px;background:var(--border2);"></div>
+            <div style="text-align:center;">
+              <div id="profileRank" style="font-size:26px;font-weight:900;color:var(--orange);line-height:1;">#-</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px;font-weight:600;">الترتيب</div>
+            </div>
+            <div style="width:1px;background:var(--border2);"></div>
+            <div style="text-align:center;">
+              <div id="profileJoined" style="font-size:14px;font-weight:700;line-height:1;"></div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px;font-weight:600;">تاريخ الانضمام</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP 5 -->
+    <div class="settings-box" style="margin-bottom:20px;">
+      <div class="settings-box-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        أعلى 5 لاعبين
+      </div>
+      <div id="top5List"></div>
+    </div>
+
+    <!-- سجل النشاط -->
+    <div class="settings-box">
+      <div class="settings-box-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        سجل النشاط
+      </div>
+      <div id="profileHistory"></div>
+    </div>
+  </div>
+</section>
+
 </main>
 <div class="footer" style="position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);text-align:center;padding:8px;font-size:11px;color:rgba(255,255,255,.2);z-index:50;">© 2026 <span style="color:var(--kick);opacity:.5;">corecode2026</span> — جميع الحقوق محفوظة</div>
 
@@ -1626,6 +1706,10 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
     <button class="dl" onclick="drawerGoTo('tournaments')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 01-2-2V5h4"/><path d="M18 9h2a2 2 0 002-2V5h-4"/><path d="M12 17v4"/><path d="M8 21h8"/><path d="M6 3h12v8a6 6 0 01-12 0V3z"/></svg>
       البطولات
+    </button>
+    <button class="dl" onclick="drawerGoTo('profile')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      ملفي
     </button>
   </div>
   <div class="drawer-foot">
@@ -1728,6 +1812,7 @@ function goTo(id, btn) {
   if (btn && btn.classList) btn.classList.add('on');
   if (id === 'store') loadStore();
   if (id === 'points') loadPoints();
+  if (id === 'profile') loadProfile();
   if (id === 'admin') {
     loadDashboard();
     // طبّق صلاحيات الموظف فقط
@@ -1836,7 +1921,7 @@ function updateAuthUI() {
   const prov = document.getElementById('userProvider');
   prov.textContent = currentUser.provider === 'discord' ? 'Discord' : 'Kick';
   prov.className = 'pbadge pbadge-' + currentUser.provider;
-  if (currentUser.avatar) document.getElementById('userAva').src = currentUser.avatar;
+  if (currentUser.avatar) { document.getElementById('userAva').src = currentUser.avatar; updateProfileAvatar(currentUser.avatar); }
   updateDrawerUI();
 }
 
@@ -3169,6 +3254,146 @@ function applyStaffPermissions(perms) {
       break;
     }
   }
+}
+
+
+// ══════════════════════════════════════════
+// PROFILE PAGE
+// ══════════════════════════════════════════
+async function loadProfile() {
+  const guest = document.getElementById('profileGuest');
+  const user  = document.getElementById('profileUser');
+
+  if (!currentUser) {
+    if(guest) guest.style.display='block';
+    if(user)  user.style.display='none';
+    return;
+  }
+  if(guest) guest.style.display='none';
+  if(user)  user.style.display='block';
+
+  // بيانات المستخدم
+  setEl('profileUsername', currentUser.username);
+
+  const provEl = document.getElementById('profileProvider');
+  if (provEl) {
+    const color = currentUser.provider==='kick' ? 'var(--kick)' : 'var(--discord)';
+    const textColor = currentUser.provider==='kick' ? '#000' : '#fff';
+    provEl.innerHTML = `<span style="background:${color};color:${textColor};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">${currentUser.provider==='kick'?'Kick':'Discord'}</span>`;
+  }
+
+  // جيب البيانات الكاملة
+  try {
+    const res = await fetch(`${W}/api/points/history?token=${sessionToken}`);
+    const d = await res.json();
+    
+    setEl('profilePoints', (d.points||0).toLocaleString());
+    
+    const joined = currentUser.joinedAt ? new Date(currentUser.joinedAt).toLocaleDateString('ar') : '-';
+    setEl('profileJoined', joined);
+
+    // سجل النشاط
+    const hist = document.getElementById('profileHistory');
+    if (hist) {
+      const history = (d.history||[]).slice(0,20);
+      hist.innerHTML = history.length
+        ? history.map(h => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">${h.title}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px;">${fmtDate(h.date)}</div>
+            </div>
+            <span style="font-size:14px;font-weight:800;color:${h.type==='earned'?'var(--kick)':'var(--red)'};">${h.type==='earned'?'+':''}${h.points}</span>
+          </div>`).join('')
+        : '<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">لا يوجد سجل بعد</p>';
+    }
+
+    // صورة الملف الشخصي
+    updateProfileAvatar(currentUser.avatar);
+
+  } catch(e) {}
+
+  // جيب Top 5
+  loadTop5();
+}
+
+async function loadTop5() {
+  try {
+    const res = await fetch(`${W}/api/leaderboard`);
+    const { top5 } = await res.json();
+    const el = document.getElementById('top5List');
+    if (!el || !top5) return;
+
+    const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+    const colors = ['#FFD700','#C0C0C0','#CD7F32','var(--muted)','var(--muted)'];
+    const myRank = top5.findIndex(u => u.id === currentUser?.id);
+    
+    // حدّث الترتيب
+    if (myRank !== -1) setEl('profileRank', '#'+(myRank+1));
+
+    el.innerHTML = top5.map((u, i) => `
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border2);${u.id===currentUser?.id?'background:rgba(83,252,24,.04);border-radius:8px;padding:11px 10px;':''}">
+        <div style="font-size:20px;width:28px;text-align:center;">${medals[i]||i+1}</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:2px solid ${u.id===currentUser?.id?'var(--kick)':'var(--border2)'};overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          ${u.avatar ? `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>` : `<span style="font-size:14px;font-weight:700;color:var(--muted);">${u.username.charAt(0).toUpperCase()}</span>`}
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;${u.id===currentUser?.id?'color:var(--kick);':''}">${u.username}${u.id===currentUser?.id?' (أنت)':''}</div>
+          <div style="font-size:11px;color:var(--muted);">${u.provider==='kick'?'Kick':'Discord'}</div>
+        </div>
+        <div style="font-size:15px;font-weight:800;color:${colors[i]||'var(--muted)'};">${(u.points||0).toLocaleString()} نق</div>
+      </div>
+    `).join('');
+  } catch(e) {
+    const el = document.getElementById('top5List');
+    if(el) el.innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">تعذر التحميل</p>';
+  }
+}
+
+function updateProfileAvatar(src) {
+  const img = document.getElementById('profileAvaImg');
+  const ph  = document.getElementById('profileAvaPlaceholder');
+  if (src && img) {
+    img.src = src;
+    img.style.display = 'block';
+    if(ph) ph.style.display = 'none';
+  }
+}
+
+async function handleProfileImg(e) {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = async ev => {
+    // اضغط الصورة
+    const image = new Image();
+    image.onload = async () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 300;
+      let w=image.width, h=image.height;
+      if(w>h){if(w>MAX){h=Math.round(h*(MAX/w));w=MAX;}}else{if(h>MAX){w=Math.round(w*(MAX/h));h=MAX;}}
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(image,0,0,w,h);
+      const compressed = canvas.toDataURL('image/jpeg',0.7);
+      
+      updateProfileAvatar(compressed);
+      
+      // احفظ على Firebase
+      try {
+        await fetch(`${W}/api/profile/avatar`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({token:sessionToken, avatar:compressed})
+        });
+        currentUser.avatar = compressed;
+        // حدّث الصورة في الـ Nav
+        const userAva = document.getElementById('userAva');
+        if(userAva) userAva.src = compressed;
+        showToast('✅ تم تحديث الصورة');
+      } catch(err) { showToast('خطأ في الرفع','err'); }
+    };
+    image.src = ev.target.result;
+  };
+  r.readAsDataURL(f);
 }
 
 async function init() {

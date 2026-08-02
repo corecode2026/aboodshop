@@ -1055,6 +1055,25 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 }
 
 </style>
+<script>
+// تطبيق فوري للـ cache قبل أي شي
+(function(){
+  try {
+    var s = JSON.parse(localStorage.getItem('sk_settings_cache') || '{}');
+    if (s.channelName) {
+      var els = ['navName','aboutName','adminName','drawerName'];
+      els.forEach(function(id){ var el=document.getElementById(id); if(el)el.textContent=s.channelName; });
+    }
+    if (s.channelImg && !s.channelImg.includes('REMOVED')) {
+      var avas = ['navAva','aboutAva','adminAva','drawerAva','settingAva'];
+      avas.forEach(function(id){
+        var el=document.getElementById(id);
+        if(el)el.innerHTML='<img src="'+s.channelImg+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>';
+      });
+    }
+  } catch(e){}
+})();
+</script>
 </head>
 <body>
 
@@ -1078,7 +1097,7 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
   <button onclick="toggleDrawer()" id="hamburgerBtn" style="display:none;flex-direction:column;gap:5px;border:1px solid var(--border);background:var(--card2);padding:8px;cursor:pointer;border-radius:8px;flex-shrink:0;"><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span></button>
   <div class="nav-logo" id="navLogo" onclick="goTo('home',this)">
     <div class="nav-ava" id="navAva" style="background:linear-gradient(135deg,#53FC18,#2a8c00);font-size:16px;font-weight:900;color:#000;">A</div>
-    <span class="nav-name" id="navName" style="display:none;"></span>
+    <span class="nav-name" id="navName"></span>
 
   </div>
   <div class="nav-links">

@@ -1078,6 +1078,7 @@ body.ready #page-rules.on, body.ready #page-points.on { opacity:1; }
   <button onclick="toggleDrawer()" id="hamburgerBtn" style="display:none;flex-direction:column;gap:5px;border:1px solid var(--border);background:var(--card2);padding:8px;cursor:pointer;border-radius:8px;flex-shrink:0;"><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span></button>
   <div class="nav-logo" id="navLogo" onclick="goTo('home',this)">
     <div class="nav-ava" id="navAva" style="background:linear-gradient(135deg,#53FC18,#2a8c00);font-size:16px;font-weight:900;color:#000;">A</div>
+    <span class="nav-name" id="navName" style="display:none;"></span>
 
   </div>
   <div class="nav-links">
@@ -2946,7 +2947,15 @@ function renderSecretCodes() {
 function applySettings(s) {
   if (!s) return;
   if (s.adminPass) adminPass = s.adminPass;
-  if (s.channelName) { setEl('navName',s.channelName); setEl('adminName',s.channelName); setEl('aboutName',s.channelName); setEl('drawerName',s.channelName); setVal('set-name',s.channelName); }
+  if (s.channelName) {
+    setEl('navName',s.channelName); 
+    setEl('adminName',s.channelName); 
+    setEl('aboutName',s.channelName); 
+    setEl('drawerName',s.channelName); 
+    setVal('set-name',s.channelName);
+    const nn=document.getElementById('navName');
+    if(nn) nn.style.display = s.channelName ? '' : 'none';
+  }
   if (s.kickUsername) { setEl('aboutHandle',s.kickUsername); setVal('set-kick',s.kickUsername); const c=document.getElementById('offlineCta'); if(c)c.href='https://kick.com/'+s.kickUsername; }
   if (s.bio) { setEl('aboutBio',s.bio); setVal('set-bio',s.bio); }
   if (s.spec) { setEl('aboutSpec',s.spec); setVal('set-spec',s.spec); }

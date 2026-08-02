@@ -1458,6 +1458,19 @@ body.ready .page.on { opacity:1; }
           </div>
         </div>
 
+
+        <div class="settings-box" style="margin-top:14px;">
+          <div class="settings-box-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--kick)" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+            نظام المستويات
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">حدد اسم كل مستوى والنقاط المطلوبة للوصول إليه والمكافأة عند الوصول</div>
+          <div id="levelsAdmin" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+          <button onclick="addLevel()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;width:100%;">
+            + إضافة مستوى
+          </button>
+        </div>
+
         <button class="btn btn-kick" onclick="savePtsCfg()">💾 حفظ إعدادات النقاط</button>
       </div>
       <!-- SETTINGS -->
@@ -1657,11 +1670,31 @@ body.ready .page.on { opacity:1; }
             </div>
             <div style="width:1px;background:var(--border2);"></div>
             <div style="text-align:center;">
+              <div id="profileLevel" style="font-size:18px;font-weight:900;line-height:1;">-</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px;font-weight:600;">المستوى</div>
+            </div>
+            <div style="width:1px;background:var(--border2);"></div>
+            <div style="text-align:center;">
               <div id="profileJoined" style="font-size:14px;font-weight:700;line-height:1;"></div>
               <div style="font-size:11px;color:var(--muted);margin-top:4px;font-weight:600;">تاريخ الانضمام</div>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- LEVEL PROGRESS -->
+    <div id="levelProgressBox" class="settings-box" style="margin-bottom:20px;display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div>
+          <div id="levelName" style="font-size:14px;font-weight:800;"></div>
+          <div id="levelNext" style="font-size:12px;color:var(--muted);margin-top:3px;"></div>
+        </div>
+        <div id="levelBadge" style="font-size:22px;"></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-bar" id="levelBar" style="width:0%;"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:5px;">
+        <span id="levelCurrent"></span><span id="levelRequired"></span>
       </div>
     </div>
 
@@ -2703,9 +2736,9 @@ async function savePtsCfg() {
 
   ptsCfg={welcome:+gv('pc-welcome'),msg:+gv('pc-msg'),hour:+gv('pc-hour'),sub:+gv('pc-sub'),follow:+gv('pc-follow'),cooldown:+gv('pc-cooldown'),maxHr:+gv('pc-maxhr'),goal:+gv('pc-goal')};
   try {
-    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({ptsCfg, dailyPts})});
+    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({ptsCfg, dailyPts, levels:levelsConfig})});
     // حدّث الـ cache
-    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyPts=dailyPts; c.ptsCfg=ptsCfg; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
+    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyPts=dailyPts; c.ptsCfg=ptsCfg; c.levels=levelsConfig; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
     dailyConfig = dailyPts;
     showToast('✅ تم حفظ إعدادات النقاط');
   } catch(e){showToast('خطأ','err');}
@@ -3426,6 +3459,7 @@ async function loadProfile() {
     const d = await res.json();
     
     setEl('profilePoints', (d.points||0).toLocaleString());
+    updateProfileLevel(d.points||0);
     
     const joined = currentUser.joinedAt ? new Date(currentUser.joinedAt).toLocaleDateString('ar') : '-';
     setEl('profileJoined', joined);
@@ -3792,6 +3826,121 @@ function loadDailySettings() {
     }
   } catch(e){}
 }
+
+// ══════════════════════════════════════════
+// LEVELS SYSTEM
+// ══════════════════════════════════════════
+let levelsConfig = [
+  { name:'مبتدئ', emoji:'🌱', threshold:0, reward:0 },
+  { name:'نشيط', emoji:'⚡', threshold:500, reward:50 },
+  { name:'متميز', emoji:'🌟', threshold:1500, reward:100 },
+  { name:'محترف', emoji:'💎', threshold:3000, reward:200 },
+  { name:'أسطورة', emoji:'👑', threshold:6000, reward:500 },
+];
+
+function getUserLevel(points) {
+  let level = levelsConfig[0];
+  for (let i = levelsConfig.length-1; i >= 0; i--) {
+    if (points >= levelsConfig[i].threshold) { level = levelsConfig[i]; break; }
+  }
+  return level;
+}
+
+function getNextLevel(points) {
+  for (let i = 0; i < levelsConfig.length; i++) {
+    if (levelsConfig[i].threshold > points) return levelsConfig[i];
+  }
+  return null;
+}
+
+function renderLevelsAdmin() {
+  const el = document.getElementById('levelsAdmin');
+  if(!el) return;
+  el.innerHTML = levelsConfig.map((l,i) => `
+    <div style="display:grid;grid-template-columns:40px 1fr 1fr 1fr auto;gap:8px;align-items:center;background:var(--surface2);padding:10px 12px;border-radius:10px;border:1px solid var(--border2);">
+      <input value="${l.emoji}" oninput="levelsConfig[${i}].emoji=this.value" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:6px;border-radius:6px;font-size:16px;text-align:center;width:100%;" maxlength="2"/>
+      <div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">الاسم</div>
+        <input value="${l.name}" oninput="levelsConfig[${i}].name=this.value" class="pf-input" placeholder="مبتدئ"/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">النقاط المطلوبة</div>
+        <input value="${l.threshold}" type="number" oninput="levelsConfig[${i}].threshold=+this.value" class="pf-input" placeholder="500" dir="ltr" ${i===0?'disabled':''}/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">مكافأة الوصول</div>
+        <input value="${l.reward}" type="number" oninput="levelsConfig[${i}].reward=+this.value" class="pf-input" placeholder="100" dir="ltr" ${i===0?'disabled':''}/>
+      </div>
+      ${i>0?`<button onclick="removeLevel(${i})" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;font-family:'Cairo',sans-serif;">✕</button>`:'<div></div>'}
+    </div>
+  `).join('');
+}
+
+function addLevel() {
+  levelsConfig.push({ name:'مستوى جديد', emoji:'⭐', threshold:levelsConfig[levelsConfig.length-1].threshold+1000, reward:0 });
+  renderLevelsAdmin();
+}
+
+function removeLevel(i) {
+  if(levelsConfig.length<=1)return;
+  levelsConfig.splice(i,1);
+  renderLevelsAdmin();
+}
+
+function updateProfileLevel(points) {
+  const level = getUserLevel(points);
+  const nextLevel = getNextLevel(points);
+
+  // حدّث في الملف الشخصي
+  const levelEl = document.getElementById('profileLevel');
+  if(levelEl) levelEl.textContent = level.emoji + ' ' + level.name;
+
+  // شريط التقدم
+  const box = document.getElementById('levelProgressBox');
+  if(box) box.style.display = 'block';
+
+  const nameEl = document.getElementById('levelName');
+  if(nameEl) nameEl.textContent = level.emoji + ' ' + level.name;
+
+  if(nextLevel) {
+    const progress = Math.min(100, Math.round(((points - level.threshold) / (nextLevel.threshold - level.threshold)) * 100));
+    const bar = document.getElementById('levelBar');
+    if(bar) setTimeout(()=>bar.style.width=progress+'%', 300);
+    const nextEl = document.getElementById('levelNext');
+    if(nextEl) nextEl.textContent = 'المستوى القادم: ' + nextLevel.emoji + ' ' + nextLevel.name;
+    const curEl = document.getElementById('levelCurrent');
+    if(curEl) curEl.textContent = (points - level.threshold).toLocaleString() + ' / ' + (nextLevel.threshold - level.threshold).toLocaleString();
+    const reqEl = document.getElementById('levelRequired');
+    if(reqEl) reqEl.textContent = 'متبقي: ' + (nextLevel.threshold - points).toLocaleString() + ' نقطة';
+    const badge = document.getElementById('levelBadge');
+    if(badge) badge.textContent = nextLevel.emoji;
+  } else {
+    const nextEl = document.getElementById('levelNext');
+    if(nextEl) nextEl.textContent = '🏆 وصلت أعلى مستوى!';
+    const bar = document.getElementById('levelBar');
+    if(bar) { bar.style.width='100%'; bar.style.background='linear-gradient(90deg,#FFD700,#FFA500)'; }
+  }
+}
+
+async function checkLevelUp(userId, oldPoints, newPoints) {
+  // تحقق إذا وصل مستوى جديد
+  for (const level of levelsConfig) {
+    if (level.reward > 0 && oldPoints < level.threshold && newPoints >= level.threshold) {
+      // وصل مستوى جديد!
+      return { levelUp: true, level, reward: level.reward };
+    }
+  }
+  return { levelUp: false };
+}
+
+function loadLevelsFromCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem('sk_settings_cache')||'{}');
+    if (c.levels && Array.isArray(c.levels)) levelsConfig = c.levels;
+  } catch(e){}
+  renderLevelsAdmin();
+}
+
 async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);
   loadStore();

@@ -3069,17 +3069,7 @@ async function submitStaffLogin() {
   }
 }
 
-    const needed = PERM_TAB_MAP[tab];
-    const allowed = !needed || perms.includes(needed);
-    btn.style.display = allowed ? '' : 'none';
-    console.log('Tab:', tab, '| Needed:', needed, '| Allowed:', allowed);
-  });
 
-  // افتح أول تبويب مسموح
-  const tabOrder = ['orders','chats','products','users','staff','settings'];
-  const firstTab = tabOrder.find(t => perms.includes(t));
-  if (firstTab) setTimeout(() => aTab(firstTab, null), 150);
-}
 
 
 // ══ STAFF PERMISSIONS ══

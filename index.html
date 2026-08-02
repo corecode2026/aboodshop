@@ -3431,8 +3431,16 @@ async function removeProfileAvatar() {
       body:JSON.stringify({token:sessionToken, avatar:''})
     });
     if(currentUser) currentUser.avatar = '';
+    // امسح الصورة من الـ cache
+    try {
+      const cached = JSON.parse(localStorage.getItem('sk_settings_cache') || '{}');
+      delete cached.channelImg;
+      localStorage.setItem('sk_settings_cache', JSON.stringify(cached));
+    } catch(e2){}
     const userAva = document.getElementById('userAva');
-    if(userAva) { userAva.src=''; }
+    if(userAva) userAva.src = '';
+    const navAva = document.getElementById('navAva');
+    if(navAva) navAva.innerHTML = 'A';
     showToast('تم حذف الصورة');
   } catch(e) { showToast('خطأ','err'); }
 }

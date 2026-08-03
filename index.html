@@ -3756,8 +3756,6 @@ async function loadDaily() {
       }
     }
   } catch(e){}
-
-  renderDailyDays();
 }
 
 function renderDailyDays(streak=0, claimedToday=false) {
@@ -3765,7 +3763,7 @@ function renderDailyDays(streak=0, claimedToday=false) {
   if (!el) return;
   const labels = ['١','٢','٣','٤','٥','٦','٧+'];
   el.innerHTML = dailyConfig.map((pts,i) => {
-    const done = claimedToday ? i < streak : i < streak;
+    const done = i < (claimedToday ? streak : streak);
     const isToday = claimedToday ? i === streak-1 : i === streak;
     let bg, border, numColor, badge='';
     if (done) {

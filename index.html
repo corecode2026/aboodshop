@@ -1553,6 +1553,7 @@ body.ready .page.on { opacity:1; }
         </div>
         <div class="settings-box">
           <div class="settings-box-title">🔐 كلمة سر الإدارة</div>
+          <div class="set-row"><div><div class="set-label">اليوزرنيم</div><div class="set-desc">اسم المستخدم للدخول (افتراضي: admin)</div></div><input class="set-input" id="set-adminuser" placeholder="admin" dir="ltr"/></div>
           <div class="set-row"><div><div class="set-label">كلمة السر الجديدة</div></div><input class="set-input" id="set-newpass" type="password" placeholder="••••••" dir="ltr"/></div>
           <div class="set-row"><div><div class="set-label">تأكيد كلمة السر</div></div><input class="set-input" id="set-confirmpass" type="password" placeholder="••••••" dir="ltr"/></div>
         </div>
@@ -1928,6 +1929,7 @@ let adminIn = false;
 let currentStaff = null; // الموظف الحالي لو مسجل دخول
 let isStaffMode = false; // وضع الموظف
 let adminPass = 'admin';
+let adminUser = 'admin';
 let pendingProd = null;
 let editingProdId = null;
 let pendingProdImg = null;
@@ -2114,6 +2116,7 @@ async function loadAllSettings() {
     const { socials } = await socRes.json();
 
     if (s.adminPass) { adminPass = s.adminPass; }
+    if (s.adminUser) { adminUser = s.adminUser; setVal('set-adminuser', s.adminUser); }
     if (s.channelName) {
       setEl('navName', s.channelName); setEl('adminName', s.channelName);
       setEl('aboutName', s.channelName); setEl('drawerName', s.channelName);
@@ -2178,10 +2181,13 @@ async function saveSettings() {
 
   // كلمة السر
   const np = gv('set-newpass'), cp = gv('set-confirmpass');
+  const nu = gv('set-adminuser');
+  if (nu) { adminUser = nu; data.adminUser = nu; }
+
   if (np) {
     if (np !== cp) { showToast('كلمتا السر غير متطابقتين','err'); return; }
     adminPass = np;
-    data.adminPass = np; // أضفها للـ data عشان تتحفظ
+    data.adminPass = np;
     setVal('set-newpass',''); setVal('set-confirmpass','');
   }
 
@@ -2386,7 +2392,7 @@ async function submitAdmin() {
   setEl('aErr','');
 
   // تحقق من المدير الرئيسي
-  if (user==='admin' && pass===adminPass) {
+  if (user===adminUser && pass===adminPass) {
     adminIn=true; isStaffMode=false; currentStaff=null;
     sessionStorage.setItem('adminIn','1');
     sessionStorage.removeItem('staffIn');
@@ -3242,6 +3248,7 @@ function renderSecretCodes() {
 function applySettings(s) {
   if (!s) return;
   if (s.adminPass) adminPass = s.adminPass;
+  if (s.adminUser) { adminUser = s.adminUser; }
   if (s.channelName) {
     setEl('navName',s.channelName); 
     setEl('adminName',s.channelName); 

@@ -2139,6 +2139,7 @@ async function loadAllSettings() {
     if (s.offlineBg)      { streamState.offlineBg = s.offlineBg; }
     if (s.offlineColor)   { streamState.offlineColor = s.offlineColor; }
     if (s.ptsCfg)         { ptsCfg = { ...ptsCfg, ...s.ptsCfg }; applyPtsCfg(); }
+    if (s.levels && Array.isArray(s.levels) && s.levels.length > 0) { levelsConfig = s.levels; }
 
     renderStream();
     applyHeroSettings(s);
@@ -3272,6 +3273,7 @@ function applySettings(s) {
   if (s.offlineBg) streamState.offlineBg=s.offlineBg;
   if (s.offlineColor) streamState.offlineColor=s.offlineColor;
   if (s.ptsCfg) ptsCfg={...ptsCfg,...s.ptsCfg};
+  if (s.levels && Array.isArray(s.levels) && s.levels.length > 0) levelsConfig = s.levels;
   renderStream();
   applyHeroSettings(s);
 }

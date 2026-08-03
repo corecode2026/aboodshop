@@ -2318,17 +2318,19 @@ function openBuy(id) {
   setEl('buyDesc', p.desc);
   setEl('buyPrice', p.price.toLocaleString() + ' نقطة');
   setVal('buyUsername', currentUser.username);
+  setVal('buyContact', '');
   openModal('buyModal');
 }
 
 async function confirmBuy() {
   if (!pendingProd || !currentUser) return;
   const kn = gv('buyUsername');
-  if (!kn) { showToast('أدخل اسمك','err'); return; }
+  const contact = gv('buyContact');
+  if (!contact) { showToast('أدخل معلومات التواصل','err'); return; }
   try {
     const res = await fetch(`${W}/api/buy`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ productId: pendingProd.id, kickUsername: kn, token: sessionToken }),
+      body: JSON.stringify({ productId: pendingProd.id, kickUsername: kn, contact, token: sessionToken }),
     });
     const d = await res.json();
     if (d.success) {
@@ -2476,7 +2478,7 @@ async function loadDashboard() {
     setEl('st-total',orders.length); setEl('st-pending',pending); setEl('st-done',orders.filter(o=>o.status==='done').length); setEl('st-users',users.length);
     const pb = document.getElementById('pendingBadge'); if(pb){pb.textContent=pending; pending?pb.classList.remove('hidden'):pb.classList.add('hidden');}
     document.getElementById('recentOrders').innerHTML = orders.length
-      ? `<table class="table"><thead><tr><th>المستخدم</th><th>المنتج</th><th>التاريخ</th><th>الحالة</th></tr></thead><tbody>${orders.slice(0,5).map(o=>`<tr><td style="color:var(--kick);font-weight:700;">${o.kickUsername||o.username}</td><td>${o.icon||''} ${o.product}</td><td style="color:var(--muted);font-size:12px;">${fmtDate(o.date)}</td><td><span class="sbadge ${o.status==='pending'?'s-pending':'s-done'}">${o.status==='pending'?'⏳ معلق':'✅ منجز'}</span></td></tr>`).join('')}</tbody></table>`
+      ? `<table class="table"><thead><tr><th>المستخدم</th><th>التواصل</th><th>المنتج</th><th>التاريخ</th><th>الحالة</th></tr></thead><tbody>${orders.slice(0,5).map(o=>`<tr><td style="color:var(--kick);font-weight:700;">${o.kickUsername||o.username}</td><td style="font-size:12px;">${o.contact||'—'}</td><td>${o.icon||''} ${o.product}</td><td style="color:var(--muted);font-size:12px;">${fmtDate(o.date)}</td><td><span class="sbadge ${o.status==='pending'?'s-pending':'s-done'}">${o.status==='pending'?'⏳ معلق':'✅ منجز'}</span></td></tr>`).join('')}</tbody></table>`
       : '<div class="empty"><p>لا توجد طلبات بعد</p></div>';
   } catch(e) {}
 }
@@ -2485,7 +2487,7 @@ async function loadOrders() {
   try {
     const { orders } = await (await fetch(`${W}/api/admin/orders`,{headers:{'x-admin-key':ADMIN_KEY}})).json();
     document.getElementById('ordersTable').innerHTML = orders.length
-      ? `<table class="table"><thead><tr><th>#</th><th>المستخدم</th><th>المنتج</th><th>السعر</th><th>التاريخ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>${orders.map((o,i)=>`<tr><td style="color:var(--muted);font-size:12px;">${orders.length-i}</td><td style="color:var(--kick);font-weight:700;">${o.kickUsername||o.username}</td><td>${o.icon||''} ${o.product}</td><td style="color:var(--kick);font-weight:700;">${(o.price||0).toLocaleString()} نق</td><td style="color:var(--muted);font-size:12px;">${fmtDate(o.date)}</td><td><span class="sbadge ${o.status==='pending'?'s-pending':'s-done'}">${o.status==='pending'?'⏳ معلق':'✅ منجز'}</span></td><td><div class="td-acts">${o.status==='pending'?`<button class="btn-sm btn-ok" onclick="markDone(${o.id})">✓</button>`:''}<button class="btn-sm btn-del" onclick="delOrder(${o.id})">🗑</button></div></td></tr>`).join('')}</tbody></table>`
+      ? `<table class="table"><thead><tr><th>#</th><th>المستخدم</th><th>التواصل</th><th>المنتج</th><th>السعر</th><th>التاريخ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>${orders.map((o,i)=>`<tr><td style="color:var(--muted);font-size:12px;">${orders.length-i}</td><td style="color:var(--kick);font-weight:700;">${o.kickUsername||o.username}</td><td style="font-size:12px;color:var(--text);">${o.contact||'—'}</td><td>${o.icon||''} ${o.product}</td><td style="color:var(--kick);font-weight:700;">${(o.price||0).toLocaleString()} نق</td><td style="color:var(--muted);font-size:12px;">${fmtDate(o.date)}</td><td><span class="sbadge ${o.status==='pending'?'s-pending':'s-done'}">${o.status==='pending'?'⏳ معلق':'✅ منجز'}</span></td><td><div class="td-acts">${o.status==='pending'?`<button class="btn-sm btn-ok" onclick="markDone(${o.id})">✓</button>`:''}<button class="btn-sm btn-del" onclick="delOrder(${o.id})">🗑</button></div></td></tr>`).join('')}</tbody></table>`
       : '<div class="empty"><p>لا توجد طلبات</p></div>';
   } catch(e) {}
 }
@@ -4012,9 +4014,14 @@ init();
     <h3 id="buyTitle">تأكيد الشراء</h3>
     <p id="buyDesc" style="color:var(--muted);font-size:13px;margin-bottom:8px;"></p>
     <div class="buy-price" id="buyPrice"></div>
+    <div style="text-align:right;margin-bottom:10px;">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">اسمك</div>
+      <input class="m-input" id="buyUsername" placeholder="username" style="text-align:right;direction:rtl;" readonly/>
+    </div>
     <div style="text-align:right;margin-bottom:14px;">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">اسمك (للتأكيد)</div>
-      <input class="m-input" id="buyUsername" placeholder="username" style="text-align:right;direction:rtl;"/>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">معلومات التواصل <span style="color:var(--red);">*</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">رقم هاتف أو حساب تواصل اجتماعي</div>
+      <input class="m-input" id="buyContact" placeholder="مثال: 0591234567 أو @username" style="text-align:right;direction:rtl;"/>
     </div>
     <div class="m-btns">
       <button class="m-ok" onclick="confirmBuy()">تأكيد ✅</button>

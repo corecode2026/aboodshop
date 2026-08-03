@@ -4225,7 +4225,7 @@ async function placeBid(auctionId) {
       document.getElementById('navPtsVal').textContent = d.remainingPoints.toLocaleString();
       showToast('✅ تم تسجيل مزايدتك بـ '+amount.toLocaleString()+' نقطة!');
       if(input) input.value = '';
-      loadAuction();
+      loadAuctionInStore();
     } else {
       showToast(d.error||'فشلت المزايدة','err');
     }

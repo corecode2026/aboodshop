@@ -1256,8 +1256,26 @@ body.ready .page.on { opacity:1; }
 
 <!-- STORE -->
 <section class="page" id="page-store">
-  <div class="section-head"><div class="section-title">المتجر <span class="green">الحصري</span></div><div style="font-size:12px;color:var(--muted);">استبدل نقاطك بجوائز</div></div>
-  <div class="store-grid" id="storeGrid"><p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p></div>
+  <!-- تبويبات المتجر -->
+  <div style="display:flex;gap:10px;margin-bottom:24px;border-bottom:1px solid var(--border2);padding-bottom:0;">
+    <button id="storeTab-products" onclick="switchStoreTab('products')" style="padding:10px 22px;border:none;background:transparent;color:var(--kick);font-size:14px;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;border-bottom:2px solid var(--kick);margin-bottom:-1px;">
+      🛍️ المنتجات
+    </button>
+    <button id="storeTab-auction" onclick="switchStoreTab('auction')" style="padding:10px 22px;border:none;background:transparent;color:var(--muted);font-size:14px;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:7px;">
+      🏷️ المزاد
+      <span id="auctionActiveDot" style="display:none;width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse 1.4s infinite;"></span>
+    </button>
+  </div>
+
+  <!-- المنتجات -->
+  <div id="storeTabProducts">
+    <div class="store-grid" id="storeGrid"><p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p></div>
+  </div>
+
+  <!-- المزاد -->
+  <div id="storeTabAuction" style="display:none;">
+    <div id="auctionList2"></div>
+  </div>
 </section>
 
 <!-- RULES -->
@@ -1304,6 +1322,7 @@ body.ready .page.on { opacity:1; }
         <button class="am" onclick="aTab('products',this)" data-tab="products"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></span> المنتجات</button>
         <button class="am" onclick="aTab('users',this)" data-tab="users"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span> المستخدمون</button>
         <button class="am" onclick="aTab('staff',this)" data-tab="staff"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span> الموظفون</button>
+        <button class="am" onclick="aTab('auction-admin',this)" data-tab="auction-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span> المزاد</button>
         <button class="am" onclick="aTab('rules-admin',this)" data-tab="rules-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> القوانين</button>
         <button class="am" onclick="aTab('pts-cfg',this)" data-tab="pts-cfg"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> النقاط</button>
         <button class="am" onclick="aTab('logs',this)" data-tab="logs"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> السجل</button>
@@ -1380,6 +1399,16 @@ body.ready .page.on { opacity:1; }
           <button class="btn btn-kick" style="font-size:13px;padding:7px 14px;" onclick="openStaffModal(null)">+ إضافة موظف</button>
         </div>
         <div id="staffList"></div>
+      </div>
+
+
+      <!-- AUCTION ADMIN -->
+      <div class="asub" id="asub-auction-admin">
+        <div class="section-head">
+          <div class="section-title">إدارة المزادات</div>
+          <button class="btn btn-kick" style="font-size:13px;padding:7px 14px;" onclick="openAuctionModal()">+ مزاد جديد</button>
+        </div>
+        <div id="auctionAdminList"></div>
       </div>
 
       <!-- RULES ADMIN -->
@@ -1766,6 +1795,9 @@ body.ready .page.on { opacity:1; }
   </div>
 </section>
 
+
+
+
 </main>
 <div class="footer" style="position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);text-align:center;padding:8px;font-size:11px;color:rgba(255,255,255,.2);z-index:50;">© 2026 <span style="color:var(--kick);opacity:.5;">corecode2026</span> — جميع الحقوق محفوظة</div>
 
@@ -1833,6 +1865,7 @@ body.ready .page.on { opacity:1; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 01-2-2V5h4"/><path d="M18 9h2a2 2 0 002-2V5h-4"/><path d="M12 17v4"/><path d="M8 21h8"/><path d="M6 3h12v8a6 6 0 01-12 0V3z"/></svg>
       البطولات
     </button>
+
     <button class="dl" onclick="drawerGoTo('profile')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       ملفي
@@ -1967,6 +2000,7 @@ function goTo(id, btn) {
   if (id === 'points') loadPoints();
   if (id === 'profile') loadProfile();
   if (id === 'daily') loadDaily();
+
   if (id === 'admin') {
     loadDashboard();
     // طبّق صلاحيات الموظف فقط
@@ -2294,10 +2328,90 @@ function renderSocials() {
 // ═══════════════════════════════════════════
 // STORE
 // ═══════════════════════════════════════════
+
+async function loadStoreAuctionBanner() {
+  const banner = document.getElementById('storeAuctionBanner');
+  if (!banner) return;
+  try {
+    const res = await fetch(`${W}/api/auctions`);
+    const { auctions } = await res.json();
+    const active = (auctions||[]).filter(a => !a.finalized && new Date(a.endTime) > new Date());
+    if (!active.length) { banner.style.display='none'; return; }
+    banner.style.display = 'block';
+    banner.innerHTML = active.map(a => {
+      const topBid = a.bids?.length ? Math.max(...a.bids.map(b=>b.amount)) : 0;
+      const diff = new Date(a.endTime) - new Date();
+      const h = Math.floor(diff/3600000);
+      const m = Math.floor((diff%3600000)/60000);
+      return `
+      <div onclick="goTo('auction',null)" style="cursor:pointer;background:linear-gradient(135deg,rgba(83,252,24,.1),rgba(83,252,24,.03));border:1px solid var(--kick);border-radius:var(--radius-lg);padding:18px 20px;display:flex;align-items:center;gap:16px;transition:var(--transition);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+        <div style="font-size:40px;flex-shrink:0;">${a.icon||'🏷️'}</div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <span style="background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:1px;">🔴 مزاد نشط</span>
+            <span style="font-size:11px;color:var(--muted);">ينتهي خلال ${h}س ${m}د</span>
+          </div>
+          <div style="font-size:15px;font-weight:800;">${a.name}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">أعلى مزايدة: <strong style="color:var(--kick);">${topBid.toLocaleString()} نقطة</strong> · ${a.bids?.length||0} مزايد</div>
+        </div>
+        <div style="background:var(--kick);color:#000;font-size:13px;font-weight:800;padding:10px 18px;border-radius:10px;flex-shrink:0;">زايد الآن →</div>
+      </div>`;
+    }).join('');
+  } catch(e) { banner.style.display='none'; }
+}
+
+
+function switchStoreTab(tab) {
+  const prodTab = document.getElementById('storeTabProducts');
+  const aucTab  = document.getElementById('storeTabAuction');
+  const prodBtn = document.getElementById('storeTab-products');
+  const aucBtn  = document.getElementById('storeTab-auction');
+
+  if (tab === 'products') {
+    prodTab.style.display = 'block';
+    aucTab.style.display  = 'none';
+    prodBtn.style.color = 'var(--kick)';
+    prodBtn.style.borderBottomColor = 'var(--kick)';
+    aucBtn.style.color  = 'var(--muted)';
+    aucBtn.style.borderBottomColor = 'transparent';
+  } else {
+    prodTab.style.display = 'none';
+    aucTab.style.display  = 'block';
+    prodBtn.style.color = 'var(--muted)';
+    prodBtn.style.borderBottomColor = 'transparent';
+    aucBtn.style.color  = 'var(--kick)';
+    aucBtn.style.borderBottomColor = 'var(--kick)';
+    loadAuctionInStore();
+  }
+}
+
+async function loadAuctionInStore() {
+  const el = document.getElementById('auctionList2');
+  if (!el) return;
+  el.innerHTML = '<div class="empty"><p style="color:var(--muted);">جاري التحميل...</p></div>';
+  try {
+    const res = await fetch(`${W}/api/auctions`);
+    const { auctions } = await res.json();
+    if (!auctions?.length) {
+      el.innerHTML = '<div class="empty" style="padding:60px 20px;text-align:center;"><div style="font-size:48px;margin-bottom:16px;">🏷️</div><p style="color:var(--muted);font-size:15px;">لا توجد مزادات نشطة حالياً</p></div>';
+      return;
+    }
+    // أظهر نقطة حمراء على تبويب المزاد
+    const dot = document.getElementById('auctionActiveDot');
+    if(dot) dot.style.display = auctions.filter(a=>!a.finalized&&new Date(a.endTime)>new Date()).length ? 'block' : 'none';
+    el.innerHTML = auctions.map(a => renderAuctionCard(a)).join('');
+    auctions.forEach(a => startAuctionTimer(a));
+  } catch(e) {
+    el.innerHTML = '<div class="empty"><p>تعذر التحميل</p></div>';
+  }
+}
+
 async function loadStore() {
   const g = document.getElementById('storeGrid');
   if (!g) return;
   g.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p>';
+  // تحقق من المزادات وأظهر النقطة
+  fetch(`${W}/api/auctions`).then(r=>r.json()).then(({auctions})=>{ const dot=document.getElementById('auctionActiveDot'); if(dot&&auctions?.filter(a=>!a.finalized&&new Date(a.endTime)>new Date()).length) dot.style.display='block'; }).catch(()=>{});
   try {
     const { products } = await (await fetch(`${W}/api/products`)).json();
     window._prods = products;
@@ -2475,6 +2589,7 @@ function aTab(tab, btn) {
   if(tab==='settings') renderSocials();
   if(tab==='pts-cfg') { loadSecretCodes(); loadDailySettings(); loadLevelsFromCache(); }
   if(tab==='logs') loadActivityLogs();
+  if(tab==='auction-admin') loadAuctionAdmin();
 }
 
 async function loadDashboard() {
@@ -3412,7 +3527,8 @@ const PERM_TAB_MAP = {
   'pts-cfg':'settings',
   'rules-admin':'settings',
   'logs':'settings',
-  'settings':'settings'
+  'settings':'settings',
+  'auction-admin':'orders'
 };
 
 function applyStaffPermissions(perms) {
@@ -3968,6 +4084,263 @@ function loadLevelsFromCache() {
     if (c.levels && Array.isArray(c.levels)) levelsConfig = c.levels;
   } catch(e){}
   renderLevelsAdmin();
+}
+
+
+// ══════════════════════════════════════════
+// AUCTION SYSTEM
+// ══════════════════════════════════════════
+let auctionTimers = {};
+
+async function loadAuction() {
+  const el = document.getElementById('auctionList');
+  if (!el) return;
+  el.innerHTML = '<div class="empty"><p style="color:var(--muted);">جاري التحميل...</p></div>';
+  try {
+    const res = await fetch(`${W}/api/auctions`);
+    const { auctions } = await res.json();
+    if (!auctions || !auctions.length) {
+      el.innerHTML = '<div class="empty" style="padding:60px 20px;text-align:center;"><div style="font-size:48px;margin-bottom:16px;">🏷️</div><p style="color:var(--muted);font-size:15px;">لا توجد مزادات نشطة حالياً</p></div>';
+      return;
+    }
+    el.innerHTML = auctions.map(a => renderAuctionCard(a)).join('');
+    // ابدأ العدادات
+    auctions.forEach(a => startAuctionTimer(a));
+  } catch(e) {
+    el.innerHTML = '<div class="empty"><p>تعذر التحميل</p></div>';
+  }
+}
+
+function renderAuctionCard(a) {
+  const endTime = new Date(a.endTime);
+  const now = new Date();
+  const ended = endTime <= now;
+  const myBid = a.bids?.find(b => b.userId === currentUser?.id);
+  const topBid = a.bids?.length ? Math.max(...a.bids.map(b => b.amount)) : 0;
+  const topBidder = a.bids?.find(b => b.amount === topBid);
+  const isWinning = topBidder?.userId === currentUser?.id;
+  const canBid = currentUser && !ended && (currentUser.points > 0);
+
+  return `<div style="background:var(--surface);border:1px solid ${isWinning?'var(--kick)':'var(--border2)'};border-radius:var(--radius-lg);overflow:hidden;margin-bottom:20px;transition:var(--transition);" id="auction-${a.id}">
+    <!-- صورة المنتج -->
+    <div style="position:relative;">
+      <div style="width:100%;height:200px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:64px;overflow:hidden;">
+        ${a.img ? `<img src="${a.img}" style="width:100%;height:100%;object-fit:cover;"/>` : (a.icon||'🎁')}
+      </div>
+      ${ended ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;"><span style="background:var(--red);color:#fff;font-size:13px;font-weight:800;padding:8px 20px;border-radius:20px;">انتهى المزاد</span></div>` : ''}
+      ${isWinning && !ended ? `<div style="position:absolute;top:10px;right:10px;background:var(--kick);color:#000;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;">🏆 أنت الأعلى!</div>` : ''}
+    </div>
+
+    <div style="padding:20px;">
+      <div style="font-size:18px;font-weight:900;margin-bottom:6px;">${a.name}</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">${a.desc||''}</div>
+
+      <!-- إحصائيات -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">أعلى مزايدة</div>
+          <div style="font-size:18px;font-weight:900;color:var(--kick);">${topBid.toLocaleString()}</div>
+          <div style="font-size:10px;color:var(--muted);">نقطة</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">المزايدون</div>
+          <div style="font-size:18px;font-weight:900;color:var(--text);">${a.bids?.length||0}</div>
+          <div style="font-size:10px;color:var(--muted);">شخص</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">الحد الأدنى</div>
+          <div style="font-size:18px;font-weight:900;color:var(--text);">${(a.minBid||1).toLocaleString()}</div>
+          <div style="font-size:10px;color:var(--muted);">نقطة</div>
+        </div>
+      </div>
+
+      <!-- العداد التنازلي -->
+      ${!ended ? `
+      <div style="background:var(--kick-dim);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;margin-bottom:16px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">ينتهي خلال</div>
+        <div id="timer-${a.id}" style="font-size:22px;font-weight:900;color:var(--kick);font-family:monospace;">--:--:--</div>
+      </div>
+      ` : `
+      <div style="background:rgba(255,59,92,.08);border:1px solid rgba(255,59,92,.2);border-radius:10px;padding:12px;text-align:center;margin-bottom:16px;">
+        <div style="font-size:13px;color:var(--red);font-weight:700;">${topBidder ? '🏆 الفائز: ' + topBidder.username : 'انتهى بدون فائز'}</div>
+      </div>
+      `}
+
+      <!-- مزايدتي -->
+      ${myBid ? `<div style="font-size:12px;color:var(--muted);margin-bottom:12px;text-align:center;">مزايدتك الحالية: <strong style="color:var(--kick);">${myBid.amount.toLocaleString()} نقطة</strong></div>` : ''}
+
+      <!-- زر المزايدة -->
+      ${!ended && currentUser ? `
+      <div style="display:flex;gap:10px;">
+        <input type="number" id="bid-${a.id}" placeholder="أدخل عدد النقاط" min="${Math.max(a.minBid||1, topBid+1)}" 
+          style="flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:10px 14px;border-radius:10px;font-size:14px;font-family:'Cairo',sans-serif;direction:ltr;"
+          onkeydown="if(event.key==='Enter')placeBid('${a.id}')"/>
+        <button onclick="placeBid('${a.id}')" class="btn btn-kick" style="padding:10px 20px;">مزايدة 🔥</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center;">نقاطك: ${(currentUser?.points||0).toLocaleString()} | الحد الأدنى: ${Math.max(a.minBid||1, topBid+1).toLocaleString()}</div>
+      ` : !currentUser ? `<button class="btn btn-kick" onclick="doLogin('kick')" style="width:100%;justify-content:center;">سجّل دخول للمزايدة</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function startAuctionTimer(a) {
+  if (auctionTimers[a.id]) clearInterval(auctionTimers[a.id]);
+  const el = () => document.getElementById('timer-'+a.id);
+  function update() {
+    const diff = new Date(a.endTime) - new Date();
+    if (diff <= 0) {
+      clearInterval(auctionTimers[a.id]);
+      loadAuction(); // أعد التحميل لما ينتهي
+      return;
+    }
+    const h = Math.floor(diff/3600000);
+    const m = Math.floor((diff%3600000)/60000);
+    const s = Math.floor((diff%60000)/1000);
+    const timerEl = el();
+    if(timerEl) {
+      timerEl.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      timerEl.style.color = diff < 300000 ? 'var(--red)' : 'var(--kick)'; // أحمر لآخر 5 دقائق
+    }
+  }
+  update();
+  auctionTimers[a.id] = setInterval(update, 1000);
+}
+
+async function placeBid(auctionId) {
+  if (!currentUser) { showToast('سجّل دخول أولاً','err'); return; }
+  const input = document.getElementById('bid-'+auctionId);
+  const amount = parseInt(input?.value);
+  if (!amount || amount <= 0) { showToast('أدخل عدد النقاط','err'); return; }
+  if (amount > currentUser.points) { showToast('نقاطك غير كافية','err'); return; }
+
+  try {
+    const res = await fetch(`${W}/api/auctions/${auctionId}/bid`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ token:sessionToken, amount })
+    });
+    const d = await res.json();
+    if (d.success) {
+      currentUser.points = d.remainingPoints;
+      document.getElementById('navPtsVal').textContent = d.remainingPoints.toLocaleString();
+      showToast('✅ تم تسجيل مزايدتك بـ '+amount.toLocaleString()+' نقطة!');
+      if(input) input.value = '';
+      loadAuction();
+    } else {
+      showToast(d.error||'فشلت المزايدة','err');
+    }
+  } catch(e) { showToast('خطأ في الاتصال','err'); }
+}
+
+// ADMIN AUCTION
+function openAuctionModal(id=null) {
+  const a = id ? (window._auctions||[]).find(x=>x.id===id) : null;
+  // حدد وقت افتراضي (24 ساعة من الآن)
+  const def = new Date(Date.now() + 24*3600*1000);
+  const defStr = def.toISOString().slice(0,16);
+
+  const modal = document.createElement('div');
+  modal.id = 'auctionModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:28px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;">
+      <h3 style="font-size:18px;font-weight:800;margin-bottom:20px;">${a?'تعديل مزاد':'مزاد جديد'} 🏷️</h3>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div><label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">اسم المنتج</label>
+          <input class="pf-input" id="am-name" value="${a?.name||''}" placeholder="جائزة حصرية"/></div>
+        <div><label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">الوصف</label>
+          <textarea class="pf-input" id="am-desc" rows="2" style="resize:vertical;">${a?.desc||''}</textarea></div>
+        <div><label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">الأيقونة</label>
+          <input class="pf-input" id="am-icon" value="${a?.icon||'🎁'}" style="font-size:20px;text-align:center;"/></div>
+        <div><label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">الحد الأدنى للمزايدة (نقاط)</label>
+          <input class="pf-input" id="am-min" type="number" value="${a?.minBid||1}" min="1" dir="ltr"/></div>
+        <div><label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">وقت الانتهاء</label>
+          <input class="pf-input" id="am-end" type="datetime-local" value="${a?.endTime?new Date(a.endTime).toISOString().slice(0,16):defStr}" dir="ltr"/></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px;">
+        <button onclick="saveAuction('${a?.id||''}')" class="btn btn-kick" style="flex:1;">💾 حفظ</button>
+        <button onclick="document.getElementById('auctionModal').remove()" class="btn btn-ghost" style="flex:1;">إلغاء</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.onclick = e => { if(e.target===modal) modal.remove(); };
+}
+
+async function saveAuction(editId='') {
+  const name = document.getElementById('am-name')?.value.trim();
+  const desc = document.getElementById('am-desc')?.value.trim();
+  const icon = document.getElementById('am-icon')?.value.trim() || '🎁';
+  const minBid = parseInt(document.getElementById('am-min')?.value)||1;
+  const endTime = new Date(document.getElementById('am-end')?.value).toISOString();
+  if (!name || !endTime) { showToast('أدخل الاسم والوقت','err'); return; }
+
+  try {
+    const res = await fetch(`${W}/api/admin/auctions${editId?'/'+editId:''}`, {
+      method: editId ? 'PUT' : 'POST',
+      headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},
+      body:JSON.stringify({name,desc,icon,minBid,endTime})
+    });
+    const d = await res.json();
+    if(d.success) {
+      document.getElementById('auctionModal')?.remove();
+      showToast('✅ تم حفظ المزاد');
+      loadAuctionAdmin();
+    } else showToast(d.error||'خطأ','err');
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+async function loadAuctionAdmin() {
+  try {
+    const res = await fetch(`${W}/api/admin/auctions`,{headers:{'x-admin-key':ADMIN_KEY}});
+    const { auctions } = await res.json();
+    window._auctions = auctions;
+    const el = document.getElementById('auctionAdminList');
+    if(!el) return;
+    el.innerHTML = auctions.length ? auctions.map(a => {
+      const topBid = a.bids?.length ? Math.max(...a.bids.map(b=>b.amount)) : 0;
+      const topBidder = a.bids?.find(b=>b.amount===topBid);
+      const ended = new Date(a.endTime) <= new Date();
+      return `
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;">
+        <div style="font-size:32px;flex-shrink:0;">${a.icon||'🎁'}</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;">${a.name}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">أعلى مزايدة: <strong style="color:var(--kick);">${topBid.toLocaleString()}</strong> ${topBidder?'بواسطة '+topBidder.username:''}</div>
+          <div style="font-size:12px;color:var(--muted);">المزايدون: ${a.bids?.length||0} | الانتهاء: ${new Date(a.endTime).toLocaleString('ar')}</div>
+          <span style="font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;${ended?'background:rgba(255,59,92,.1);color:var(--red)':'background:var(--kick-dim);color:var(--kick)'};">${ended?'انتهى':'نشط'}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button class="btn-sm btn-edit" onclick="openAuctionModal('${a.id}')">✏️</button>
+          ${ended?`<button class="btn-sm btn-ok" onclick="finalizeAuction('${a.id}')">✓ إغلاق</button>`:''}
+          <button class="btn-sm btn-del" onclick="deleteAuction('${a.id}')">🗑</button>
+        </div>
+      </div>`;
+    }).join('') : '<div class="empty"><p>لا توجد مزادات</p></div>';
+  } catch(e) {}
+}
+
+async function finalizeAuction(id) {
+  if(!confirm('إغلاق المزاد وإرسال الجائزة للفائز؟')) return;
+  try {
+    const res = await fetch(`${W}/api/admin/auctions/${id}/finalize`,{
+      method:'POST',
+      headers:{'x-admin-key':ADMIN_KEY}
+    });
+    const d = await res.json();
+    if(d.success) {
+      showToast(d.winner?`✅ الفائز: ${d.winner}`:'✅ تم الإغلاق - لا يوجد فائز');
+      loadAuctionAdmin();
+    } else showToast(d.error||'خطأ','err');
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+async function deleteAuction(id) {
+  if(!confirm('حذف المزاد؟')) return;
+  try {
+    await fetch(`${W}/api/admin/auctions/${id}`,{method:'DELETE',headers:{'x-admin-key':ADMIN_KEY}});
+    showToast('تم الحذف'); loadAuctionAdmin();
+  } catch(e) {}
 }
 
 async function init() {

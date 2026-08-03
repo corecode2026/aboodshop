@@ -1997,6 +1997,7 @@ function goTo(id, btn) {
   document.getElementById('page-' + id)?.classList.add('on');
   if (btn && btn.classList) btn.classList.add('on');
   if (id === 'store') loadStore();
+  if (id !== 'store') stopAuctionAutoRefresh();
   if (id === 'points') loadPoints();
   if (id === 'profile') loadProfile();
   if (id === 'daily') loadDaily();
@@ -2382,7 +2383,22 @@ function switchStoreTab(tab) {
     aucBtn.style.color  = 'var(--kick)';
     aucBtn.style.borderBottomColor = 'var(--kick)';
     loadAuctionInStore();
+    startAuctionAutoRefresh();
   }
+}
+
+let auctionAutoRefresh = null;
+
+function startAuctionAutoRefresh() {
+  if (auctionAutoRefresh) clearInterval(auctionAutoRefresh);
+  auctionAutoRefresh = setInterval(() => {
+    const tab = document.getElementById('storeTabAuction');
+    if (tab && tab.style.display !== 'none') loadAuctionInStore();
+  }, 5000); // كل 5 ثواني
+}
+
+function stopAuctionAutoRefresh() {
+  if (auctionAutoRefresh) { clearInterval(auctionAutoRefresh); auctionAutoRefresh = null; }
 }
 
 async function loadAuctionInStore() {

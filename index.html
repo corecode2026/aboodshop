@@ -2382,7 +2382,7 @@ function switchStoreTab(tab) {
     prodBtn.style.borderBottomColor = 'transparent';
     aucBtn.style.color  = 'var(--kick)';
     aucBtn.style.borderBottomColor = 'var(--kick)';
-    loadAuctionInStore();
+    loadAuctionInStore(true);
     startAuctionAutoRefresh();
   }
 }
@@ -2401,25 +2401,70 @@ function stopAuctionAutoRefresh() {
   if (auctionAutoRefresh) { clearInterval(auctionAutoRefresh); auctionAutoRefresh = null; }
 }
 
-async function loadAuctionInStore() {
+let _auctionData = [];
+
+async function loadAuctionInStore(initial=false) {
   const el = document.getElementById('auctionList2');
   if (!el) return;
-  el.innerHTML = '<div class="empty"><p style="color:var(--muted);">جاري التحميل...</p></div>';
   try {
     const res = await fetch(`${W}/api/auctions`);
     const { auctions } = await res.json();
+    
+    // نقطة المزاد
+    const dot = document.getElementById('auctionActiveDot');
+    const active = (auctions||[]).filter(a=>!a.finalized&&new Date(a.endTime)>new Date());
+    if(dot) dot.style.display = active.length ? 'block' : 'none';
+
     if (!auctions?.length) {
       el.innerHTML = '<div class="empty" style="padding:60px 20px;text-align:center;"><div style="font-size:48px;margin-bottom:16px;">🏷️</div><p style="color:var(--muted);font-size:15px;">لا توجد مزادات نشطة حالياً</p></div>';
       return;
     }
-    // أظهر نقطة حمراء على تبويب المزاد
-    const dot = document.getElementById('auctionActiveDot');
-    if(dot) dot.style.display = auctions.filter(a=>!a.finalized&&new Date(a.endTime)>new Date()).length ? 'block' : 'none';
-    el.innerHTML = auctions.map(a => renderAuctionCard(a)).join('');
-    auctions.forEach(a => startAuctionTimer(a));
-  } catch(e) {
-    el.innerHTML = '<div class="empty"><p>تعذر التحميل</p></div>';
-  }
+
+    // أول تحميل — ارسم كل شي
+    if (initial || !_auctionData.length) {
+      _auctionData = auctions;
+      el.innerHTML = auctions.map(a => renderAuctionCard(a)).join('');
+      auctions.forEach(a => startAuctionTimer(a));
+      return;
+    }
+
+    // تحديث — فقط غيّر الأرقام بدون إعادة رسم
+    auctions.forEach(a => {
+      const topBid = a.bids?.length ? Math.max(...a.bids.map(b=>b.amount)) : 0;
+      const topBidder = a.bids?.find(b=>b.amount===topBid);
+      const myBid = a.bids?.find(b=>b.userId===currentUser?.id);
+      const isWinning = topBidder?.userId === currentUser?.id;
+
+      // حدّث أعلى مزايدة
+      const topEl = document.getElementById('auc-top-'+a.id);
+      if(topEl) topEl.textContent = topBid.toLocaleString();
+      
+      // حدّث عدد المزايدين
+      const cntEl = document.getElementById('auc-cnt-'+a.id);
+      if(cntEl) cntEl.textContent = a.bids?.length||0;
+
+      // حدّث مزايدتي
+      const myEl = document.getElementById('auc-my-'+a.id);
+      if(myEl) {
+        myEl.style.display = myBid ? 'block' : 'none';
+        if(myBid) myEl.innerHTML = 'مزايدتك الحالية: <strong style="color:var(--kick);">' + myBid.amount.toLocaleString() + ' نقطة</strong>';
+      }
+
+      // حدّث حد المزايدة
+      const bidInput = document.getElementById('bid-'+a.id);
+      if(bidInput) bidInput.min = Math.max(a.minBid||1, topBid+1);
+
+      // حدّث لون الكارد
+      const card = document.getElementById('auction-'+a.id);
+      if(card) card.style.borderColor = isWinning ? 'var(--kick)' : 'var(--border2)';
+
+      // حدّث شارة "أنت الأعلى"
+      const winBadge = document.getElementById('auc-win-'+a.id);
+      if(winBadge) winBadge.style.display = (isWinning&&!a.finalized) ? 'flex' : 'none';
+    });
+
+    _auctionData = auctions;
+  } catch(e) {}
 }
 
 async function loadStore() {
@@ -4144,7 +4189,7 @@ function renderAuctionCard(a) {
         ${a.img ? `<img src="${a.img}" style="width:100%;height:100%;object-fit:cover;"/>` : (a.icon||'🎁')}
       </div>
       ${ended ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;"><span style="background:var(--red);color:#fff;font-size:13px;font-weight:800;padding:8px 20px;border-radius:20px;">انتهى المزاد</span></div>` : ''}
-      ${isWinning && !ended ? `<div style="position:absolute;top:10px;right:10px;background:var(--kick);color:#000;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;">🏆 أنت الأعلى!</div>` : ''}
+      <div id="auc-win-${a.id}" style="position:absolute;top:10px;right:10px;background:var(--kick);color:#000;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;display:${isWinning&&!ended?'flex':'none'}">🏆 أنت الأعلى!</div>
     </div>
 
     <div style="padding:20px;">
@@ -4155,12 +4200,12 @@ function renderAuctionCard(a) {
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
         <div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">أعلى مزايدة</div>
-          <div style="font-size:18px;font-weight:900;color:var(--kick);">${topBid.toLocaleString()}</div>
+          <div id="auc-top-${a.id}" style="font-size:18px;font-weight:900;color:var(--kick);">${topBid.toLocaleString()}</div>
           <div style="font-size:10px;color:var(--muted);">نقطة</div>
         </div>
         <div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">المزايدون</div>
-          <div style="font-size:18px;font-weight:900;color:var(--text);">${a.bids?.length||0}</div>
+          <div id="auc-cnt-${a.id}" style="font-size:18px;font-weight:900;color:var(--text);">${a.bids?.length||0}</div>
           <div style="font-size:10px;color:var(--muted);">شخص</div>
         </div>
         <div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
@@ -4183,7 +4228,7 @@ function renderAuctionCard(a) {
       `}
 
       <!-- مزايدتي -->
-      ${myBid ? `<div style="font-size:12px;color:var(--muted);margin-bottom:12px;text-align:center;">مزايدتك الحالية: <strong style="color:var(--kick);">${myBid.amount.toLocaleString()} نقطة</strong></div>` : ''}
+      <div id="auc-my-${a.id}" style="font-size:12px;color:var(--muted);margin-bottom:12px;text-align:center;display:${myBid?'block':'none'}">${myBid?'مزايدتك الحالية: <strong style="color:var(--kick);">'+(myBid.amount.toLocaleString())+' نقطة</strong>':''}</div>
 
       <!-- زر المزايدة -->
       ${!ended && currentUser ? `
@@ -4241,7 +4286,7 @@ async function placeBid(auctionId) {
       document.getElementById('navPtsVal').textContent = d.remainingPoints.toLocaleString();
       showToast('✅ تم تسجيل مزايدتك بـ '+amount.toLocaleString()+' نقطة!');
       if(input) input.value = '';
-      loadAuctionInStore();
+      loadAuctionInStore(true);
     } else {
       showToast(d.error||'فشلت المزايدة','err');
     }

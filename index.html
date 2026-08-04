@@ -2144,13 +2144,12 @@ async function doLogout() {
 async function loadAllSettings() {
   try {
     const [sRes, socRes] = await Promise.all([
-      fetch(`${W}/api/admin/settings`, {headers:{'x-admin-key':ADMIN_KEY}}),
+      fetch(`${W}/api/settings`),
       fetch(`${W}/api/socials`),
     ]);
     const s = await sRes.json();
     const { socials } = await socRes.json();
 
-    if (s.adminPass) { adminPass = s.adminPass; }
     if (s.adminUser) { adminUser = s.adminUser; setVal('set-adminuser', s.adminUser); }
     if (s.channelName) {
       setEl('navName', s.channelName); setEl('adminName', s.channelName);
@@ -2572,6 +2571,13 @@ async function submitAdmin() {
     adminIn=true; isStaffMode=false; currentStaff=null;
     sessionStorage.setItem('adminIn','1');
     sessionStorage.removeItem('staffIn');
+    // جيب كلمة السر الحالية للمقارنة لاحقاً
+    try {
+      const sr = await fetch(`${W}/api/admin/settings`,{headers:{'x-admin-key':ADMIN_KEY}});
+      const sd = await sr.json();
+      if(sd.adminPass) adminPass = sd.adminPass;
+      if(sd.adminUser) adminUser = sd.adminUser;
+    } catch(e){}
     const am=document.getElementById('adminModal'); if(am)am.style.display='none';
     closeModal('adminModal');
     goTo('admin',null);

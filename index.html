@@ -2562,7 +2562,17 @@ function openAdminLogin() {
   am.classList.remove('hidden');
   am.style.display = 'flex';
 }
+let loginAttempts = parseInt(sessionStorage.getItem('loginAttempts')||'0');
+let loginLocked = parseInt(sessionStorage.getItem('loginLocked')||'0');
+
 async function submitAdmin() {
+  // تحقق من الـ lockout
+  const now = Date.now();
+  if (loginLocked && now < loginLocked) {
+    const secs = Math.ceil((loginLocked - now)/1000);
+    setEl('aErr', `🔒 محظور لمدة ${secs} ثانية`);
+    return;
+  }
   const user = gv('aUser'), pass = gv('aPass');
   setEl('aErr','');
 
@@ -2571,6 +2581,9 @@ async function submitAdmin() {
     adminIn=true; isStaffMode=false; currentStaff=null;
     sessionStorage.setItem('adminIn','1');
     sessionStorage.removeItem('staffIn');
+    sessionStorage.setItem('loginAttempts','0');
+    sessionStorage.removeItem('loginLocked');
+    sessionStorage.setItem('loginTime', Date.now());
     // جيب كلمة السر الحالية للمقارنة لاحقاً
     try {
       const sr = await fetch(`${W}/api/admin/settings`,{headers:{'x-admin-key':ADMIN_KEY}});
@@ -4507,6 +4520,19 @@ async function showUserHistory(userId) {
   document.body.appendChild(modal);
   modal.onclick = e => { if(e.target===modal) modal.remove(); };
 }
+
+
+// ══ SESSION TIMEOUT ══
+function checkSessionTimeout() {
+  const loginTime = parseInt(sessionStorage.getItem('loginTime')||'0');
+  if (!loginTime) return;
+  const hours8 = 8 * 3600 * 1000;
+  if (Date.now() - loginTime > hours8) {
+    adminLogout();
+    showToast('انتهت جلستك — سجّل دخول مجدداً');
+  }
+}
+setInterval(checkSessionTimeout, 60000); // تحقق كل دقيقة
 
 async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);

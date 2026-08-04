@@ -3535,7 +3535,7 @@ async function submitStaffLogin() {
   if (!user || !pass) { setEl('staffLoginErr','❌ أدخل البيانات'); return; }
 
   // تحقق من كلمة السر المدير أولاً
-  if (user === 'admin' && pass === adminPass) {
+  if (user === adminUser && pass === adminPass) {
     adminIn=true; isStaffMode=false; currentStaff=null;
     sessionStorage.setItem('adminIn','1');
     closeModal('staffLoginModal');
@@ -4193,14 +4193,14 @@ function renderAuctionCard(a) {
     </div>
 
     <div style="padding:20px;">
-      <div style="font-size:18px;font-weight:900;margin-bottom:6px;">${a.name}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="font-size:18px;font-weight:900;">${a.name}</div><span style="font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;background:${a.mode==='cumulative'?'rgba(255,140,0,.1)':'var(--kick-dim)'};color:${a.mode==='cumulative'?'var(--orange)':'var(--kick)'}">${a.mode==='cumulative'?'🔥 تراكمي':'🏆 كلاسيكي'}</span></div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">${a.desc||''}</div>
 
       <!-- إحصائيات -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
         <div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">أعلى مزايدة</div>
-          <div id="auc-top-${a.id}" style="font-size:18px;font-weight:900;color:var(--kick);">${topBid.toLocaleString()}</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">${a.mode==='cumulative'?'المجموع الكلي':'أعلى مزايدة'}</div>
+          <div id="auc-top-${a.id}" style="font-size:18px;font-weight:900;color:var(--kick);">${a.mode==='cumulative'?(a.totalBid||0).toLocaleString():topBid.toLocaleString()}</div>
           <div style="font-size:10px;color:var(--muted);">نقطة</div>
         </div>
         <div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
@@ -4313,6 +4313,12 @@ function openAuctionModal(id=null) {
           <textarea class="pf-input" id="am-desc" rows="2" style="resize:vertical;">${a?.desc||''}</textarea></div>
         <div><label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">الأيقونة</label>
           <input class="pf-input" id="am-icon" value="${a?.icon||'🎁'}" style="font-size:20px;text-align:center;"/></div>
+        <div><label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">نظام المزاد</label>
+          <select class="pf-input" id="am-mode" style="cursor:pointer;">
+            <option value="classic" ${a?.mode==='classic'||!a?.mode?'selected':''}>🏆 كلاسيكي — أعلى مزايدة تفوز (النقاط ترجع للخاسرين)</option>
+            <option value="cumulative" ${a?.mode==='cumulative'?'selected':''}>🔥 تراكمي — آخر من يزيد يفوز (النقاط تُخصم فوراً)</option>
+          </select>
+        </div>
         <div><label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">الحد الأدنى للمزايدة (نقاط)</label>
           <input class="pf-input" id="am-min" type="number" value="${a?.minBid||1}" min="1" dir="ltr"/></div>
         <div><label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">وقت الانتهاء</label>
@@ -4334,13 +4340,14 @@ async function saveAuction(editId='') {
   const icon = document.getElementById('am-icon')?.value.trim() || '🎁';
   const minBid = parseInt(document.getElementById('am-min')?.value)||1;
   const endTime = new Date(document.getElementById('am-end')?.value).toISOString();
+  const mode = document.getElementById('am-mode')?.value || 'classic';
   if (!name || !endTime) { showToast('أدخل الاسم والوقت','err'); return; }
 
   try {
     const res = await fetch(`${W}/api/admin/auctions${editId?'/'+editId:''}`, {
       method: editId ? 'PUT' : 'POST',
       headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},
-      body:JSON.stringify({name,desc,icon,minBid,endTime})
+      body:JSON.stringify({name,desc,icon,minBid,endTime,mode})
     });
     const d = await res.json();
     if(d.success) {
@@ -4402,6 +4409,97 @@ async function deleteAuction(id) {
     await fetch(`${W}/api/admin/auctions/${id}`,{method:'DELETE',headers:{'x-admin-key':ADMIN_KEY}});
     showToast('تم الحذف'); loadAuctionAdmin();
   } catch(e) {}
+}
+
+
+// ══ USERS SEARCH + DETAILS ══
+let allUsers = [];
+
+function filterUsers() {
+  const q = (document.getElementById('userSearch')?.value || '').toLowerCase().trim();
+  const filtered = q ? allUsers.filter(u => 
+    u.username.toLowerCase().includes(q) || 
+    (u.kickUsername||'').toLowerCase().includes(q)
+  ) : allUsers;
+  renderUsersTable(filtered);
+}
+
+function renderUsersTable(users) {
+  const el = document.getElementById('usersTable');
+  if (!el) return;
+  if (!users.length) {
+    el.innerHTML = '<div class="empty"><p>لا يوجد مستخدمون</p></div>';
+    return;
+  }
+  el.innerHTML = `<table class="table">
+    <thead><tr>
+      <th>المستخدم</th><th>المنصة</th><th>المستوى</th><th>النقاط</th><th>التسجيل</th><th>الحالة</th><th>إجراءات</th>
+    </tr></thead>
+    <tbody>${users.map(u => `
+      <tr style="${u.blocked?'opacity:.5;':''}">
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${u.avatar?`<img src="${u.avatar}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);"/>`:'<div style="width:28px;height:28px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);">${u.username.charAt(0).toUpperCase()}</div>'}
+            <div>
+              <div style="font-size:13px;font-weight:700;">${u.username}</div>
+              ${u.blocked?'<span style="font-size:10px;background:rgba(255,59,92,.1);color:var(--red);padding:1px 7px;border-radius:10px;font-weight:700;">محظور</span>':''}
+            </div>
+          </div>
+        </td>
+        <td><span class="pbadge pbadge-${u.provider}">${u.provider==='discord'?'Discord':'Kick'}</span></td>
+        <td><span style="font-size:12px;font-weight:700;color:${getLevelColor((getUserLevel(u.points||0)).level)};">Lv${(getUserLevel(u.points||0)).level}</span></td>
+        <td style="color:var(--kick);font-weight:700;">${(u.points||0).toLocaleString()}</td>
+        <td style="color:var(--muted);font-size:12px;">${u.joinedAt?fmtDate(u.joinedAt):'-'}</td>
+        <td>
+          <button onclick="showUserHistory('${u.id}')" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">سجل النقاط</button>
+        </td>
+        <td>
+          <div class="td-acts">
+            <button class="btn-sm btn-edit" onclick="openAddPts('${u.id}','${u.username}')" title="إضافة نقاط">⭐+</button>
+            <button class="btn-sm btn-pause" onclick="resetPts('${u.id}','${u.username}')" title="تصفير">⬜</button>
+            <button class="btn-sm ${u.blocked?'btn-ok':'btn-del'}" onclick="toggleBlock('${u.id}','${u.username}',${!u.blocked})" title="${u.blocked?'رفع الحظر':'حظر'}">
+              ${u.blocked?'🔓':'🚫'}
+            </button>
+            <button class="btn-sm btn-del" onclick="deleteUser('${u.id}','${u.username}')" title="حذف">🗑</button>
+          </div>
+        </td>
+      </tr>
+    `).join('')}</tbody>
+  </table>`;
+}
+
+async function showUserHistory(userId) {
+  const user = allUsers.find(u => u.id === userId);
+  if (!user) return;
+  
+  const history = user.history || [];
+  
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px;max-width:500px;width:100%;max-height:85vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+        ${user.avatar?`<img src="${user.avatar}" style="width:44px;height:44px;border-radius:50%;border:2px solid var(--kick);object-fit:cover;"/>`:''}
+        <div>
+          <div style="font-size:16px;font-weight:800;">${user.username}</div>
+          <div style="font-size:13px;color:var(--kick);font-weight:700;">⭐ ${(user.points||0).toLocaleString()} نقطة | Lv${(getUserLevel(user.points||0)).level}</div>
+        </div>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="margin-right:auto;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+      </div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--muted);">سجل النقاط (${history.length} عملية)</div>
+      ${history.length ? history.map(h => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);">
+          <div>
+            <div style="font-size:13px;font-weight:600;">${h.title||'نقاط'}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px;">${fmtDate(h.date)}</div>
+          </div>
+          <span style="font-size:14px;font-weight:800;color:${h.type==='earned'?'var(--kick)':'var(--red)'};">${h.type==='earned'?'+':''}${h.points}</span>
+        </div>
+      `).join('') : '<p style="text-align:center;color:var(--muted);padding:30px;">لا يوجد سجل</p>'}
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.onclick = e => { if(e.target===modal) modal.remove(); };
 }
 
 async function init() {

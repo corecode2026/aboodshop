@@ -2144,7 +2144,7 @@ async function doLogout() {
 async function loadAllSettings() {
   try {
     const [sRes, socRes] = await Promise.all([
-      fetch(`${W}/api/settings`),
+      fetch(`${W}/api/admin/settings`, {headers:{'x-admin-key':ADMIN_KEY}}),
       fetch(`${W}/api/socials`),
     ]);
     const s = await sRes.json();

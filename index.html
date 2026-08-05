@@ -5150,7 +5150,7 @@ async function submitMarketPost() {
     if (d.success) {
       closeMarketModal();
       showToast('✅ تم نشر منتجك!');
-      if(currentUser) logActivity('نشر منتج', post.name + ' — بانتظار الموافقة');
+      if(currentUser) logActivity('نشر منتج', currentUser.username + ' نشر: ' + post.name + ' — بانتظار الموافقة');
       loadMarket();
     } else { err.textContent = d.error || 'خطأ في النشر'; }
   } catch(e) { err.textContent = 'خطأ في الاتصال'; }

@@ -2152,6 +2152,7 @@ async function loadAllSettings() {
     const s = await sRes.json();
     const { socials } = await socRes.json();
 
+    if (s.adminPass) { adminPass = s.adminPass; }
     if (s.adminUser) { adminUser = s.adminUser; setVal('set-adminuser', s.adminUser); }
     if (s.adminEmail) { window._adminEmail = s.adminEmail; setVal('set-adminemail', s.adminEmail); }
     if (s.channelName) {
@@ -3450,7 +3451,7 @@ function renderSecretCodes() {
 // ══ SETTINGS CACHE ══
 function applySettings(s) {
   if (!s) return;
-  if (s.adminPass) adminPass = s.adminPass;
+  // adminPass لا يتحمل من الـ cache — فقط من الـ Worker
   if (s.adminUser) { adminUser = s.adminUser; }
   if (s.channelName) {
     setEl('navName',s.channelName); 

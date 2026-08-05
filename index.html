@@ -3290,7 +3290,7 @@ async function sendChat(){
     const res = await fetch(`${W}/api/chat/send`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({sender,msg,avatar:currentUser?.avatar||null})
+      body:JSON.stringify({sender,msg,avatar:currentUser?.avatar||null,token:sessionToken||null})
     });
     const d = await res.json();
     // رد تلقائي بس إذا ما في موظف رد قبل

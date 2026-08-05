@@ -1326,6 +1326,7 @@ body.ready .page.on { opacity:1; }
         <button class="am" onclick="aTab('rules-admin',this)" data-tab="rules-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> القوانين</button>
         <button class="am" onclick="aTab('pts-cfg',this)" data-tab="pts-cfg"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> النقاط</button>
         <button class="am" onclick="aTab('logs',this)" data-tab="logs"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> السجل</button>
+        <button class="am" onclick="aTab('password',this)" data-tab="password"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span> كلمة السر</button>
         <button class="am" onclick="aTab('settings',this)" data-tab="settings"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span> الإعدادات</button>
       </div>
       <div class="admin-side-foot">
@@ -1420,6 +1421,31 @@ body.ready .page.on { opacity:1; }
         <div id="rulesAdminList"></div>
       </div>
 
+
+
+      <!-- PASSWORD PAGE -->
+      <div class="asub" id="asub-password">
+        <div class="section-head"><div class="section-title">🔐 تغيير بيانات الدخول</div></div>
+        <div class="settings-box" style="max-width:420px;">
+          <div class="settings-box-title">بيانات المدير</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;">اليوزرنيم الجديد</div>
+              <input class="pf-input" id="pw-user" placeholder="admin" dir="ltr"/>
+            </div>
+            <div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;">كلمة السر الجديدة</div>
+              <input class="pf-input" id="pw-pass" type="password" placeholder="••••••" dir="ltr"/>
+            </div>
+            <div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;">تأكيد كلمة السر</div>
+              <input class="pf-input" id="pw-confirm" type="password" placeholder="••••••" dir="ltr"/>
+            </div>
+            <div id="pw-err" style="color:var(--red);font-size:12px;"></div>
+            <button class="btn btn-kick" onclick="saveAdminPassword()" style="width:100%;">💾 حفظ بيانات الدخول</button>
+          </div>
+        </div>
+      </div>
 
       <!-- ACTIVITY LOGS -->
       <div class="asub" id="asub-logs">
@@ -1582,10 +1608,7 @@ body.ready .page.on { opacity:1; }
         </div>
         <div class="settings-box">
           <div class="settings-box-title">🔐 كلمة سر الإدارة</div>
-          <div class="set-row"><div><div class="set-label">اليوزرنيم</div><div class="set-desc">اسم المستخدم للدخول (افتراضي: admin)</div></div><input class="set-input" id="set-adminuser" placeholder="admin" dir="ltr"/></div>
-          <div class="set-row"><div><div class="set-label">الإيميل</div><div class="set-desc">إيميل إضافي للتحقق عند الدخول (اختياري)</div></div><input class="set-input" id="set-adminemail" type="email" placeholder="admin@example.com" dir="ltr"/></div>
-          <div class="set-row"><div><div class="set-label">كلمة السر الجديدة</div></div><input class="set-input" id="set-newpass" type="password" placeholder="••••••" dir="ltr"/></div>
-          <div class="set-row"><div><div class="set-label">تأكيد كلمة السر</div></div><input class="set-input" id="set-confirmpass" type="password" placeholder="••••••" dir="ltr"/></div>
+
         </div>
         <button class="btn btn-kick" onclick="saveSettings()">💾 حفظ كل الإعدادات</button>
       </div>
@@ -3539,7 +3562,8 @@ const PERM_TAB_MAP = {
   'rules-admin':'settings',
   'logs':'settings',
   'settings':'settings',
-  'auction-admin':'orders'
+  'auction-admin':'orders',
+  'password':'settings'
 };
 
 function applyStaffPermissions(perms) {
@@ -4572,6 +4596,40 @@ async function submitAdmin() {
   } catch(e) {}
 
   setEl('aErr', '❌ بيانات خاطئة');
+}
+
+
+async function saveAdminPassword() {
+  const user = document.getElementById('pw-user')?.value.trim();
+  const pass = document.getElementById('pw-pass')?.value;
+  const confirm = document.getElementById('pw-confirm')?.value;
+  const err = document.getElementById('pw-err');
+  if(err) err.textContent = '';
+
+  if (!user && !pass) { if(err) err.textContent='أدخل البيانات'; return; }
+  if (pass && pass !== confirm) { if(err) err.textContent='كلمتا السر غير متطابقتين'; return; }
+  if (pass && pass.length < 6) { if(err) err.textContent='كلمة السر قصيرة — 6 أحرف على الأقل'; return; }
+
+  const data = {};
+  if (user) data.adminUser = user;
+  if (pass) data.adminPass = pass;
+
+  try {
+    const res = await fetch(`${W}/api/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) {
+      logActivity('تغيير بيانات الدخول', user ? 'اليوزرنيم: '+user : 'كلمة السر');
+      showToast('✅ تم الحفظ — ستحتاج لتسجيل دخول مجدداً');
+      document.getElementById('pw-user').value = '';
+      document.getElementById('pw-pass').value = '';
+      document.getElementById('pw-confirm').value = '';
+    } else {
+      if(err) err.textContent = 'فشل الحفظ';
+    }
+  } catch(e) { if(err) err.textContent = 'خطأ في الاتصال'; }
 }
 
 async function init() {

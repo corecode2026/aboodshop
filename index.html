@@ -2734,6 +2734,7 @@ async function delProd(id){
 
 // USERS
 async function loadUsers() {
+  console.log("loadUsers called");
   try {
     const { users } = await (await fetch(`${W}/api/admin/users`,{headers:{'x-admin-key':ADMIN_KEY}})).json();
     allUsers = users;

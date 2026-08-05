@@ -1583,6 +1583,7 @@ body.ready .page.on { opacity:1; }
         <div class="settings-box">
           <div class="settings-box-title">🔐 كلمة سر الإدارة</div>
           <div class="set-row"><div><div class="set-label">اليوزرنيم</div><div class="set-desc">اسم المستخدم للدخول (افتراضي: admin)</div></div><input class="set-input" id="set-adminuser" placeholder="admin" dir="ltr"/></div>
+          <div class="set-row"><div><div class="set-label">الإيميل</div><div class="set-desc">إيميل إضافي للتحقق عند الدخول (اختياري)</div></div><input class="set-input" id="set-adminemail" type="email" placeholder="admin@example.com" dir="ltr"/></div>
           <div class="set-row"><div><div class="set-label">كلمة السر الجديدة</div></div><input class="set-input" id="set-newpass" type="password" placeholder="••••••" dir="ltr"/></div>
           <div class="set-row"><div><div class="set-label">تأكيد كلمة السر</div></div><input class="set-input" id="set-confirmpass" type="password" placeholder="••••••" dir="ltr"/></div>
         </div>
@@ -2151,6 +2152,7 @@ async function loadAllSettings() {
     const { socials } = await socRes.json();
 
     if (s.adminUser) { adminUser = s.adminUser; setVal('set-adminuser', s.adminUser); }
+    if (s.adminEmail) { window._adminEmail = s.adminEmail; setVal('set-adminemail', s.adminEmail); }
     if (s.channelName) {
       setEl('navName', s.channelName); setEl('adminName', s.channelName);
       setEl('aboutName', s.channelName); setEl('drawerName', s.channelName);
@@ -2218,6 +2220,8 @@ async function saveSettings() {
   const np = gv('set-newpass'), cp = gv('set-confirmpass');
   const nu = gv('set-adminuser');
   if (nu) { adminUser = nu; data.adminUser = nu; }
+  const ne = gv('set-adminemail');
+  if (ne) { window._adminEmail = ne; data.adminEmail = ne; }
 
   if (np) {
     if (np !== cp) { showToast('كلمتا السر غير متطابقتين','err'); return; }
@@ -2577,7 +2581,9 @@ async function submitAdmin() {
   setEl('aErr','');
 
   // تحقق من المدير الرئيسي
-  if (user===adminUser && pass===adminPass) {
+  const email = gv('aEmail');
+  const adminEmail = window._adminEmail || '';
+  if (user===adminUser && pass===adminPass && (!adminEmail || email===adminEmail)) {
     adminIn=true; isStaffMode=false; currentStaff=null;
     sessionStorage.setItem('adminIn','1');
     sessionStorage.removeItem('staffIn');

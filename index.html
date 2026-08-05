@@ -5250,6 +5250,7 @@ async function loadTournamentsAdmin() {
         <div style="flex:1;">
           <div style="font-size:14px;font-weight:700;">${t.name}</div>
           <div style="font-size:12px;color:var(--muted);">${t.game} · ${t.teamSize} لاعب/فريق · ${t.teams?.length||0} فريق مسجل</div>
+          ${t.teams?.length ? `<div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">${t.teams.map((tm,i)=>`<div style="display:flex;align-items:center;gap:8px;background:var(--surface2);padding:6px 10px;border-radius:7px;"><span style="font-size:12px;flex:1;">${tm.name} — ${tm.members?.map(m=>m.username).join(', ')}</span><button onclick="deleteTeam('${t.id}',${i})" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;">🗑</button></div>`).join('')}</div>` : ''}
           <div style="font-size:12px;color:var(--muted);">${t.prize?'جائزة: '+t.prize+' · ':''} ${t.date||''}</div>
           <span style="font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;${t.status==='open'?'background:var(--kick-dim);color:var(--kick)':t.status==='ongoing'?'background:rgba(255,140,0,.1);color:var(--orange)':'background:var(--surface2);color:var(--muted)'};">${t.status==='open'?'تسجيل مفتوح':t.status==='ongoing'?'جارية':'انتهت'}</span>
         </div>
@@ -5267,6 +5268,20 @@ async function deleteTournament(id) {
     await fetch(`${W}/api/admin/tournaments/${id}`,{method:'DELETE',headers:{'x-admin-key':ADMIN_KEY}});
     showToast('تم الحذف'); loadTournamentsAdmin();
   } catch(e) {}
+}
+
+
+async function deleteTeam(tournId, teamIdx) {
+  if (!confirm('حذف هذا الفريق؟')) return;
+  try {
+    const res = await fetch(`${W}/api/admin/tournaments/${tournId}/teams/${teamIdx}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-key': ADMIN_KEY }
+    });
+    const d = await res.json();
+    if (d.success) { showToast('✅ تم حذف الفريق'); loadTournamentsAdmin(); }
+    else showToast(d.error||'خطأ','err');
+  } catch(e) { showToast('خطأ','err'); }
 }
 
 async function init() {

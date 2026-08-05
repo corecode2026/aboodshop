@@ -1578,6 +1578,7 @@ body.ready .page.on { opacity:1; }
         <button class="am" onclick="aTab('products',this)" data-tab="products"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></span> المنتجات</button>
         <button class="am" onclick="aTab('users',this)" data-tab="users"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span> المستخدمون</button>
         <button class="am" onclick="aTab('staff',this)" data-tab="staff"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span> الموظفون</button>
+        <button class="am" onclick="aTab('market-admin',this)" data-tab="market-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></span> السوق</button>
         <button class="am" onclick="aTab('tournaments-admin',this)" data-tab="tournaments-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 01-2-2V5h4"/><path d="M18 9h2a2 2 0 002-2V5h-4"/><path d="M12 17v4"/><path d="M8 21h8"/><path d="M6 3h12v8a6 6 0 01-12 0V3z"/></svg></span> البطولات</button>
         <button class="am" onclick="aTab('auction-admin',this)" data-tab="auction-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span> المزاد</button>
         <button class="am" onclick="aTab('rules-admin',this)" data-tab="rules-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> القوانين</button>
@@ -1663,6 +1664,13 @@ body.ready .page.on { opacity:1; }
       </div>
 
 
+
+
+      <!-- MARKET ADMIN -->
+      <div class="asub" id="asub-market-admin">
+        <div class="section-head"><div class="section-title">إدارة السوق المجتمعي</div></div>
+        <div id="marketAdminList"></div>
+      </div>
 
       <!-- TOURNAMENTS ADMIN -->
       <div class="asub" id="asub-tournaments-admin">
@@ -2981,6 +2989,7 @@ function aTab(tab, btn) {
   if(tab==='logs') loadActivityLogs();
   if(tab==='auction-admin') loadAuctionAdmin();
   if(tab==='tournaments-admin') loadTournamentsAdmin();
+  if(tab==='market-admin') loadMarketAdmin();
 }
 
 async function loadDashboard() {
@@ -3910,7 +3919,8 @@ const PERM_TAB_MAP = {
   'settings':'settings',
   'auction-admin':'orders',
   'password':'settings',
-  'tournaments-admin':'orders'
+  'tournaments-admin':'orders',
+  'market-admin':'orders'
 };
 
 function applyStaffPermissions(perms) {
@@ -5033,6 +5043,11 @@ function toggleMktType() {
 }
 
 function openMarketPost() {
+  if (!currentUser) {
+    showToast('سجّل دخول بـ Kick أولاً', 'err');
+    doLogin('kick');
+    return;
+  }
   _marketImgs = [];
   ['mkt-name','mkt-desc','mkt-price','mkt-whatsapp','mkt-start-price'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
@@ -5106,6 +5121,7 @@ async function submitMarketPost() {
   const post = {
     name, desc, whatsapp, type,
     imgs: _marketImgs,
+    status: 'pending',
     seller: currentUser ? currentUser.username : 'زائر',
     sellerId: currentUser ? currentUser.id : null,
     sellerAvatar: currentUser?.avatar || null,
@@ -5166,7 +5182,8 @@ async function loadMarket() {
   if (!grid) return;
   try {
     const res = await fetch(`${W}/api/market`);
-    const { posts } = await res.json();
+    const { posts: allPosts } = await res.json();
+    const posts = (allPosts||[]).filter(p => p.status === 'approved');
     if (!posts || !posts.length) {
       grid.innerHTML = '<div class="empty" style="grid-column:1/-1;text-align:center;padding:60px;"><div style="font-size:48px;margin-bottom:12px;">🛒</div><p style="color:var(--muted);">لا توجد منتجات بعد — كن أول من ينشر!</p></div>';
       return;
@@ -5545,6 +5562,56 @@ async function deleteTeam(tournId, teamIdx) {
     });
     const d = await res.json();
     if (d.success) { showToast('✅ تم حذف الفريق'); loadTournamentsAdmin(); }
+    else showToast(d.error||'خطأ','err');
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+
+async function loadMarketAdmin() {
+  const el = document.getElementById('marketAdminList');
+  if (!el) return;
+  try {
+    const res = await fetch(`${W}/api/admin/market`, { headers: { 'x-admin-key': ADMIN_KEY } });
+    const { posts } = await res.json();
+    if (!posts?.length) { el.innerHTML = '<div class="empty"><p>لا توجد منتجات</p></div>'; return; }
+    
+    const pending = posts.filter(p => p.status === 'pending');
+    const approved = posts.filter(p => p.status === 'approved');
+    
+    el.innerHTML = `
+      ${pending.length ? `<div style="font-size:13px;font-weight:700;color:var(--orange);margin-bottom:12px;">⏳ بانتظار الموافقة (${pending.length})</div>` : ''}
+      ${pending.map(p => renderMarketAdminCard(p)).join('')}
+      ${approved.length ? `<div style="font-size:13px;font-weight:700;color:var(--kick);margin:16px 0 12px;">✅ مقبولة (${approved.length})</div>` : ''}
+      ${approved.map(p => renderMarketAdminCard(p)).join('')}
+    `;
+  } catch(e) {}
+}
+
+function renderMarketAdminCard(p) {
+  const isPending = p.status === 'pending';
+  return `<div style="background:var(--surface);border:1px solid ${isPending?'rgba(255,140,0,.3)':'var(--border2)'};border-radius:var(--radius);padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;">
+    ${p.imgs?.length ? `<img src="${p.imgs[0]}" style="width:64px;height:64px;border-radius:8px;object-fit:cover;flex-shrink:0;"/>` : '<div style="width:64px;height:64px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📦</div>'}
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:700;">${p.name}</div>
+      <div style="font-size:12px;color:var(--muted);margin:3px 0;">${p.desc||''}</div>
+      <div style="font-size:12px;color:var(--muted);">@${p.seller} · ${p.type==='auction'?'مزاد':'بيع'} · ${p.price?'$'+p.price:''}</div>
+      <div style="font-size:11px;color:var(--muted);">واتساب: ${p.whatsapp}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+      ${isPending ? `<button onclick="approveMarket('${p.id}')" class="btn-sm btn-ok">✅ قبول</button>` : ''}
+      <button onclick="deleteMarketPost('${p.id}')" class="btn-sm btn-del">🗑 حذف</button>
+    </div>
+  </div>`;
+}
+
+async function approveMarket(id) {
+  try {
+    const res = await fetch(`${W}/api/admin/market/${id}/approve`, {
+      method: 'POST',
+      headers: { 'x-admin-key': ADMIN_KEY }
+    });
+    const d = await res.json();
+    if (d.success) { showToast('✅ تم قبول المنتج'); loadMarketAdmin(); }
     else showToast(d.error||'خطأ','err');
   } catch(e) { showToast('خطأ','err'); }
 }

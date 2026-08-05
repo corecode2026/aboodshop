@@ -4325,6 +4325,7 @@ async function claimDaily() {
     const d = await res.json();
     if(d.success) {
       showToast('🎉 كسبت '+d.points+' نقطة! سلسلة: '+d.streak+' يوم');
+      logActivity('تسجيل يومي', 'يوم '+d.streak+' — '+d.points+' نقطة');
       renderDailyDays(d.streak, true);
       if(currentUser) currentUser.points=(currentUser.points||0)+d.points;
       const ptsEl=document.getElementById('userPts'); if(ptsEl) ptsEl.textContent=(currentUser.points).toLocaleString()+' نقطة';
@@ -5149,6 +5150,7 @@ async function submitMarketPost() {
     if (d.success) {
       closeMarketModal();
       showToast('✅ تم نشر منتجك!');
+      if(currentUser) logActivity('نشر منتج', post.name + ' — بانتظار الموافقة');
       loadMarket();
     } else { err.textContent = d.error || 'خطأ في النشر'; }
   } catch(e) { err.textContent = 'خطأ في الاتصال'; }
@@ -5433,6 +5435,7 @@ async function submitTeam(tournId, teamSize) {
     if (d.success) {
       document.getElementById('registerTeamModal')?.remove();
       showToast('✅ تم تسجيل فريقك!');
+      logActivity('تسجيل بطولة', 'فريق: '+team.name);
       loadTournaments();
     } else { document.getElementById('tm-err').textContent = d.error || 'خطأ'; }
   } catch(e) { document.getElementById('tm-err').textContent = 'خطأ في الاتصال'; }
@@ -5611,7 +5614,7 @@ async function approveMarket(id) {
       headers: { 'x-admin-key': ADMIN_KEY }
     });
     const d = await res.json();
-    if (d.success) { showToast('✅ تم قبول المنتج'); loadMarketAdmin(); }
+    if (d.success) { showToast('✅ تم قبول المنتج'); logActivity('قبول منتج سوق', id); loadMarketAdmin(); }
     else showToast(d.error||'خطأ','err');
   } catch(e) { showToast('خطأ','err'); }
 }

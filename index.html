@@ -2618,13 +2618,23 @@ async function saveSettings() {
 // ═══════════════════════════════════════════
 // STREAM
 // ═══════════════════════════════════════════
-function setStream(status) {
+async function setStream(status) {
   streamState.status = status;
   const btnL = document.getElementById('btn-live'), btnO = document.getElementById('btn-offline');
   if (status === 'live') { btnL.style.background='rgba(83,252,24,1)'; btnL.style.color='#000'; btnO.style.background='rgba(255,64,64,.15)'; btnO.style.color='var(--red)'; }
   else { btnO.style.background='rgba(255,64,64,.15)'; btnO.style.color='var(--red)'; btnL.style.background='var(--kick)'; btnL.style.color='#000'; }
   renderStream();
-  showToast(status==='live'?'🔴 البث شغال!':'😴 البث أوقف');
+  // احفظ على Firebase
+  try {
+    await fetch(`${W}/api/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+      body: JSON.stringify({ streamStatus: status, streamUsername: gv('set-stream-user') || streamState.username })
+    });
+    showToast(status==='live'?'🔴 البث شغال!':'😴 البث أوقف');
+  } catch(e) {
+    showToast(status==='live'?'🔴 شغال (لم يُحفظ)':'😴 أوقف (لم يُحفظ)');
+  }
 }
 
 function renderStream() {

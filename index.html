@@ -2572,7 +2572,6 @@ let loginAttempts = parseInt(sessionStorage.getItem('loginAttempts')||'0');
 let loginLocked = parseInt(sessionStorage.getItem('loginLocked')||'0');
 
 async function submitAdmin() {
-  // تحقق من الـ lockout
   const now = Date.now();
   if (loginLocked && now < loginLocked) {
     const secs = Math.ceil((loginLocked - now)/1000);
@@ -2581,6 +2580,12 @@ async function submitAdmin() {
   }
   const user = gv('aUser'), pass = gv('aPass');
   setEl('aErr','');
+  
+  // جيب كلمة السر الحالية من Firebase قبل المقارنة
+  try {
+    const sr = await fetch(`${W}/api/admin/settings`,{headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY}});
+    if(sr.ok){const sd=await sr.json();if(sd.adminPass)adminPass=sd.adminPass;if(sd.adminUser)adminUser=sd.adminUser;}
+  } catch(e){}
 
   // تحقق من المدير الرئيسي
   const email = gv('aEmail');

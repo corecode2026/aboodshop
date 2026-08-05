@@ -1391,7 +1391,10 @@ body.ready .page.on { opacity:1; }
           </div>
         </div>
 
-        <div id="usersTable"></div>
+        <div style="margin-bottom:12px;text-align:left;">
+            <button onclick="resetAllPoints()" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.3);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">🗑 تصفير نقاط الجميع</button>
+          </div>
+          <div id="usersTable"></div>
       </div>
       <!-- STAFF -->
       <div class="asub" id="asub-staff">
@@ -4641,6 +4644,25 @@ async function saveAdminPassword() {
       if(err) err.textContent = 'فشل الحفظ';
     }
   } catch(e) { if(err) err.textContent = 'خطأ في الاتصال'; }
+}
+
+
+async function resetAllPoints() {
+  if (!confirm('تصفير نقاط جميع المستخدمين (169+)؟ هذا لا يمكن التراجع عنه!')) return;
+  if (!confirm('هل أنت متأكد تماماً؟')) return;
+  try {
+    showToast('⏳ جاري التصفير...');
+    const res = await fetch(`${W}/api/admin/reset-all-points`, {
+      method: 'POST',
+      headers: { 'x-admin-key': ADMIN_KEY }
+    });
+    const d = await res.json();
+    if (d.success) {
+      logActivity('تصفير نقاط الجميع', 'تم تصفير ' + (d.count||0) + ' مستخدم');
+      showToast('✅ تم تصفير نقاط ' + (d.count||0) + ' مستخدم');
+      loadUsers();
+    } else showToast(d.error||'خطأ','err');
+  } catch(e) { showToast('خطأ في الاتصال','err'); }
 }
 
 async function init() {

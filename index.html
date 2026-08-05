@@ -2305,7 +2305,7 @@ body.ready .page.on { opacity:1; }
       <div><div class="chat-box-title">💬 تواصل مع الدعم</div></div>
       <button class="chat-box-close" onclick="toggleChat()">✕</button>
     </div>
-    <div class="chat-name-row"><input class="chat-name-inp" id="chatName" placeholder="اسمك (اختياري)"/></div>
+    <div class="chat-name-row" id="chatNameRow" style="display:none;"></div>
     <div class="chat-msgs" id="chatMsgs">
       <div class="cmsg support">أهلاً! كيف أقدر أساعدك؟ 👋</div>
     </div>
@@ -3268,7 +3268,8 @@ function toggleChat(){
   chatOpen=!chatOpen;
   document.getElementById('chatBox').classList.toggle('on',chatOpen);
   if (chatOpen) {
-    const sender = document.getElementById('chatName')?.value.trim() || (currentUser?currentUser.username:'زائر');
+    if (!currentUser) { showToast('سجّل دخول بـ Kick لإرسال رسالة','err'); doLogin('kick'); return; }
+    const sender = currentUser.username;
     if (sender !== 'زائر') startChatPolling(sender);
   } else {
     stopChatPolling();
@@ -3276,7 +3277,8 @@ function toggleChat(){
 }
 async function sendChat(){
   const inp=document.getElementById('chatInp'),msg=inp.value.trim();if(!msg)return;
-  const sender=document.getElementById('chatName')?.value.trim()||(currentUser?currentUser.username:'زائر');
+  if (!currentUser) { showToast('سجّل دخول بـ Kick لإرسال رسالة','err'); doLogin('kick'); return; }
+  const sender = currentUser.username;
   startChatPolling(sender);
   const area=document.getElementById('chatMsgs');
   area.innerHTML+=`<div class="cmsg user">${msg}</div>`;inp.value='';area.scrollTop=area.scrollHeight;

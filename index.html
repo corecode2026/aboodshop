@@ -2736,21 +2736,10 @@ async function delProd(id){
 async function loadUsers() {
   try {
     const { users } = await (await fetch(`${W}/api/admin/users`,{headers:{'x-admin-key':ADMIN_KEY}})).json();
-    document.getElementById('usersTable').innerHTML = users.length
-      ? `<table class="table"><thead><tr><th>المستخدم</th><th>المنصة</th><th>النقاط</th><th>التسجيل</th><th>إجراءات</th></tr></thead><tbody>${users.map(u=>`<tr>
-          <td style="display:flex;align-items:center;gap:8px;">${u.avatar?`<img src="${u.avatar}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;"/>`:''}${u.username}</td>
-          <td><span class="pbadge pbadge-${u.provider}">${u.provider==='discord'?'Discord':'Kick'}</span></td>
-          <td style="color:var(--kick);font-weight:700;">${(u.points||0).toLocaleString()}</td>
-          <td style="color:var(--muted);font-size:12px;">${u.joinedAt?fmtDate(u.joinedAt):'-'}</td>
-          <td>
-            <div class="td-acts">
-              <button class="btn-sm btn-edit" onclick="openAddPts('${u.id}','${u.username}')" title="إضافة نقاط">⭐+</button>
-              <button class="btn-sm btn-pause" onclick="resetPts('${u.id}','${u.username}')" title="تصفير النقاط">⬜</button>
-              <button class="btn-sm btn-del" onclick="deleteUser('${u.id}','${u.username}')" title="حذف">🗑</button>
-            </div>
-          </td>
-        </tr>`).join('')}</tbody></table>`
-      : '<div class="empty"><p>لا يوجد مستخدمون</p></div>';
+    allUsers = users;
+    const countEl = document.getElementById('usersCount');
+    if(countEl) countEl.textContent = `(${users.length})`;
+    filterUsers();
   } catch(e) {}
 }
 

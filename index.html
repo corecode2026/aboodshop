@@ -4402,7 +4402,7 @@ function renderUsersTable(users) {
       <tr style="${u.blocked?'opacity:.5;':''}">
         <td>
           <div style="display:flex;align-items:center;gap:8px;">
-            ${u.avatar?`<img src="${u.avatar}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);"/>`:'<div style="width:28px;height:28px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);">${u.username.charAt(0).toUpperCase()}</div>'}
+            ${u.avatar?`<img src="${u.avatar}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);"/>`:`<div style="width:28px;height:28px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);">${u.username.charAt(0).toUpperCase()}</div>`}
             <div>
               <div style="font-size:13px;font-weight:700;">${u.username}</div>
               ${u.blocked?'<span style="font-size:10px;background:rgba(255,59,92,.1);color:var(--red);padding:1px 7px;border-radius:10px;font-weight:700;">محظور</span>':''}

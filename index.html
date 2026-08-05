@@ -4410,7 +4410,7 @@ function renderUsersTable(users) {
           </div>
         </td>
         <td><span class="pbadge pbadge-${u.provider}">${u.provider==='discord'?'Discord':'Kick'}</span></td>
-        <td><span style="font-size:12px;font-weight:700;color:${getLevelColor((getUserLevel(u.points||0)).level)};">Lv${(getUserLevel(u.points||0)).level}</span></td>
+        <td><span style="font-size:12px;font-weight:700;color:var(--kick);">Lv${typeof getUserLevel==='function'?(getUserLevel(u.points||0)).level:1}</span></td>
         <td style="color:var(--kick);font-weight:700;">${(u.points||0).toLocaleString()}</td>
         <td style="color:var(--muted);font-size:12px;">${u.joinedAt?fmtDate(u.joinedAt):'-'}</td>
         <td>

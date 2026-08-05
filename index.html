@@ -1963,8 +1963,7 @@ let sessionToken = localStorage.getItem('sk_token') || null;
 let adminIn = false;
 let currentStaff = null; // الموظف الحالي لو مسجل دخول
 let isStaffMode = false; // وضع الموظف
-let adminPass = 'admin';
-let adminUser = 'admin';
+
 let pendingProd = null;
 let editingProdId = null;
 let pendingProdImg = null;
@@ -2152,9 +2151,8 @@ async function loadAllSettings() {
     const s = await sRes.json();
     const { socials } = await socRes.json();
 
-    if (s.adminPass) { adminPass = s.adminPass; }
-    if (s.adminUser) { adminUser = s.adminUser; setVal('set-adminuser', s.adminUser); }
-    if (s.adminEmail) { window._adminEmail = s.adminEmail; setVal('set-adminemail', s.adminEmail); }
+
+
     if (s.channelName) {
       setEl('navName', s.channelName); setEl('adminName', s.channelName);
       setEl('aboutName', s.channelName); setEl('drawerName', s.channelName);
@@ -2568,80 +2566,7 @@ function openAdminLogin() {
   am.classList.remove('hidden');
   am.style.display = 'flex';
 }
-let loginAttempts = parseInt(sessionStorage.getItem('loginAttempts')||'0');
-let loginLocked = parseInt(sessionStorage.getItem('loginLocked')||'0');
 
-async function submitAdmin() {
-  const now = Date.now();
-  if (loginLocked && now < loginLocked) {
-    const secs = Math.ceil((loginLocked - now)/1000);
-    setEl('aErr', `🔒 محظور لمدة ${secs} ثانية`);
-    return;
-  }
-  const user = gv('aUser'), pass = gv('aPass');
-  setEl('aErr','');
-
-  // تحقق من المدير الرئيسي
-  const email = gv('aEmail');
-  const adminEmail = window._adminEmail || '';
-  if (user===adminUser && pass===adminPass && (!adminEmail || email===adminEmail)) {
-    adminIn=true; isStaffMode=false; currentStaff=null;
-    sessionStorage.setItem('adminIn','1');
-    sessionStorage.removeItem('staffIn');
-    sessionStorage.setItem('loginAttempts','0');
-    sessionStorage.removeItem('loginLocked');
-    sessionStorage.setItem('loginTime', Date.now());
-    // جيب كلمة السر الحالية للمقارنة لاحقاً
-    try {
-      const sr = await fetch(`${W}/api/admin/settings`,{headers:{'x-admin-key':ADMIN_KEY}});
-      const sd = await sr.json();
-      if(sd.adminPass) adminPass = sd.adminPass;
-      if(sd.adminUser) adminUser = sd.adminUser;
-    } catch(e){}
-    const am=document.getElementById('adminModal'); if(am)am.style.display='none';
-    closeModal('adminModal');
-    goTo('admin',null);
-    logActivity('تسجيل دخول','دخل كمدير رئيسي');
-    showToast('أهلاً بك في الإدارة 🛡️');
-    return;
-  }
-
-  // تحقق من الموظفين عبر الـ Worker (من Firebase)
-  try {
-    const res = await fetch(`${W}/api/staff/login`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username:user, password:pass})
-    });
-    const d = await res.json();
-    if (d.success && d.staff) {
-      const s = d.staff;
-      isStaffMode = true;
-      adminIn = true;
-      currentStaff = {
-        id: s.id,
-        username: s.username,
-        name: s.name || s.username,
-        roleTitle: s.roleTitle || 'موظف',
-        perms: s.perms || []
-      };
-      sessionStorage.setItem('staffIn', JSON.stringify(currentStaff));
-      sessionStorage.removeItem('adminIn');
-      const am=document.getElementById('adminModal'); if(am)am.style.display='none';
-      closeModal('adminModal');
-      setEl('adminName', currentStaff.name);
-      const roleEl = document.querySelector('.admin-role');
-      if(roleEl) roleEl.textContent = currentStaff.roleTitle;
-      await logActivity('تسجيل دخول', 'دخل كموظف: '+currentStaff.roleTitle);
-      goTo('admin',null);
-      setTimeout(()=>applyStaffPermissions(currentStaff.perms), 300);
-      showToast('أهلاً '+currentStaff.name+' 👮');
-      return;
-    }
-  } catch(e) {}
-
-  setEl('aErr','❌ بيانات خاطئة');
-}
 function adminLogout() {
   logActivity('تسجيل خروج', 'خرج من لوحة الإدارة');
   adminIn=false; isStaffMode=false; currentStaff=null;
@@ -3450,8 +3375,7 @@ function renderSecretCodes() {
 // ══ SETTINGS CACHE ══
 function applySettings(s) {
   if (!s) return;
-  // adminPass لا يتحمل من الـ cache — فقط من الـ Worker
-  if (s.adminUser) { adminUser = s.adminUser; }
+
   if (s.channelName) {
     setEl('navName',s.channelName); 
     setEl('adminName',s.channelName); 
@@ -4586,6 +4510,68 @@ async function checkGoogleAdminToken() {
   } catch(e) {
     showToast('❌ خطأ في الاتصال', 'err');
   }
+}
+
+
+// ══ ADMIN LOGIN ══
+async function submitAdmin() {
+  const user = gv('aUser');
+  const pass = gv('aPass');
+  setEl('aErr', '');
+
+  if (!user || !pass) { setEl('aErr', '❌ أدخل البيانات'); return; }
+
+  // جيب كلمة السر من Firebase مباشرة
+  try {
+    const res = await fetch(`${W}/api/admin/settings`, {
+      headers: { 'x-admin-key': ADMIN_KEY }
+    });
+    const s = await res.json();
+    const correctUser = s.adminUser || 'admin';
+    const correctPass = s.adminPass || 'admin';
+
+    if (user === correctUser && pass === correctPass) {
+      // مدير
+      adminIn = true; isStaffMode = false; currentStaff = null;
+      sessionStorage.setItem('adminIn', '1');
+      sessionStorage.removeItem('staffIn');
+      const am = document.getElementById('adminModal');
+      if (am) am.style.display = 'none';
+      closeModal('adminModal');
+      goTo('admin', null);
+      logActivity('تسجيل دخول', 'دخل كمدير');
+      showToast('أهلاً بك في الإدارة 🛡️');
+      return;
+    }
+  } catch(e) {}
+
+  // تحقق من الموظفين
+  try {
+    const res = await fetch(`${W}/api/staff/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass })
+    });
+    const d = await res.json();
+    if (d.success && d.staff) {
+      const s = d.staff;
+      isStaffMode = true; adminIn = true;
+      currentStaff = { id: s.id, username: s.username, name: s.name || s.username, roleTitle: s.roleTitle || 'موظف', perms: s.perms || [] };
+      sessionStorage.setItem('staffIn', JSON.stringify(currentStaff));
+      sessionStorage.removeItem('adminIn');
+      const am = document.getElementById('adminModal');
+      if (am) am.style.display = 'none';
+      closeModal('adminModal');
+      setEl('adminName', currentStaff.name);
+      await logActivity('تسجيل دخول', 'دخل كموظف: ' + currentStaff.roleTitle);
+      goTo('admin', null);
+      setTimeout(() => applyStaffPermissions(currentStaff.perms), 300);
+      showToast('أهلاً ' + currentStaff.name + ' 👮');
+      return;
+    }
+  } catch(e) {}
+
+  setEl('aErr', '❌ بيانات خاطئة');
 }
 
 async function init() {

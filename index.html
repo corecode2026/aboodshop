@@ -5149,7 +5149,7 @@ async function submitMarketPost() {
     const d = await res.json();
     if (d.success) {
       closeMarketModal();
-      showToast('✅ تم نشر منتجك!');
+      showToast('⏳ طلبك قيد المراجعة — سيظهر بعد موافقة الإدارة');
       if(currentUser) logActivity('نشر منتج', currentUser.username + ' نشر: ' + post.name + ' — بانتظار الموافقة');
       loadMarket();
     } else { err.textContent = d.error || 'خطأ في النشر'; }

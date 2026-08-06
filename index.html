@@ -2501,6 +2501,8 @@ function updateAuthUI() {
   document.getElementById('navPts').classList.remove('hidden');
   document.getElementById('userChip').classList.remove('hidden');
   document.getElementById('navPtsVal').textContent = currentUser.points.toLocaleString();
+  // أعد رسم المتجر لو كان مفتوح
+  if (_storeProducts.length) renderStorePage();
   document.getElementById('userName').textContent = currentUser.username;
   const prov = document.getElementById('userProvider');
   prov.textContent = currentUser.provider === 'discord' ? 'Discord' : 'Kick';

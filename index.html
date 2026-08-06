@@ -1330,55 +1330,7 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 
 </style>
 
-<script>
-(function(){
-  function freeze() {
-    document.body.style.display = 'none';
-    document.head.innerHTML = '';
-    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#07070F;color:#53FC18;font-family:Cairo,sans-serif;font-size:24px;font-weight:900;text-align:center;flex-direction:column;gap:16px;"><div style="font-size:48px;">🚫</div><div>تم تعطيل الصفحة</div></div>';
-    document.body.style.display = 'flex';
-    // أوقف كل الـ timers
-    var id = setTimeout(function(){},0);
-    for(var i=0;i<id;i++) clearTimeout(i);
-    id = setInterval(function(){},9999);
-    for(var i=0;i<id;i++) clearInterval(i);
-  }
 
-  // منع F12
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-        (e.ctrlKey && e.key === 'U')) {
-      e.preventDefault();
-      e.stopPropagation();
-      freeze();
-      return false;
-    }
-  }, true);
-
-  // منع كليك يمين
-  document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-    return false;
-  });
-
-  // كشف devtools مفتوح
-  setInterval(function() {
-    var threshold = 160;
-    if (window.outerWidth - window.innerWidth > threshold ||
-        window.outerHeight - window.innerHeight > threshold) {
-      freeze();
-    }
-  }, 500);
-
-  // debugger trap
-  setInterval(function() {
-    var start = new Date();
-    debugger;
-    if (new Date() - start > 100) freeze();
-  }, 1000);
-})();
-</script>
 
 </head>
 <body>

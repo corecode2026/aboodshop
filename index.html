@@ -2882,47 +2882,113 @@ const _storePerPage = 6;
 
 
 function renderStorePage() {
-  const g = document.getElementById('storeGrid');
-  const pg = document.getElementById('storePagination');
+  var g = document.getElementById('storeGrid');
+  var pg = document.getElementById('storePagination');
   if (!g) return;
 
-  const start = (_storePage - 1) * _storePerPage;
-  const pageProds = _storeProducts.slice(start, start + _storePerPage);
-  const totalPages = Math.ceil(_storeProducts.length / _storePerPage);
+  var start = (_storePage - 1) * _storePerPage;
+  var pageProds = _storeProducts.slice(start, start + _storePerPage);
+  var totalPages = Math.ceil(_storeProducts.length / _storePerPage);
 
-  g.innerHTML = pageProds.map(p => {
+  g.innerHTML = '';
+  pageProds.forEach(function(p) {
     var qty = (p.quantity !== undefined && p.quantity !== null && p.quantity !== '') ? Number(p.quantity) : null;
     var outOfStock = qty !== null && qty <= 0;
     var canAfford = currentUser && currentUser.points >= p.price;
-    var cardStyle = outOfStock ? 'opacity:.7;' : '';
-    var qtyBadge = qty !== null ? '<span style="font-size:11px;background:var(--surface2);border:1px solid var(--border2);padding:2px 8px;border-radius:10px;color:var(--muted);">متبقي: '+qty+'</span>' : '';
-    var buyBtn;
-    if (outOfStock) {
-      buyBtn = '<button class="btn" style="width:100%;justify-content:center;background:var(--surface2);color:var(--muted);cursor:not-allowed;" disabled>نفذت الكمية</button>';
-    } else if (!currentUser) {
-      buyBtn = '<button class="btn btn-kick" style="width:100%;justify-content:center;" onclick="openBuy(' + JSON.stringify(p.id) + ',' + JSON.stringify(p.name) + ',' + p.price + ')">🛒 استبدال</button>';
-    } else if (!canAfford) {
-      buyBtn = '<button class="btn" style="width:100%;justify-content:center;background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);cursor:not-allowed;" disabled>نقاطك غير كافية</button>';
+
+    var card = document.createElement('div');
+    card.className = 'product-card';
+    if (outOfStock) card.style.opacity = '.7';
+
+    // صورة
+    var imgDiv = document.createElement('div');
+    imgDiv.className = 'prod-img';
+    if (p.img) {
+      var imgEl = document.createElement('img');
+      imgEl.src = p.img; imgEl.alt = p.name;
+      imgDiv.appendChild(imgEl);
     } else {
-      buyBtn = '<button class="btn btn-kick" style="width:100%;justify-content:center;" data-pid="'+p.id+'" data-pname="'+encodeURIComponent(p.name)+'" data-pprice="'+p.price+'" onclick="openBuyFromStore(this)">🛒 استبدال</button>';
+      imgDiv.textContent = p.icon || '🎁';
     }
-    var img = p.img ? '<div class="prod-img"><img src="'+p.img+'" alt="'+p.name+'"/></div>' : '<div class="prod-img">'+(p.icon||'🎁')+'</div>';
-    return '<div class="product-card" style="'+cardStyle+'">'+img+'<div class="prod-body"><div class="prod-name">'+p.name+'</div><div class="prod-desc">'+p.desc+'</div><div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;"><div class="prod-price">⭐ '+p.price.toLocaleString()+' نقطة</div>'+qtyBadge+'</div>'+buyBtn+'</div></div>';
-  }).join('');
+    card.appendChild(imgDiv);
+
+    // Body
+    var body = document.createElement('div');
+    body.className = 'prod-body';
+
+    var nameEl = document.createElement('div');
+    nameEl.className = 'prod-name';
+    nameEl.textContent = p.name;
+    body.appendChild(nameEl);
+
+    var descEl = document.createElement('div');
+    descEl.className = 'prod-desc';
+    descEl.textContent = p.desc || '';
+    body.appendChild(descEl);
+
+    var infoRow = document.createElement('div');
+    infoRow.style.cssText = 'display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;';
+
+    var priceEl = document.createElement('div');
+    priceEl.className = 'prod-price';
+    priceEl.textContent = '⭐ ' + p.price.toLocaleString() + ' نقطة';
+    infoRow.appendChild(priceEl);
+
+    if (qty !== null) {
+      var qtyEl = document.createElement('span');
+      qtyEl.style.cssText = 'font-size:11px;background:var(--surface2);border:1px solid var(--border2);padding:2px 8px;border-radius:10px;color:var(--muted);';
+      qtyEl.textContent = 'متبقي: ' + qty;
+      infoRow.appendChild(qtyEl);
+    }
+    body.appendChild(infoRow);
+
+    var btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.style.cssText = 'width:100%;justify-content:center;';
+
+    if (outOfStock) {
+      btn.style.cssText += 'background:var(--surface2);color:var(--muted);cursor:not-allowed;';
+      btn.disabled = true;
+      btn.textContent = 'نفذت الكمية';
+    } else if (!currentUser) {
+      btn.className = 'btn btn-kick';
+      btn.textContent = '🛒 استبدال';
+      btn.onclick = (function(pid) { return function() { openBuy(pid); }; })(p.id);
+    } else if (!canAfford) {
+      btn.style.cssText += 'background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);cursor:not-allowed;';
+      btn.disabled = true;
+      btn.textContent = 'نقاطك غير كافية';
+    } else {
+      btn.className = 'btn btn-kick';
+      btn.textContent = '🛒 استبدال';
+      btn.onclick = (function(pid) { return function() { openBuy(pid); }; })(p.id);
+    }
+    body.appendChild(btn);
+    card.appendChild(body);
+    g.appendChild(card);
+  });
 
   // Pagination
-  if (totalPages <= 1) { if(pg) pg.innerHTML=''; return; }
-  var pHTML = '';
-  var btnStyle = 'width:36px;height:36px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;';
-  pHTML += '<button onclick="goStorePage('+(_storePage-1)+')" '+(_storePage===1?'disabled':'')+' style="'+btnStyle+'">&lt;</button>';
+  if (!pg) return;
+  pg.innerHTML = '';
+  if (totalPages <= 1) return;
+
+  var mkBtn = function(label, page, active, disabled) {
+    var b = document.createElement('button');
+    b.style.cssText = 'width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:14px;font-family:Cairo,sans-serif;border:1px solid '+(active?'var(--kick)':'var(--border2)')+';background:'+(active?'var(--kick)':'var(--surface)')+';color:'+(active?'#000':'var(--text)')+';font-weight:'+(active?'900':'600')+';';
+    b.textContent = label;
+    b.disabled = disabled || false;
+    if (!disabled) b.onclick = function() { goStorePage(page); };
+    return b;
+  };
+
+  pg.appendChild(mkBtn('<', _storePage-1, false, _storePage===1));
   for (var i=1; i<=totalPages; i++) {
-    var active = i===_storePage;
-    var bStyle = 'width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:14px;border:1px solid '+(active?'var(--kick)':'var(--border2)')+';background:'+(active?'var(--kick)':'var(--surface)')+';color:'+(active?'#000':'var(--text)')+';font-weight:'+(active?'900':'600')+';box-shadow:'+(active?'0 0 12px rgba(83,252,24,.4)':'none')+';';
-    pHTML += '<button onclick="goStorePage('+i+')" style="'+bStyle+'">'+i+'</button>';
+    pg.appendChild(mkBtn(i, i, i===_storePage, false));
   }
-  pHTML += '<button onclick="goStorePage('+(_storePage+1)+')" '+(_storePage===totalPages?'disabled':'')+' style="'+btnStyle+'">&gt;</button>';
-  if(pg) pg.innerHTML = pHTML;
+  pg.appendChild(mkBtn('>', _storePage+1, false, _storePage===totalPages));
 }
+
 
 function goStorePage(page) {
   const total = Math.ceil(_storeProducts.length / _storePerPage);

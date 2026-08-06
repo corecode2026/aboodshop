@@ -1329,152 +1329,8 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 .rule:hover { border-color:rgba(83,252,24,.15); background:rgba(83,252,24,.02); }
 
 </style>
-<style id="__siteProtectCSS">
-/* منع تحديد النص افتراضيًا (يُسمح داخل الحقول والمناطق القابلة للتحرير) */
-body.__protect-active {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-body.__protect-active input,
-body.__protect-active textarea,
-body.__protect-active [contenteditable="true"] {
-  -webkit-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
-  user-select: text;
-}
-#__devtoolsBlock {
-  position: fixed; inset: 0; z-index: 2147483647;
-  background: #07070F;
-  color: #EEEEF8;
-  display: none;
-  align-items: center; justify-content: center;
-  text-align: center;
-  font-family: 'Cairo', sans-serif;
-  direction: rtl;
-  padding: 24px;
-}
-#__devtoolsBlock.show { display: flex; }
-#__devtoolsBlock .box { max-width: 420px; }
-#__devtoolsBlock h2 { color:#53FC18; font-size:22px; margin-bottom:10px; }
-#__devtoolsBlock p { color:#C4C4D8; font-size:14px; line-height:1.8; }
-</style>
 </head>
 <body>
-
-<div id="__devtoolsBlock">
-  <div class="box">
-    <h2>🔒 الوصول محظور</h2>
-    <p>تم اكتشاف فتح أدوات المطوّر. الرجاء إغلاقها للمتابعة.</p>
-  </div>
-</div>
-
-<script>
-/* ══════════════════════════════════════════════════════════
-   __SITE_PROTECT__  —  طبقة حماية عامة للزوار
-   ملاحظة: هذه إجراءات رادعة (deterrent) وليست حماية مطلقة.
-   أي حماية حقيقية لبيانات الأدمن يجب أن تكون على السيرفر (Worker).
-   يتم تعطيل كل هذه القيود تلقائيًا إذا كان المستخدم أدمن/موظف مسجل دخول.
-   ══════════════════════════════════════════════════════════ */
-(function () {
-  'use strict';
-
-  function isPrivileged() {
-    try {
-      return sessionStorage.getItem('adminIn') === '1' || !!sessionStorage.getItem('staffIn');
-    } catch (e) { return false; }
-  }
-
-  var blockEl, bodyEl;
-  function ensureRefs() {
-    if (!blockEl) blockEl = document.getElementById('__devtoolsBlock');
-    if (!bodyEl) bodyEl = document.body;
-  }
-
-  function applyProtectionState() {
-    ensureRefs();
-    if (!bodyEl) return;
-    if (isPrivileged()) {
-      bodyEl.classList.remove('__protect-active');
-    } else {
-      bodyEl.classList.add('__protect-active');
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', applyProtectionState);
-  applyProtectionState();
-  // إعادة الفحص دوريًا لأن حالة الدخول ممكن تتغير بعد التحميل
-  setInterval(applyProtectionState, 1500);
-
-  // منع كليك يمين
-  document.addEventListener('contextmenu', function (e) {
-    if (!isPrivileged()) e.preventDefault();
-  });
-
-  // منع اختصارات فتح أدوات المطوّر وعرض المصدر
-  document.addEventListener('keydown', function (e) {
-    if (isPrivileged()) return;
-    var k = e.key ? e.key.toUpperCase() : '';
-    var blocked =
-      k === 'F12' ||
-      (e.ctrlKey && e.shiftKey && (k === 'I' || k === 'J' || k === 'C')) ||
-      (e.metaKey && e.altKey && (k === 'I' || k === 'J' || k === 'C')) || // Mac Safari/Chrome
-      (e.ctrlKey && (k === 'U' || k === 'S'));
-    if (blocked) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }, true);
-
-  // كشف فتح DevTools عبر فرق أبعاد النافذة (يعمل جيدًا مع اللوحات المنفصلة/الدوكينغ)
-  var threshold = 160;
-  function sizeCheck() {
-    var widthDiff = window.outerWidth - window.innerWidth;
-    var heightDiff = window.outerHeight - window.innerHeight;
-    return widthDiff > threshold || heightDiff > threshold;
-  }
-
-  // كشف إضافي عبر توقيت debugger (يفشل بصمت إن تم تعطيله، وهذا مقبول كطبقة إضافية فقط)
-  function timingCheck() {
-    var start = performance.now();
-    // eslint-disable-next-line no-debugger
-    debugger;
-    return (performance.now() - start) > 100;
-  }
-
-  var detectedStreak = 0;
-  function runDetection() {
-    ensureRefs();
-    if (isPrivileged()) {
-      if (blockEl) blockEl.classList.remove('show');
-      detectedStreak = 0;
-      return;
-    }
-    var detected = sizeCheck() || timingCheck();
-    if (detected) {
-      detectedStreak++;
-    } else {
-      detectedStreak = 0;
-    }
-    // نطلب تكرار الكشف مرتين متتاليتين قبل الحجب لتقليل الإيجابيات الكاذبة
-    if (detectedStreak >= 2 && blockEl) {
-      blockEl.classList.add('show');
-    } else if (blockEl) {
-      blockEl.classList.remove('show');
-    }
-  }
-  setInterval(runDetection, 700);
-
-  // تحذير في الكونسول نفسه لمن يفتحه رغم كل شيء
-  try {
-    console.log('%c⚠ توقف!', 'color:#FF3B5C;font-size:34px;font-weight:900;');
-    console.log('%cهذا القسم مخصص للمطورين فقط. أي محاولة لصق كود هنا أو استخدام هذا المتصفح للوصول لبيانات لا تملك صلاحية عليها قد تُعرّض حسابك للحظر.', 'color:#EEEEF8;font-size:14px;');
-  } catch (e) {}
-})();
-</script>
-
 
 <!-- NAV -->
 
@@ -1792,17 +1648,6 @@ body.ready .page.on { opacity:1; }
           </div>
         </div>
 
-        <!-- توزيع نقاط بالتساوي على الجميع -->
-        <div class="settings-box" style="margin-bottom:14px;">
-          <div class="settings-box-title">⚖️ توزيع نقاط بالتساوي على كل الأعضاء</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">كل عضو ياخذ نفس العدد بالضبط — ما حد ياخذ نقاط زيادة عن غيره. الأعضاء المحظورون ما يشملهم التوزيع.</div>
-          <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
-            <div><div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">النقاط لكل عضو</div><input class="pf-input" id="distributePtsAmt" type="number" min="1" placeholder="50" dir="ltr"/></div>
-            <button class="btn btn-kick" id="distributeBtn" onclick="distributeEqualPoints()" style="height:36px;padding:0 16px;white-space:nowrap;">⚖️ توزيع على الجميع</button>
-          </div>
-          <div id="distributeStatus" style="font-size:12px;color:var(--muted);margin-top:8px;"></div>
-        </div>
-
         <div style="margin-bottom:12px;text-align:left;">
             <button onclick="resetAllPoints()" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.3);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">🗑 تصفير نقاط الجميع</button>
           </div>
@@ -1875,19 +1720,11 @@ body.ready .page.on { opacity:1; }
       <!-- ACTIVITY LOGS -->
       <div class="asub" id="asub-logs">
         <div class="section-head">
-          <div class="section-title">سجل الأنشطة <span style="font-size:12px;color:var(--muted);font-weight:400;">— كل حركات الأعضاء والإدارة</span></div>
+          <div class="section-title">سجل الأنشطة</div>
           <button onclick="loadActivityLogs()" class="btn btn-ghost" style="font-size:12px;padding:6px 12px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
             تحديث
           </button>
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:14px;">
-          <input class="pf-input" id="logSearch" placeholder="🔍 ابحث باسم عضو أو حدث..." oninput="filterActivityLogs()" style="flex:1;"/>
-          <select class="pf-input" id="logTypeFilter" onchange="filterActivityLogs()" style="max-width:150px;">
-            <option value="all">الكل</option>
-            <option value="members">👤 الأعضاء فقط</option>
-            <option value="staff">👮 الإدارة فقط</option>
-          </select>
         </div>
         <div class="settings-box">
           <div id="activityLogsList"><div class="empty"><p>اضغط تحديث لتحميل السجل</p></div></div>
@@ -2544,13 +2381,6 @@ function goTo(id, btn) {
       document.querySelectorAll('.am[data-tab]').forEach(b=>b.style.display='');
     }
   }
-
-  // سجّل تنقل العضو (مش الإدارة) بين الصفحات — بدون تكرار نفس الصفحة
-  if (id !== 'admin' && currentUser && !isStaffMode && id !== _lastLoggedPage) {
-    _lastLoggedPage = id;
-    const pageNames = { home:'الرئيسية', store:'المتجر', market:'السوق', tournaments:'البطولات', points:'النقاط', profile:'الملف الشخصي', daily:'الحضور اليومي' };
-    logMemberActivity('تصفّح صفحة', pageNames[id] || id);
-  }
 }
 
 // ═══════════════════════════════════════════
@@ -2590,8 +2420,6 @@ async function checkAuth() {
         updateAuthUI();
         loadStore();
         showToast(`أهلاً ${d.username}! 🎉`);
-        sessionStorage.setItem('sk_loggedThisSession','1');
-        logMemberActivity('🟢 دخول للموقع', 'عبر Kick');
       } else {
         showToast('❌ فشل تسجيل الدخول بـ Kick', 'err');
       }
@@ -2614,8 +2442,6 @@ async function checkAuth() {
         updateAuthUI();
         loadStore();
         showToast(`أهلاً ${d.username}! 🎉`);
-        sessionStorage.setItem('sk_loggedThisSession','1');
-        logMemberActivity('🟢 دخول للموقع', 'عبر ' + (d.provider==='discord'?'Discord':'Kick'));
       }
     } catch(e) { showToast('✅ تم تسجيل الدخول!'); }
     return;
@@ -2632,10 +2458,6 @@ async function checkAuth() {
       currentUser = { ...d };
       updateAuthUI();
       loadStore();
-      if (!sessionStorage.getItem('sk_loggedThisSession')) {
-        sessionStorage.setItem('sk_loggedThisSession','1');
-        logMemberActivity('🟢 دخول للموقع', 'عضو عائد — ' + (d.provider==='discord'?'Discord':'Kick'));
-      }
     } else {
       localStorage.removeItem('sk_token');
       sessionToken = null;
@@ -2668,13 +2490,11 @@ function updateAuthUI() {
 }
 
 async function doLogout() {
-  if (currentUser) logMemberActivity('🔴 خروج من الموقع', '');
   if (sessionToken) {
     try { await fetch(`${W}/auth/logout`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token:sessionToken}) }); } catch(e) {}
     localStorage.removeItem('sk_token');
     sessionToken = null;
   }
-  sessionStorage.removeItem('sk_loggedThisSession');
   currentUser = null;
   const bd2=document.getElementById('btnDiscord'); if(bd2) bd2.style.display='flex';
   const lkBtn = document.getElementById('btnLinkKick');
@@ -3055,57 +2875,24 @@ function openBuy(id) {
   openModal('buyModal');
 }
 
-let _buyInFlight = false;
 async function confirmBuy() {
   if (!pendingProd || !currentUser) return;
-  if (_buyInFlight) return; // يمنع الضغط المزدوج اللي ممكن يسبب خصم مرتين أو تضارب
   const kn = gv('buyUsername');
   const contact = gv('buyContact');
   if (!contact) { showToast('أدخل معلومات التواصل','err'); return; }
-
-  const okBtn = document.querySelector('#buyModal .m-ok');
-  _buyInFlight = true;
-  if (okBtn) { okBtn.disabled = true; okBtn.dataset.origText = okBtn.textContent; okBtn.textContent = '... جاري التنفيذ'; }
-
   try {
     const res = await fetch(`${W}/api/buy`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ productId: pendingProd.id, kickUsername: kn, contact, token: sessionToken }),
     });
-
-    // اقرأ الرد كنص أولاً حتى لو مو JSON صالح، حتى نقدر نشخّص السبب الحقيقي بدل رسالة "خطأ" العامة
-    const raw = await res.text();
-    let d = null;
-    try { d = raw ? JSON.parse(raw) : null; } catch (parseErr) {
-      console.error('[buy] رد السيرفر مو JSON صالح — status:', res.status, 'body:', raw);
-      showToast(`فشل الشراء — رد غير متوقع من السيرفر (كود ${res.status}). افتح Console لمزيد من التفاصيل`, 'err');
-      return;
-    }
-
-    if (!res.ok) {
-      console.error('[buy] فشل الطلب — status:', res.status, 'response:', d);
-      showToast((d && d.error) ? `فشل الشراء: ${d.error} (كود ${res.status})` : `فشل الشراء — كود الحالة ${res.status}`, 'err');
-      return;
-    }
-
-    if (d && d.success) {
+    const d = await res.json();
+    if (d.success) {
       currentUser.points = d.remainingPoints;
       document.getElementById('navPtsVal').textContent = d.remainingPoints.toLocaleString();
       closeModal('buyModal'); loadStore();
       showToast('✅ ' + d.message);
-      logMemberActivity('🛒 شراء منتج', `${pendingProd.name} — ⭐ ${pendingProd.price.toLocaleString()} نقطة — تواصل: ${contact}`);
-    } else {
-      console.error('[buy] السيرفر رجع success=false:', d);
-      showToast((d && d.error) || 'فشل الشراء', 'err');
-    }
-  } catch(e) {
-    // هذا يصير فقط لو الطلب ما وصل للسيرفر أصلاً (مشكلة شبكة / CORS / السيرفر واطي)
-    console.error('[buy] خطأ بالاتصال بالسيرفر:', e);
-    showToast('تعذر الاتصال بالسيرفر — تحقق من الإنترنت أو حاول لاحقاً (افتح Console لمزيد من التفاصيل)', 'err');
-  } finally {
-    _buyInFlight = false;
-    if (okBtn) { okBtn.disabled = false; okBtn.textContent = okBtn.dataset.origText || 'تأكيد ✅'; }
-  }
+    } else showToast(d.error||'فشل الشراء','err');
+  } catch(e) { showToast('خطأ','err'); }
 }
 
 // ═══════════════════════════════════════════
@@ -3360,55 +3147,6 @@ async function addPtsManual(dir=1) {
     showToast(dir>0?`✅ تم إضافة ${a} نقطة لـ ${u}`:`✅ تم خصم ${a} نقطة من ${u}`);
     setVal('addPtsUser','');setVal('addPtsAmt','');loadUsers();
   } catch(e){showToast('خطأ','err');}
-}
-
-// ══ توزيع نقاط بالتساوي على كل الأعضاء (بدون أي زيادة لأي حد) ══
-let _distributeRunning = false;
-async function distributeEqualPoints() {
-  if (_distributeRunning) return; // يمنع الضغط المزدوج نهائياً
-  const amt = parseInt(gv('distributePtsAmt'));
-  if (!amt || amt <= 0) { showToast('أدخل عدد نقاط صحيح','err'); return; }
-
-  // خذ نسخة نظيفة من الأعضاء غير المحظورين، وامنع التكرار (كل يوزر مرة وحدة فقط)
-  const seen = new Set();
-  const targets = (allUsers||[]).filter(u => {
-    if (u.blocked) return false;
-    const key = u.id ?? u.username;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-
-  if (!targets.length) { showToast('لا يوجد أعضاء لتوزيع النقاط عليهم','err'); return; }
-
-  const total = amt * targets.length;
-  if (!confirm(`توزيع ${amt.toLocaleString()} نقطة على ${targets.length} عضو (بالتساوي)؟\nالإجمالي: ${total.toLocaleString()} نقطة\nكل عضو ياخذ نفس العدد بالضبط، ولا حد ياخذ أكثر.`)) return;
-
-  _distributeRunning = true;
-  const btn = document.getElementById('distributeBtn');
-  const statusEl = document.getElementById('distributeStatus');
-  btn.disabled = true; btn.textContent = '⏳ جاري التوزيع...';
-
-  let done = 0, failed = 0;
-  for (const u of targets) {
-    try {
-      const res = await fetch(`${W}/api/admin/points-add`, {
-        method:'POST', headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},
-        body: JSON.stringify({ username: u.username, amount: amt }) // نفس الرقم بالضبط لكل عضو — مرة وحدة
-      });
-      const d = await res.json();
-      if (d.status === 'added' || d.success) done++; else failed++;
-    } catch(e) { failed++; }
-    if (statusEl) statusEl.textContent = `جاري... ${done+failed}/${targets.length}`;
-  }
-
-  btn.disabled = false; btn.textContent = '⚖️ توزيع على الجميع';
-  _distributeRunning = false;
-  setVal('distributePtsAmt','');
-  if (statusEl) statusEl.textContent = `✅ تم التوزيع على ${done} عضو${failed?` — فشل ${failed}`:''}`;
-  showToast(`✅ تم توزيع ${amt.toLocaleString()} نقطة على ${done} عضو بالتساوي`);
-  logActivity('⚖️ توزيع نقاط جماعي', `${amt.toLocaleString()} نقطة لكل عضو — ${done} عضو — الإجمالي ${(amt*done).toLocaleString()} نقطة`);
-  loadUsers();
 }
 
 // STAFF
@@ -4052,35 +3790,13 @@ async function logActivity(action, details='') {
   } catch(e) { console.log('log error:', e); }
 }
 
-// ══ MEMBER ACTIVITY LOG (كل تحركات الأعضاء) ══
-// يسجّل أي حدث يصير من عضو عادي (دخول، تنقل، شراء، كسب نقاط...) بنفس مكان سجل الإدارة
-// حتى يقدر الأدمن يشوف كل شي صار من أول ما العضو دخل الموقع.
-let _lastLoggedPage = null;
-async function logMemberActivity(action, details='') {
-  try {
-    const who = currentUser ? (currentUser.username || 'عضو') : 'زائر';
-    await fetch(`${W}/api/admin/log`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
-      body: JSON.stringify({ staffName: '👤 ' + who, action, details })
-    });
-  } catch(e) { console.log('member log error:', e); }
-}
-
-let _allLogsCache = [];
 async function loadActivityLogs() {
   try {
     const res = await fetch(`${W}/api/admin/logs`, { headers: { 'x-admin-key': ADMIN_KEY } });
     const { logs } = await res.json();
-    _allLogsCache = logs || [];
-    renderActivityLogs(_allLogsCache);
-  } catch(e) {}
-}
-
-function renderActivityLogs(logs) {
-  const el = document.getElementById('activityLogsList');
-  if (!el) return;
-  el.innerHTML = logs.length ? logs.map(l => `
+    const el = document.getElementById('activityLogsList');
+    if (!el) return;
+    el.innerHTML = logs.length ? logs.map(l => `
       <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border2);">
         <div style="width:36px;height:36px;border-radius:50%;background:var(--kick-dim);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">
           ${getActionIcon(l.action)}
@@ -4092,16 +3808,7 @@ function renderActivityLogs(logs) {
         </div>
       </div>
     `).join('') : '<div class="empty"><p>لا توجد أنشطة بعد</p></div>';
-}
-
-function filterActivityLogs() {
-  const q = (gv('logSearch')||'').trim().toLowerCase();
-  const mode = document.getElementById('logTypeFilter')?.value || 'all';
-  let list = _allLogsCache;
-  if (mode === 'members') list = list.filter(l => (l.staffName||'').includes('👤'));
-  if (mode === 'staff') list = list.filter(l => !(l.staffName||'').includes('👤'));
-  if (q) list = list.filter(l => `${l.staffName} ${l.action} ${l.details||''}`.toLowerCase().includes(q));
-  renderActivityLogs(list);
+  } catch(e) {}
 }
 
 function getActionIcon(action) {
@@ -4601,7 +4308,6 @@ async function claimDaily() {
       renderDailyDays(d.streak, true);
       if(currentUser) currentUser.points=(currentUser.points||0)+d.points;
       const ptsEl=document.getElementById('userPts'); if(ptsEl) ptsEl.textContent=(currentUser.points).toLocaleString()+' نقطة';
-      logMemberActivity('⭐ كسب نقاط يومية', `+${d.points} نقطة — سلسلة ${d.streak} يوم`);
       loadDaily();
     } else {
       showToast(d.error||'خطأ','err');

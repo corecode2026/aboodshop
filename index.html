@@ -3055,25 +3055,57 @@ function openBuy(id) {
   openModal('buyModal');
 }
 
+let _buyInFlight = false;
 async function confirmBuy() {
   if (!pendingProd || !currentUser) return;
+  if (_buyInFlight) return; // يمنع الضغط المزدوج اللي ممكن يسبب خصم مرتين أو تضارب
   const kn = gv('buyUsername');
   const contact = gv('buyContact');
   if (!contact) { showToast('أدخل معلومات التواصل','err'); return; }
+
+  const okBtn = document.querySelector('#buyModal .m-ok');
+  _buyInFlight = true;
+  if (okBtn) { okBtn.disabled = true; okBtn.dataset.origText = okBtn.textContent; okBtn.textContent = '... جاري التنفيذ'; }
+
   try {
     const res = await fetch(`${W}/api/buy`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ productId: pendingProd.id, kickUsername: kn, contact, token: sessionToken }),
     });
-    const d = await res.json();
-    if (d.success) {
+
+    // اقرأ الرد كنص أولاً حتى لو مو JSON صالح، حتى نقدر نشخّص السبب الحقيقي بدل رسالة "خطأ" العامة
+    const raw = await res.text();
+    let d = null;
+    try { d = raw ? JSON.parse(raw) : null; } catch (parseErr) {
+      console.error('[buy] رد السيرفر مو JSON صالح — status:', res.status, 'body:', raw);
+      showToast(`فشل الشراء — رد غير متوقع من السيرفر (كود ${res.status}). افتح Console لمزيد من التفاصيل`, 'err');
+      return;
+    }
+
+    if (!res.ok) {
+      console.error('[buy] فشل الطلب — status:', res.status, 'response:', d);
+      showToast((d && d.error) ? `فشل الشراء: ${d.error} (كود ${res.status})` : `فشل الشراء — كود الحالة ${res.status}`, 'err');
+      return;
+    }
+
+    if (d && d.success) {
       currentUser.points = d.remainingPoints;
       document.getElementById('navPtsVal').textContent = d.remainingPoints.toLocaleString();
       closeModal('buyModal'); loadStore();
       showToast('✅ ' + d.message);
       logMemberActivity('🛒 شراء منتج', `${pendingProd.name} — ⭐ ${pendingProd.price.toLocaleString()} نقطة — تواصل: ${contact}`);
-    } else showToast(d.error||'فشل الشراء','err');
-  } catch(e) { showToast('خطأ','err'); }
+    } else {
+      console.error('[buy] السيرفر رجع success=false:', d);
+      showToast((d && d.error) || 'فشل الشراء', 'err');
+    }
+  } catch(e) {
+    // هذا يصير فقط لو الطلب ما وصل للسيرفر أصلاً (مشكلة شبكة / CORS / السيرفر واطي)
+    console.error('[buy] خطأ بالاتصال بالسيرفر:', e);
+    showToast('تعذر الاتصال بالسيرفر — تحقق من الإنترنت أو حاول لاحقاً (افتح Console لمزيد من التفاصيل)', 'err');
+  } finally {
+    _buyInFlight = false;
+    if (okBtn) { okBtn.disabled = false; okBtn.textContent = okBtn.dataset.origText || 'تأكيد ✅'; }
+  }
 }
 
 // ═══════════════════════════════════════════

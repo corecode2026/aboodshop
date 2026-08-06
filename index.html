@@ -1329,6 +1329,57 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 .rule:hover { border-color:rgba(83,252,24,.15); background:rgba(83,252,24,.02); }
 
 </style>
+
+<script>
+(function(){
+  function freeze() {
+    document.body.style.display = 'none';
+    document.head.innerHTML = '';
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#07070F;color:#53FC18;font-family:Cairo,sans-serif;font-size:24px;font-weight:900;text-align:center;flex-direction:column;gap:16px;"><div style="font-size:48px;">🚫</div><div>تم تعطيل الصفحة</div></div>';
+    document.body.style.display = 'flex';
+    // أوقف كل الـ timers
+    var id = setTimeout(function(){},0);
+    for(var i=0;i<id;i++) clearTimeout(i);
+    id = setInterval(function(){},9999);
+    for(var i=0;i<id;i++) clearInterval(i);
+  }
+
+  // منع F12
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.ctrlKey && e.key === 'U')) {
+      e.preventDefault();
+      e.stopPropagation();
+      freeze();
+      return false;
+    }
+  }, true);
+
+  // منع كليك يمين
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // كشف devtools مفتوح
+  setInterval(function() {
+    var threshold = 160;
+    if (window.outerWidth - window.innerWidth > threshold ||
+        window.outerHeight - window.innerHeight > threshold) {
+      freeze();
+    }
+  }, 500);
+
+  // debugger trap
+  setInterval(function() {
+    var start = new Date();
+    debugger;
+    if (new Date() - start > 100) freeze();
+  }, 1000);
+})();
+</script>
+
 </head>
 <body>
 
@@ -2894,7 +2945,7 @@ function renderStorePage() {
   pageProds.forEach(function(p) {
     var qty = (p.quantity !== undefined && p.quantity !== null && p.quantity !== '') ? Number(p.quantity) : null;
     var outOfStock = qty !== null && qty <= 0;
-    var canAfford = currentUser && currentUser.points >= p.price;
+    var canAfford = currentUser && Number(currentUser.points||0) >= Number(p.price||0);
 
     var card = document.createElement('div');
     card.className = 'product-card';
@@ -3039,19 +3090,19 @@ function openBuy(id) {
   if (!currentUser) { openModal('loginModal'); return; }
   const p = (window._prods||[]).find(x => x.id === id);
   if (!p) return;
-  if (currentUser.points < p.price) { showToast('نقاطك غير كافية للاستبدال','err'); return; }
+  if (Number(currentUser.points||0) < Number(p.price||0)) { showToast('نقاطك غير كافية للاستبدال','err'); return; }
   pendingProd = p;
   setEl('buyTitle', p.name);
   setEl('buyDesc', p.desc);
   setEl('buyPrice', p.price.toLocaleString() + ' نقطة');
-  setVal('buyUsername', currentUser.username);
+  setVal('buyUsername', currentUser.kickUsername || currentUser.username || '');
   setVal('buyContact', '');
   openModal('buyModal');
 }
 
 async function confirmBuy() {
   if (!pendingProd || !currentUser) return;
-  const kn = gv('buyUsername');
+  const kn = currentUser?.kickUsername || currentUser?.username || gv('buyUsername');
   const contact = gv('buyContact');
   if (!contact) { showToast('أدخل معلومات التواصل','err'); return; }
   try {
@@ -5881,12 +5932,12 @@ init();
     <p id="buyDesc" style="color:var(--muted);font-size:13px;margin-bottom:8px;"></p>
     <div class="buy-price" id="buyPrice"></div>
     <div style="text-align:right;margin-bottom:10px;">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">اسمك</div>
-      <input class="m-input" id="buyUsername" placeholder="username" style="text-align:right;direction:rtl;" readonly/>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">اسمك على Kick</div>
+      <input class="m-input" id="buyUsername" placeholder="username" style="text-align:right;direction:rtl;opacity:.7;background:var(--surface2);" readonly/>
     </div>
     <div style="text-align:right;margin-bottom:14px;">
       <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">معلومات التواصل <span style="color:var(--red);">*</span></div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">رقم هاتف أو حساب تواصل اجتماعي</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">رقم واتساب أو حساب تواصل</div>
       <input class="m-input" id="buyContact" placeholder="مثال: 0591234567 أو @username" style="text-align:right;direction:rtl;"/>
     </div>
     <div class="m-btns">

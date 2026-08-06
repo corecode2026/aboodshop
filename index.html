@@ -1524,6 +1524,9 @@ body.ready .page.on { opacity:1; }
       🏷️ المزاد
       <span id="auctionActiveDot" style="display:none;width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse 1.4s infinite;"></span>
     </button>
+    <button id="storeTab-wheel" onclick="switchStoreTab('wheel')" style="padding:10px 22px;border:none;background:transparent;color:var(--muted);font-size:14px;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;">
+      🎡 دولاب الحظ
+    </button>
   </div>
 
   <!-- المنتجات -->
@@ -1531,6 +1534,25 @@ body.ready .page.on { opacity:1; }
     <div id="storePagination" style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;flex-wrap:wrap;"></div>
     <div class="store-grid" id="storeGrid"><p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p></div>
     </div>
+
+  <!-- الدولاب -->
+  <div id="storeTabWheel" style="display:none;">
+    <div id="wheelContainer" style="text-align:center;padding:20px 0;">
+      <div id="wheelCostInfo" style="font-size:13px;color:var(--muted);margin-bottom:16px;"></div>
+      <div style="position:relative;display:inline-block;margin-bottom:20px;">
+        <!-- مؤشر -->
+        <div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);z-index:10;font-size:28px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));">▼</div>
+        <canvas id="wheelCanvas" width="320" height="320" style="border-radius:50%;box-shadow:0 0 40px rgba(83,252,24,.3);cursor:pointer;"></canvas>
+      </div>
+      <div id="wheelResult" style="margin-bottom:16px;min-height:40px;"></div>
+      <button id="wheelSpinBtn" onclick="spinWheel()" class="btn btn-kick" style="font-size:16px;padding:14px 40px;border-radius:12px;">
+        🎡 الفة الدولاب
+      </button>
+      <div id="wheelLoginMsg" style="display:none;margin-top:12px;">
+        <button onclick="doLogin('kick')" class="btn btn-kick">سجّل دخول للعب</button>
+      </div>
+    </div>
+  </div>
 
   <!-- المزاد -->
   <div id="storeTabAuction" style="display:none;">
@@ -1811,6 +1833,24 @@ body.ready .page.on { opacity:1; }
           <button onclick="addLevel()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;width:100%;">
             + إضافة مستوى
           </button>
+        </div>
+
+
+        <div class="settings-box" style="margin-top:14px;">
+          <div class="settings-box-title">
+            🎡 دولاب الحظ
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:5px;">تكلفة اللفة (نقاط)</div>
+              <input class="pf-input" id="wheelCostAdmin" type="number" value="100" min="1" dir="ltr" style="width:120px;"/>
+            </div>
+            <div id="wheelChanceTotal" style="font-size:12px;font-weight:700;color:var(--kick);margin-top:18px;"></div>
+          </div>
+          <div id="wheelAdminItems" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="addWheelItem()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">+ إضافة جائزة</button>
+          </div>
         </div>
 
         <button class="btn btn-kick" onclick="savePtsCfg()">💾 حفظ إعدادات النقاط</button>
@@ -2588,6 +2628,7 @@ async function loadAllSettings() {
     if (s.offlineColor)   { streamState.offlineColor = s.offlineColor; }
     if (s.ptsCfg)         { ptsCfg = { ...ptsCfg, ...s.ptsCfg }; applyPtsCfg(); }
     if (s.levels && Array.isArray(s.levels) && s.levels.length > 0) { levelsConfig = s.levels; }
+    if (s.wheel) { wheelConfig.cost = s.wheel.cost||100; wheelConfig.items = s.wheel.items||[]; }
 
     renderStream();
     applyHeroSettings(s);
@@ -2800,15 +2841,26 @@ function switchStoreTab(tab) {
     prodBtn.style.borderBottomColor = 'var(--kick)';
     aucBtn.style.color  = 'var(--muted)';
     aucBtn.style.borderBottomColor = 'transparent';
-  } else {
+  } else if (tab === 'auction') {
     prodTab.style.display = 'none';
+    document.getElementById('storeTabWheel').style.display = 'none';
     aucTab.style.display  = 'block';
-    prodBtn.style.color = 'var(--muted)';
-    prodBtn.style.borderBottomColor = 'transparent';
-    aucBtn.style.color  = 'var(--kick)';
-    aucBtn.style.borderBottomColor = 'var(--kick)';
+    prodBtn.style.color = 'var(--muted)'; prodBtn.style.borderBottomColor = 'transparent';
+    aucBtn.style.color  = 'var(--kick)'; aucBtn.style.borderBottomColor = 'var(--kick)';
+    document.getElementById('storeTab-wheel').style.color = 'var(--muted)';
+    document.getElementById('storeTab-wheel').style.borderBottomColor = 'transparent';
     loadAuctionInStore(true);
     startAuctionAutoRefresh();
+  } else if (tab === 'wheel') {
+    prodTab.style.display = 'none';
+    aucTab.style.display  = 'none';
+    document.getElementById('storeTabWheel').style.display = 'block';
+    prodBtn.style.color = 'var(--muted)'; prodBtn.style.borderBottomColor = 'transparent';
+    aucBtn.style.color  = 'var(--muted)'; aucBtn.style.borderBottomColor = 'transparent';
+    document.getElementById('storeTab-wheel').style.color = 'var(--kick)';
+    document.getElementById('storeTab-wheel').style.borderBottomColor = 'var(--kick)';
+    stopAuctionAutoRefresh();
+    loadWheel();
   }
 }
 
@@ -3482,7 +3534,8 @@ async function savePtsCfg() {
 
   ptsCfg={welcome:+gv('pc-welcome'),msg:+gv('pc-msg'),hour:+gv('pc-hour'),sub:+gv('pc-sub'),follow:+gv('pc-follow'),cooldown:+gv('pc-cooldown'),maxHr:+gv('pc-maxhr'),goal:+gv('pc-goal')};
   try {
-    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({ptsCfg, dailyPts, levels:levelsConfig})});
+    const wheelData = { cost: Number(document.getElementById('wheelCostAdmin')?.value)||100, items: wheelConfig.items };
+    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({ptsCfg, dailyPts, levels:levelsConfig, wheel:wheelData})});
     // حدّث الـ cache
     try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyPts=dailyPts; c.ptsCfg=ptsCfg; c.levels=levelsConfig; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
     dailyConfig = dailyPts;
@@ -5869,6 +5922,233 @@ async function logUserActivity(action, details='') {
       body: JSON.stringify({ token: sessionToken, action, details })
     });
   } catch(e) {}
+}
+
+
+// ══════════════════════════════════════════
+// WHEEL OF FORTUNE
+// ══════════════════════════════════════════
+let wheelConfig = { cost: 100, items: [], spinning: false };
+let wheelAngle = 0;
+
+async function loadWheel() {
+  try {
+    const res = await fetch(`${W}/api/wheel`);
+    const d = await res.json();
+    if (d.wheel) {
+      wheelConfig.cost = d.wheel.cost || 100;
+      wheelConfig.items = d.wheel.items || [];
+    }
+    const costEl = document.getElementById('wheelCostInfo');
+    if(costEl) costEl.innerHTML = 'تكلفة اللفة: <strong style="color:var(--kick);">⭐ '+wheelConfig.cost+' نقطة</strong>';
+    drawWheel();
+    // تحقق من تسجيل الدخول
+    const loginMsg = document.getElementById('wheelLoginMsg');
+    const spinBtn = document.getElementById('wheelSpinBtn');
+    if (!currentUser) {
+      if(loginMsg) loginMsg.style.display='block';
+      if(spinBtn) spinBtn.style.display='none';
+    } else {
+      if(loginMsg) loginMsg.style.display='none';
+      if(spinBtn) spinBtn.style.display='inline-flex';
+    }
+  } catch(e) {}
+}
+
+function drawWheel(highlightIdx=-1) {
+  const canvas = document.getElementById('wheelCanvas');
+  if (!canvas || !wheelConfig.items.length) return;
+  const ctx = canvas.getContext('2d');
+  const cx = canvas.width/2, cy = canvas.height/2, r = cx-4;
+  const items = wheelConfig.items;
+  const arc = (2 * Math.PI) / items.length;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // رسم القطع
+  const colors = ['#1a2a1a','#0d1f0d','#152815','#0a1a0a','#1f2f1f','#112011','#182818','#0e1e0e'];
+  items.forEach((item, i) => {
+    const startAngle = wheelAngle + i * arc - Math.PI/2;
+    const endAngle = startAngle + arc;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.closePath();
+    ctx.fillStyle = i === highlightIdx ? 'rgba(83,252,24,.3)' : colors[i % colors.length];
+    ctx.fill();
+    ctx.strokeStyle = '#53FC18';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // نص
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(startAngle + arc/2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = i === highlightIdx ? '#53FC18' : '#fff';
+    ctx.font = 'bold 12px Cairo';
+    ctx.fillText(item.label, r-10, 5);
+    // نسبة
+    ctx.font = '10px Cairo';
+    ctx.fillStyle = '#53FC18';
+    ctx.fillText(item.chance+'%', r-10, 18);
+    ctx.restore();
+  });
+
+  // دائرة وسط
+  ctx.beginPath();
+  ctx.arc(cx, cy, 22, 0, 2*Math.PI);
+  ctx.fillStyle = '#07070F';
+  ctx.fill();
+  ctx.strokeStyle = '#53FC18';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#53FC18';
+  ctx.font = 'bold 11px Cairo';
+  ctx.textAlign = 'center';
+  ctx.fillText('🎡', cx, cy+5);
+}
+
+async function spinWheel() {
+  if (!currentUser) { showToast('سجّل دخول أولاً','err'); return; }
+  if (wheelConfig.spinning) return;
+  if (!wheelConfig.items.length) { showToast('الدولاب فارغ','err'); return; }
+  if (currentUser.points < wheelConfig.cost) {
+    showToast('نقاطك غير كافية — تحتاج '+wheelConfig.cost+' نقطة','err');
+    return;
+  }
+
+  try {
+    wheelConfig.spinning = true;
+    document.getElementById('wheelSpinBtn').disabled = true;
+    document.getElementById('wheelSpinBtn').textContent = '⏳ جاري...';
+    document.getElementById('wheelResult').innerHTML = '';
+
+    const res = await fetch(`${W}/api/wheel/spin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: sessionToken })
+    });
+    const d = await res.json();
+    if (!d.success) { showToast(d.error||'خطأ','err'); return; }
+
+    // حدّث نقاط المستخدم
+    currentUser.points = d.remainingPoints;
+    document.getElementById('navPtsVal').textContent = d.remainingPoints.toLocaleString();
+
+    // حرك الدولاب
+    const targetIdx = d.resultIdx;
+    const arc = (2 * Math.PI) / wheelConfig.items.length;
+    const targetAngle = -(targetIdx * arc) - (arc/2);
+    const spins = 5 + Math.random() * 3;
+    const totalRotation = spins * 2 * Math.PI + targetAngle - wheelAngle;
+    const duration = 4000;
+    const startTime = performance.now();
+    const startAngle = wheelAngle;
+
+    function animate(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 4);
+      wheelAngle = startAngle + totalRotation * ease;
+      drawWheel();
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        wheelAngle = startAngle + totalRotation;
+        drawWheel(targetIdx);
+        const result = wheelConfig.items[targetIdx];
+        document.getElementById('wheelResult').innerHTML = 
+          '<div style="background:var(--kick-dim);border:1px solid var(--kick);border-radius:12px;padding:16px;margin:0 auto;max-width:300px;">' +
+          '<div style="font-size:24px;margin-bottom:8px;">' + (result.emoji||'🎁') + '</div>' +
+          '<div style="font-size:16px;font-weight:800;color:var(--kick);">'+result.label+'</div>' +
+          (d.pointsWon ? '<div style="font-size:13px;color:var(--muted);margin-top:6px;">+'+d.pointsWon+' نقطة أضيفت لحسابك</div>' : '') +
+          '</div>';
+        showToast('🎉 فزت بـ: '+result.label);
+        if(d.pointsWon && d.pointsWon > 0) {
+          currentUser.points += d.pointsWon;
+          document.getElementById('navPtsVal').textContent = currentUser.points.toLocaleString();
+        }
+        wheelConfig.spinning = false;
+        document.getElementById('wheelSpinBtn').disabled = false;
+        document.getElementById('wheelSpinBtn').textContent = '🎡 الفة الدولاب';
+        logUserActivity('دولاب الحظ', 'فاز بـ: '+result.label);
+      }
+    }
+    requestAnimationFrame(animate);
+  } catch(e) {
+    showToast('خطأ في الاتصال','err');
+    wheelConfig.spinning = false;
+    document.getElementById('wheelSpinBtn').disabled = false;
+    document.getElementById('wheelSpinBtn').textContent = '🎡 الفة الدولاب';
+  }
+}
+
+// ADMIN WHEEL
+function loadWheelAdmin() {
+  try {
+    const c = JSON.parse(localStorage.getItem('sk_settings_cache')||'{}');
+    if (c.wheel) {
+      wheelConfig.cost = c.wheel.cost || 100;
+      wheelConfig.items = c.wheel.items || [];
+    }
+  } catch(e) {}
+  renderWheelAdmin();
+}
+
+function renderWheelAdmin() {
+  const el = document.getElementById('wheelAdminItems');
+  if (!el) return;
+  document.getElementById('wheelCostAdmin').value = wheelConfig.cost || 100;
+  el.innerHTML = wheelConfig.items.map((item, i) => `
+    <div style="display:grid;grid-template-columns:36px 1fr 80px 60px auto;gap:8px;align-items:center;background:var(--surface2);padding:8px 12px;border-radius:8px;border:1px solid var(--border2);">
+      <input value="${item.emoji||'🎁'}" oninput="wheelConfig.items[${i}].emoji=this.value" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:4px;border-radius:6px;font-size:16px;text-align:center;width:100%;"/>
+      <div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:2px;">الجائزة</div>
+        <input value="${item.label}" oninput="wheelConfig.items[${i}].label=this.value" class="pf-input" placeholder="مثال: 500 نقطة"/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:2px;">نقاط</div>
+        <input value="${item.points||0}" type="number" oninput="wheelConfig.items[${i}].points=+this.value" class="pf-input" dir="ltr"/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:2px;">% نسبة</div>
+        <input value="${item.chance}" type="number" oninput="wheelConfig.items[${i}].chance=+this.value" class="pf-input" dir="ltr" min="1" max="100"/>
+      </div>
+      <button onclick="removeWheelItem(${i})" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;">✕</button>
+    </div>
+  `).join('');
+  
+  // عرض مجموع النسب
+  const total = wheelConfig.items.reduce((s,i)=>s+(i.chance||0),0);
+  document.getElementById('wheelChanceTotal').textContent = 'مجموع النسب: '+total+'%';
+  document.getElementById('wheelChanceTotal').style.color = total===100 ? 'var(--kick)' : 'var(--red)';
+}
+
+function addWheelItem() {
+  wheelConfig.items.push({ emoji:'🎁', label:'جائزة جديدة', points:0, chance:10 });
+  renderWheelAdmin();
+}
+
+function removeWheelItem(i) {
+  wheelConfig.items.splice(i,1);
+  renderWheelAdmin();
+}
+
+async function saveWheelConfig() {
+  const cost = Number(document.getElementById('wheelCostAdmin').value)||100;
+  const total = wheelConfig.items.reduce((s,i)=>s+(i.chance||0),0);
+  if (total !== 100) { showToast('مجموع النسب يجب أن يكون 100%','err'); return; }
+  wheelConfig.cost = cost;
+  try {
+    await fetch(`${W}/api/settings`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},
+      body:JSON.stringify({ wheel: { cost, items: wheelConfig.items } })
+    });
+    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.wheel={cost,items:wheelConfig.items}; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
+    showToast('✅ تم حفظ إعدادات الدولاب');
+    renderWheelAdmin();
+  } catch(e) { showToast('خطأ','err'); }
 }
 
 async function init() {

@@ -1529,7 +1529,7 @@ body.ready .page.on { opacity:1; }
   <!-- المنتجات -->
   <div id="storeTabProducts">
     <div class="store-grid" id="storeGrid"><p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p></div>
-  <div id="storePagination" style="display:flex;justify-content:flex-end;gap:8px;margin-top:24px;flex-wrap:wrap;"></div>
+  <div id="storePagination" style="display:flex;justify-content:flex-end;gap:8px;margin-top:-8px;margin-bottom:16px;flex-wrap:wrap;"></div>
   </div>
 
   <!-- المزاد -->
@@ -2898,8 +2898,9 @@ function renderStorePage() {
   var pg = document.getElementById('storePagination');
   if (!g) return;
 
-  var start = (_storePage - 1) * _storePerPage;
-  var pageProds = _storeProducts.slice(start, start + _storePerPage);
+  var isMobile = window.innerWidth < 768;
+  var start = isMobile ? 0 : (_storePage - 1) * _storePerPage;
+  var pageProds = isMobile ? _storeProducts : _storeProducts.slice(start, start + _storePerPage);
   var totalPages = Math.ceil(_storeProducts.length / _storePerPage);
 
   g.innerHTML = '';
@@ -2986,10 +2987,10 @@ function renderStorePage() {
     g.appendChild(card);
   });
 
-  // Pagination
+  // Pagination - فقط على الكمبيوتر
   if (!pg) return;
   pg.innerHTML = '';
-  if (totalPages <= 1) return;
+  if (totalPages <= 1 || isMobile) return;
 
   var mkBtn = function(label, page, active, disabled) {
     var b = document.createElement('button');

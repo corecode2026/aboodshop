@@ -4021,16 +4021,15 @@ document.body.classList.add('ready');
 
 // ══ ACTIVITY LOG ══
 async function logActivity(action, details='') {
-  const name = isStaffMode && currentStaff 
-    ? (currentStaff.name || currentStaff.username || 'موظف') 
-    : 'المدير';
+  const role = isStaffMode ? 'موظف' : adminIn ? 'المدير' : currentUser ? 'عضو' : 'زائر';
+  const who = isStaffMode ? (currentStaff?.name||'موظف') : adminIn ? 'المدير' : (currentUser?.username||'زائر');
   try {
     await fetch(`${W}/api/admin/log`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
-      body: JSON.stringify({ staffName: name, action, details })
+      body: JSON.stringify({ staffName: who, role, action, details, time: new Date().toISOString() })
     });
-  } catch(e) { console.log('log error:', e); }
+  } catch(e) {}
 }
 
 async function loadActivityLogs() {

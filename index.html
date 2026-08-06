@@ -2954,14 +2954,18 @@ function renderStorePage() {
       btn.className = 'btn btn-kick';
       btn.textContent = '🛒 استبدال';
       btn.onclick = (function(pid) { return function() { openBuy(pid); }; })(p.id);
-    } else if (!canAfford) {
-      btn.style.cssText += 'background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);cursor:not-allowed;';
-      btn.disabled = true;
-      btn.textContent = 'نقاطك غير كافية';
     } else {
       btn.className = 'btn btn-kick';
       btn.textContent = '🛒 استبدال';
-      btn.onclick = (function(pid) { return function() { openBuy(pid); }; })(p.id);
+      var canBuy = currentUser && currentUser.points >= p.price;
+      if (!canBuy) {
+        btn.className = 'btn';
+        btn.style.cssText += 'background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);cursor:not-allowed;';
+        btn.disabled = true;
+        btn.textContent = 'نقاطك غير كافية';
+      } else {
+        btn.onclick = (function(pid) { return function() { openBuy(pid); }; })(p.id);
+      }
     }
     body.appendChild(btn);
     card.appendChild(body);

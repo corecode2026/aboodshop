@@ -2904,7 +2904,7 @@ function renderStorePage() {
 
   g.innerHTML = '';
   pageProds.forEach(function(p) {
-    var qty = (p.quantity !== undefined && p.quantity !== null && p.quantity !== '') ? Number(p.quantity) : null;
+    var qty = (p.qty !== undefined && p.qty !== null && p.qty !== '') ? Number(p.qty) : (p.quantity !== undefined && p.quantity !== null && p.quantity !== '') ? Number(p.quantity) : null;
     var outOfStock = qty !== null && qty <= 0;
     var canAfford = currentUser && Number(currentUser.points||0) >= Number(p.price||0);
 

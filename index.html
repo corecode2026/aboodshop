@@ -2929,6 +2929,8 @@ function renderStorePage() {
     descEl.textContent = p.desc || '';
     body.appendChild(descEl);
 
+    var userPts = currentUser ? Number(currentUser.points||0) : 0;
+    var canAffordNow = userPts >= Number(p.price||0);
     var infoRow = document.createElement('div');
     infoRow.style.cssText = 'display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;';
 
@@ -2937,7 +2939,7 @@ function renderStorePage() {
     priceEl.textContent = '⭐ ' + p.price.toLocaleString() + ' نقطة';
     infoRow.appendChild(priceEl);
 
-    if (qty !== null) {
+    if (qty !== null && (outOfStock || !canAffordNow)) {
       var qtyEl = document.createElement('span');
       qtyEl.style.cssText = 'font-size:11px;background:var(--surface2);border:1px solid var(--border2);padding:2px 8px;border-radius:10px;color:var(--muted);';
       qtyEl.textContent = 'متبقي: ' + qty;

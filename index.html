@@ -4554,7 +4554,7 @@ async function claimDaily() {
     const d = await res.json();
     if(d.success) {
       showToast('🎉 كسبت '+d.points+' نقطة! سلسلة: '+d.streak+' يوم');
-      logActivity('تسجيل يومي', (currentUser?.username||'') + ' — يوم '+d.streak+' — '+d.points+' نقطة');
+      logUserActivity('تسجيل يومي', 'يوم '+d.streak+' — كسب '+d.points+' نقطة');
       renderDailyDays(d.streak, true);
       if(currentUser) currentUser.points=(currentUser.points||0)+d.points;
       const ptsEl=document.getElementById('userPts'); if(ptsEl) ptsEl.textContent=(currentUser.points).toLocaleString()+' نقطة';
@@ -5376,7 +5376,7 @@ async function submitMarketPost() {
     if (d.success) {
       closeMarketModal();
       showToast('⏳ طلبك قيد المراجعة — سيظهر بعد موافقة الإدارة');
-      if(currentUser) logActivity('نشر منتج', currentUser.username + ' نشر: ' + post.name + ' — بانتظار الموافقة');
+      logUserActivity('نشر منتج', post.name + ' — بانتظار الموافقة');
       loadMarket();
     } else { err.textContent = d.error || 'خطأ في النشر'; }
   } catch(e) { err.textContent = 'خطأ في الاتصال'; }
@@ -5857,6 +5857,18 @@ async function clearLogs() {
     if (d.success) { showToast('✅ تم حذف السجل'); loadActivityLogs(); }
     else showToast(d.error||'خطأ','err');
   } catch(e) { showToast('خطأ','err'); }
+}
+
+
+async function logUserActivity(action, details='') {
+  if (!currentUser || !sessionToken) return;
+  try {
+    await fetch(`${W}/api/user/log`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: sessionToken, action, details })
+    });
+  } catch(e) {}
 }
 
 async function init() {

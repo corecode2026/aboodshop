@@ -591,8 +591,8 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 .product-card:hover { border-color:rgba(83,252,24,.2); transform:translateY(-6px); box-shadow:0 16px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(83,252,24,.08); }
 .product-card:hover::before { opacity:1; }
 .product-card:hover::after { opacity:1; }
-.prod-img { width:100%; height:160px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:52px; overflow:hidden; flex-shrink:0; }
-.prod-img img { width:100%; height:100%; object-fit:cover; }
+.prod-img { width:100%; height:220px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:52px; overflow:hidden; flex-shrink:0; }
+.prod-img img { width:100%; height:100%; object-fit:contain; display:block; }
 .prod-body { padding:16px; display:flex; flex-direction:column; flex:1; }
 .prod-name { font-size:15px; font-weight:700; margin-bottom:6px; }
 .prod-desc { font-size:12px; color:var(--muted); margin-bottom:12px; line-height:1.55; flex:1; }
@@ -1526,6 +1526,7 @@ body.ready .page.on { opacity:1; }
   <!-- المنتجات -->
   <div id="storeTabProducts">
     <div class="store-grid" id="storeGrid"><p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p></div>
+  <div id="storePagination" style="display:flex;justify-content:flex-end;gap:8px;margin-top:24px;flex-wrap:wrap;"></div>
   </div>
 
   <!-- المزاد -->
@@ -1578,6 +1579,7 @@ body.ready .page.on { opacity:1; }
         <button class="am" onclick="aTab('products',this)" data-tab="products"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></span> المنتجات</button>
         <button class="am" onclick="aTab('users',this)" data-tab="users"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span> المستخدمون</button>
         <button class="am" onclick="aTab('staff',this)" data-tab="staff"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span> الموظفون</button>
+        <button class="am" onclick="aTab('market-admin',this)" data-tab="market-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></span> السوق</button>
         <button class="am" onclick="aTab('tournaments-admin',this)" data-tab="tournaments-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 01-2-2V5h4"/><path d="M18 9h2a2 2 0 002-2V5h-4"/><path d="M12 17v4"/><path d="M8 21h8"/><path d="M6 3h12v8a6 6 0 01-12 0V3z"/></svg></span> البطولات</button>
         <button class="am" onclick="aTab('auction-admin',this)" data-tab="auction-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span> المزاد</button>
         <button class="am" onclick="aTab('rules-admin',this)" data-tab="rules-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> القوانين</button>
@@ -1663,6 +1665,13 @@ body.ready .page.on { opacity:1; }
       </div>
 
 
+
+
+      <!-- MARKET ADMIN -->
+      <div class="asub" id="asub-market-admin">
+        <div class="section-head"><div class="section-title">إدارة السوق المجتمعي</div></div>
+        <div id="marketAdminList"></div>
+      </div>
 
       <!-- TOURNAMENTS ADMIN -->
       <div class="asub" id="asub-tournaments-admin">
@@ -2290,6 +2299,23 @@ body.ready .page.on { opacity:1; }
   </div>
 </div>
 
+
+<!-- PRODUCT CROP MODAL -->
+<div id="prodCropModal" style="position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;">
+  <div style="font-size:14px;font-weight:700;color:var(--kick);">اقتص الصورة</div>
+  <div style="position:relative;width:min(320px,85vw);height:min(320px,85vw);border:2px solid var(--kick);border-radius:12px;overflow:hidden;background:#000;cursor:grab;box-shadow:0 0 30px rgba(83,252,24,.2);">
+    <img id="prodCropImg" style="position:absolute;transform-origin:center;user-select:none;" draggable="false"/>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:min(320px,85vw);">
+    <div style="font-size:11px;color:var(--muted);">تكبير</div>
+    <input type="range" id="prodCropZoom" min="0.5" max="3" step="0.05" value="1" style="width:100%;accent-color:var(--kick);" oninput="updateProdCrop()"/>
+  </div>
+  <div style="display:flex;gap:10px;width:min(320px,85vw);">
+    <button onclick="confirmProdCrop()" style="flex:1;background:var(--kick);color:#000;border:none;padding:11px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Cairo',sans-serif;">✓ حفظ</button>
+    <button onclick="cancelProdCrop()" style="flex:1;background:var(--surface2);color:var(--muted);border:1px solid var(--border2);padding:11px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Cairo',sans-serif;">إلغاء</button>
+  </div>
+</div>
+
 <!-- CHAT BUBBLE -->
 <div class="chat-bubble">
   <div class="chat-box" id="chatBox">
@@ -2297,7 +2323,7 @@ body.ready .page.on { opacity:1; }
       <div><div class="chat-box-title">💬 تواصل مع الدعم</div></div>
       <button class="chat-box-close" onclick="toggleChat()">✕</button>
     </div>
-    <div class="chat-name-row"><input class="chat-name-inp" id="chatName" placeholder="اسمك (اختياري)"/></div>
+    <div class="chat-name-row" id="chatNameRow" style="display:none;"></div>
     <div class="chat-msgs" id="chatMsgs">
       <div class="cmsg support">أهلاً! كيف أقدر أساعدك؟ 👋</div>
     </div>
@@ -2475,6 +2501,8 @@ function updateAuthUI() {
   document.getElementById('navPts').classList.remove('hidden');
   document.getElementById('userChip').classList.remove('hidden');
   document.getElementById('navPtsVal').textContent = currentUser.points.toLocaleString();
+  // أعد رسم المتجر
+  if (_storeProducts.length) { _storePage = 1; renderStorePage(); }
   document.getElementById('userName').textContent = currentUser.username;
   const prov = document.getElementById('userProvider');
   prov.textContent = currentUser.provider === 'discord' ? 'Discord' : 'Kick';
@@ -2618,13 +2646,23 @@ async function saveSettings() {
 // ═══════════════════════════════════════════
 // STREAM
 // ═══════════════════════════════════════════
-function setStream(status) {
+async function setStream(status) {
   streamState.status = status;
   const btnL = document.getElementById('btn-live'), btnO = document.getElementById('btn-offline');
   if (status === 'live') { btnL.style.background='rgba(83,252,24,1)'; btnL.style.color='#000'; btnO.style.background='rgba(255,64,64,.15)'; btnO.style.color='var(--red)'; }
   else { btnO.style.background='rgba(255,64,64,.15)'; btnO.style.color='var(--red)'; btnL.style.background='var(--kick)'; btnL.style.color='#000'; }
   renderStream();
-  showToast(status==='live'?'🔴 البث شغال!':'😴 البث أوقف');
+  // احفظ على Firebase
+  try {
+    await fetch(`${W}/api/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+      body: JSON.stringify({ streamStatus: status, streamUsername: gv('set-stream-user') || streamState.username })
+    });
+    showToast(status==='live'?'🔴 البث شغال!':'😴 البث أوقف');
+  } catch(e) {
+    showToast(status==='live'?'🔴 شغال (لم يُحفظ)':'😴 أوقف (لم يُحفظ)');
+  }
 }
 
 function renderStream() {
@@ -2838,34 +2876,170 @@ async function loadAuctionInStore(initial=false) {
   } catch(e) {}
 }
 
+let _storeProducts = [];
+let _storePage = 1;
+const _storePerPage = 6;
+
+
+function renderStorePage() {
+  var g = document.getElementById('storeGrid');
+  var pg = document.getElementById('storePagination');
+  if (!g) return;
+
+  var start = (_storePage - 1) * _storePerPage;
+  var pageProds = _storeProducts.slice(start, start + _storePerPage);
+  var totalPages = Math.ceil(_storeProducts.length / _storePerPage);
+
+  g.innerHTML = '';
+  pageProds.forEach(function(p) {
+    var qty = (p.quantity !== undefined && p.quantity !== null && p.quantity !== '') ? Number(p.quantity) : null;
+    var outOfStock = qty !== null && qty <= 0;
+    var canAfford = currentUser && currentUser.points >= p.price;
+
+    var card = document.createElement('div');
+    card.className = 'product-card';
+    if (outOfStock) card.style.opacity = '.7';
+
+    // صورة
+    var imgDiv = document.createElement('div');
+    imgDiv.className = 'prod-img';
+    if (p.img) {
+      var imgEl = document.createElement('img');
+      imgEl.src = p.img; imgEl.alt = p.name;
+      imgDiv.appendChild(imgEl);
+    } else {
+      imgDiv.textContent = p.icon || '🎁';
+    }
+    card.appendChild(imgDiv);
+
+    // Body
+    var body = document.createElement('div');
+    body.className = 'prod-body';
+
+    var nameEl = document.createElement('div');
+    nameEl.className = 'prod-name';
+    nameEl.textContent = p.name;
+    body.appendChild(nameEl);
+
+    var descEl = document.createElement('div');
+    descEl.className = 'prod-desc';
+    descEl.textContent = p.desc || '';
+    body.appendChild(descEl);
+
+    var infoRow = document.createElement('div');
+    infoRow.style.cssText = 'display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;';
+
+    var priceEl = document.createElement('div');
+    priceEl.className = 'prod-price';
+    priceEl.textContent = '⭐ ' + p.price.toLocaleString() + ' نقطة';
+    infoRow.appendChild(priceEl);
+
+    if (qty !== null) {
+      var qtyEl = document.createElement('span');
+      qtyEl.style.cssText = 'font-size:11px;background:var(--surface2);border:1px solid var(--border2);padding:2px 8px;border-radius:10px;color:var(--muted);';
+      qtyEl.textContent = 'متبقي: ' + qty;
+      infoRow.appendChild(qtyEl);
+    }
+    body.appendChild(infoRow);
+
+    var btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.style.cssText = 'width:100%;justify-content:center;';
+
+    if (outOfStock) {
+      btn.style.cssText += 'background:var(--surface2);color:var(--muted);cursor:not-allowed;';
+      btn.disabled = true;
+      btn.textContent = 'نفذت الكمية';
+    } else if (!currentUser) {
+      btn.className = 'btn btn-kick';
+      btn.textContent = '🛒 استبدال';
+      btn.onclick = (function(pid) { return function() { openBuy(pid); }; })(p.id);
+    } else {
+      btn.className = 'btn btn-kick';
+      btn.textContent = '🛒 استبدال';
+      var canBuy = currentUser && currentUser.points >= p.price;
+      if (!canBuy) {
+        btn.className = 'btn';
+        btn.style.cssText += 'background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);cursor:not-allowed;';
+        btn.disabled = true;
+        btn.textContent = 'نقاطك غير كافية';
+      } else {
+        btn.onclick = (function(pid) { return function() { openBuy(pid); }; })(p.id);
+      }
+    }
+    body.appendChild(btn);
+    card.appendChild(body);
+    g.appendChild(card);
+  });
+
+  // Pagination
+  if (!pg) return;
+  pg.innerHTML = '';
+  if (totalPages <= 1) return;
+
+  var mkBtn = function(label, page, active, disabled) {
+    var b = document.createElement('button');
+    b.style.cssText = 'width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:14px;font-family:Cairo,sans-serif;border:1px solid '+(active?'var(--kick)':'var(--border2)')+';background:'+(active?'var(--kick)':'var(--surface)')+';color:'+(active?'#000':'var(--text)')+';font-weight:'+(active?'900':'600')+';';
+    b.textContent = label;
+    b.disabled = disabled || false;
+    if (!disabled) b.onclick = function() { goStorePage(page); };
+    return b;
+  };
+
+  pg.appendChild(mkBtn('<', _storePage-1, false, _storePage===1));
+  for (var i=1; i<=totalPages; i++) {
+    pg.appendChild(mkBtn(i, i, i===_storePage, false));
+  }
+  pg.appendChild(mkBtn('>', _storePage+1, false, _storePage===totalPages));
+}
+
+
+function goStorePage(page) {
+  const total = Math.ceil(_storeProducts.length / _storePerPage);
+  if (page < 1 || page > total) return;
+  _storePage = page;
+  renderStorePage();
+  document.getElementById('page-store')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
 async function loadStore() {
   const g = document.getElementById('storeGrid');
   if (!g) return;
   g.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p>';
-  // تحقق من المزادات وأظهر النقطة
   fetch(`${W}/api/auctions`).then(r=>r.json()).then(({auctions})=>{ const dot=document.getElementById('auctionActiveDot'); if(dot&&auctions?.filter(a=>!a.finalized&&new Date(a.endTime)>new Date()).length) dot.style.display='block'; }).catch(()=>{});
   try {
     const { products } = await (await fetch(`${W}/api/products`)).json();
     window._prods = products;
     if (!products.length) { g.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">لا توجد منتجات</p>'; return; }
-    g.innerHTML = products.map(p => {
-      const can = currentUser && currentUser.points >= p.price;
-      const outOfStock = p.qty !== null && p.qty !== undefined && p.qty <= 0;
-      const img = p.img ? '<div class="prod-img"><img src="'+p.img+'" alt="'+p.name+'"/></div>' : '<div class="prod-img">'+(p.icon||'🎁')+'</div>';
-      const qtyBadge = p.qty != null ? (p.qty <= 0 ? '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.25);color:var(--red);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">✕ نفذت الكمية</span>' : '<span style="font-size:11px;color:var(--muted);">متبقي: '+p.qty+'</span>') : '';
-      const btnDisabled = !can || outOfStock;
-      const btnText = outOfStock ? 'نفذت الكمية' : !currentUser ? 'سجّل دخول أولاً' : !can ? 'نقاط غير كافية' : 'استبدال الآن';
-      const cardStyle = outOfStock ? 'opacity:.7;' : '';
-      const buyBtn = '<button class="buy-btn" '+(btnDisabled?'disabled':'')+' onclick="'+(outOfStock?'':'openBuy('+p.id+')')+'">'+btnText+'</button>';
-      return '<div class="product-card" style="'+cardStyle+'">'+img+'<div class="prod-body"><div class="prod-name">'+p.name+'</div><div class="prod-desc">'+p.desc+'</div><div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;"><div class="prod-price">⭐ '+p.price.toLocaleString()+' نقطة</div>'+qtyBadge+'</div>'+buyBtn+'</div></div>';
-    }).join('');
+    _storeProducts = products;
+    _storePage = 1;
+    // انتظر تحميل المستخدم قبل الرسم
+    if (currentUser || !sessionToken) {
+      renderStorePage();
+    } else {
+      var checkUser = setInterval(function() {
+        if (currentUser || !sessionToken) {
+          clearInterval(checkUser);
+          renderStorePage();
+        }
+      }, 200);
+      setTimeout(function() { clearInterval(checkUser); renderStorePage(); }, 3000);
+    }
   } catch(e) { g.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;">تعذر التحميل</p>'; }
+}
+
+function openBuyFromStore(btn) {
+  var id = btn.getAttribute('data-pid');
+  var name = decodeURIComponent(btn.getAttribute('data-pname'));
+  var price = Number(btn.getAttribute('data-pprice'));
+  openBuy(id);
 }
 
 function openBuy(id) {
   if (!currentUser) { openModal('loginModal'); return; }
   const p = (window._prods||[]).find(x => x.id === id);
   if (!p) return;
+  if (currentUser.points < p.price) { showToast('نقاطك غير كافية للاستبدال','err'); return; }
   pendingProd = p;
   setEl('buyTitle', p.name);
   setEl('buyDesc', p.desc);
@@ -2971,6 +3145,7 @@ function aTab(tab, btn) {
   if(tab==='logs') loadActivityLogs();
   if(tab==='auction-admin') loadAuctionAdmin();
   if(tab==='tournaments-admin') loadTournamentsAdmin();
+  if(tab==='market-admin') loadMarketAdmin();
 }
 
 async function loadDashboard() {
@@ -3029,31 +3204,83 @@ function openProdModal(id) {
   openModal('prodModal');
 }
 
+let _prodCropState = { x:0, y:0, scale:1, dragging:false, startX:0, startY:0, origSrc:'' };
+
 function handleProdImg(e) {
   const f = e.target.files[0]; if(!f) return;
   const r = new FileReader();
   r.onload = ev => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      // حجم أصغر وجودة أقل عشان Firebase
-      const MAX = 250;
-      let w = img.width, h = img.height;
-      if (w > h) { if(w>MAX){h=Math.round(h*(MAX/w));w=MAX;} }
-      else { if(h>MAX){w=Math.round(w*(MAX/h));h=MAX;} }
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const compressed = canvas.toDataURL('image/jpeg', 0.5);
-      console.log('Compressed size:', Math.round(compressed.length/1024)+'KB');
-      pendingProdImg = compressed;
-      const prev = document.getElementById('prodImgPrev');
-      const emoji = document.getElementById('prodImgEmoji');
-      if(prev) { prev.src=compressed; prev.style.display='block'; }
-      if(emoji) emoji.style.display='none';
-    };
-    img.src = ev.target.result;
+    openProdCrop(ev.target.result);
   };
   r.readAsDataURL(f);
+}
+
+function cancelProdCrop() {
+  document.getElementById('prodCropModal').style.display='none';
+}
+
+function openProdCrop(src) {
+  _prodCropState = { x:0, y:0, scale:1, dragging:false, startX:0, startY:0, origSrc:src };
+  const modal = document.getElementById('prodCropModal');
+  const img = document.getElementById('prodCropImg');
+  const zoom = document.getElementById('prodCropZoom');
+  if(!modal||!img) return;
+  img.src = src;
+  zoom.value = 1;
+  modal.style.display = 'flex';
+  img.onload = () => updateProdCrop();
+  // Drag
+  const container = img.parentElement;
+  container.onmousedown = container.ontouchstart = e => {
+    _prodCropState.dragging = true;
+    const pt = e.touches ? e.touches[0] : e;
+    _prodCropState.startX = pt.clientX - _prodCropState.x;
+    _prodCropState.startY = pt.clientY - _prodCropState.y;
+    e.preventDefault();
+  };
+  window.onmousemove = window.ontouchmove = e => {
+    if (!_prodCropState.dragging) return;
+    const pt = e.touches ? e.touches[0] : e;
+    _prodCropState.x = pt.clientX - _prodCropState.startX;
+    _prodCropState.y = pt.clientY - _prodCropState.startY;
+    updateProdCrop();
+    e.preventDefault();
+  };
+  window.onmouseup = window.ontouchend = () => { _prodCropState.dragging = false; };
+}
+
+function updateProdCrop() {
+  const img = document.getElementById('prodCropImg');
+  const zoom = document.getElementById('prodCropZoom');
+  if(!img) return;
+  _prodCropState.scale = parseFloat(zoom.value);
+  const cSize = img.parentElement?.offsetWidth || 320;
+  img.style.width = (cSize * _prodCropState.scale) + 'px';
+  img.style.height = 'auto';
+  img.style.left = _prodCropState.x + 'px';
+  img.style.top = _prodCropState.y + 'px';
+}
+
+function confirmProdCrop() {
+  const img = document.getElementById('prodCropImg');
+  if(!img) return;
+  const cSize = img.parentElement?.offsetWidth || 320;
+  const canvas = document.createElement('canvas');
+  canvas.width = 800; canvas.height = 800;
+  const ctx = canvas.getContext('2d');
+  const scale = _prodCropState.scale;
+  const drawW = cSize * scale * (800/cSize);
+  const drawH = (img.naturalHeight/img.naturalWidth) * drawW;
+  const offX = _prodCropState.x * (800/cSize);
+  const offY = _prodCropState.y * (800/cSize);
+  ctx.drawImage(img, offX, offY, drawW, drawH);
+  const cropped = canvas.toDataURL('image/jpeg', 0.9);
+  pendingProdImg = cropped;
+  const prev = document.getElementById('prodImgPrev');
+  const emoji = document.getElementById('prodImgEmoji');
+  if(prev) { prev.src=cropped; prev.style.display='block'; }
+  document.getElementById('prodCropModal').style.display='none';
+  if(emoji) emoji.style.display='none';
 }
 
 async function saveProd() {
@@ -3249,7 +3476,8 @@ function toggleChat(){
   chatOpen=!chatOpen;
   document.getElementById('chatBox').classList.toggle('on',chatOpen);
   if (chatOpen) {
-    const sender = document.getElementById('chatName')?.value.trim() || (currentUser?currentUser.username:'زائر');
+    if (!currentUser) { showToast('سجّل دخول بـ Kick لإرسال رسالة','err'); doLogin('kick'); return; }
+    const sender = currentUser.username;
     if (sender !== 'زائر') startChatPolling(sender);
   } else {
     stopChatPolling();
@@ -3257,7 +3485,8 @@ function toggleChat(){
 }
 async function sendChat(){
   const inp=document.getElementById('chatInp'),msg=inp.value.trim();if(!msg)return;
-  const sender=document.getElementById('chatName')?.value.trim()||(currentUser?currentUser.username:'زائر');
+  if (!currentUser) { showToast('سجّل دخول بـ Kick لإرسال رسالة','err'); doLogin('kick'); return; }
+  const sender = currentUser.username;
   startChatPolling(sender);
   const area=document.getElementById('chatMsgs');
   area.innerHTML+=`<div class="cmsg user">${msg}</div>`;inp.value='';area.scrollTop=area.scrollHeight;
@@ -3269,7 +3498,7 @@ async function sendChat(){
     const res = await fetch(`${W}/api/chat/send`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({sender,msg,avatar:currentUser?.avatar||null})
+      body:JSON.stringify({sender,msg,avatar:currentUser?.avatar||null,token:sessionToken||null})
     });
     const d = await res.json();
     // رد تلقائي بس إذا ما في موظف رد قبل
@@ -3900,7 +4129,8 @@ const PERM_TAB_MAP = {
   'settings':'settings',
   'auction-admin':'orders',
   'password':'settings',
-  'tournaments-admin':'orders'
+  'tournaments-admin':'orders',
+  'market-admin':'orders'
 };
 
 function applyStaffPermissions(perms) {
@@ -4305,6 +4535,7 @@ async function claimDaily() {
     const d = await res.json();
     if(d.success) {
       showToast('🎉 كسبت '+d.points+' نقطة! سلسلة: '+d.streak+' يوم');
+      logActivity('تسجيل يومي', 'يوم '+d.streak+' — '+d.points+' نقطة');
       renderDailyDays(d.streak, true);
       if(currentUser) currentUser.points=(currentUser.points||0)+d.points;
       const ptsEl=document.getElementById('userPts'); if(ptsEl) ptsEl.textContent=(currentUser.points).toLocaleString()+' نقطة';
@@ -5023,6 +5254,11 @@ function toggleMktType() {
 }
 
 function openMarketPost() {
+  if (!currentUser) {
+    showToast('سجّل دخول بـ Kick أولاً', 'err');
+    doLogin('kick');
+    return;
+  }
   _marketImgs = [];
   ['mkt-name','mkt-desc','mkt-price','mkt-whatsapp','mkt-start-price'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
@@ -5096,6 +5332,7 @@ async function submitMarketPost() {
   const post = {
     name, desc, whatsapp, type,
     imgs: _marketImgs,
+    status: 'pending',
     seller: currentUser ? currentUser.username : 'زائر',
     sellerId: currentUser ? currentUser.id : null,
     sellerAvatar: currentUser?.avatar || null,
@@ -5122,7 +5359,8 @@ async function submitMarketPost() {
     const d = await res.json();
     if (d.success) {
       closeMarketModal();
-      showToast('✅ تم نشر منتجك!');
+      showToast('⏳ طلبك قيد المراجعة — سيظهر بعد موافقة الإدارة');
+      if(currentUser) logActivity('نشر منتج', currentUser.username + ' نشر: ' + post.name + ' — بانتظار الموافقة');
       loadMarket();
     } else { err.textContent = d.error || 'خطأ في النشر'; }
   } catch(e) { err.textContent = 'خطأ في الاتصال'; }
@@ -5156,7 +5394,8 @@ async function loadMarket() {
   if (!grid) return;
   try {
     const res = await fetch(`${W}/api/market`);
-    const { posts } = await res.json();
+    const { posts: allPosts } = await res.json();
+    const posts = (allPosts||[]).filter(p => p.status === 'approved');
     if (!posts || !posts.length) {
       grid.innerHTML = '<div class="empty" style="grid-column:1/-1;text-align:center;padding:60px;"><div style="font-size:48px;margin-bottom:12px;">🛒</div><p style="color:var(--muted);">لا توجد منتجات بعد — كن أول من ينشر!</p></div>';
       return;
@@ -5406,6 +5645,7 @@ async function submitTeam(tournId, teamSize) {
     if (d.success) {
       document.getElementById('registerTeamModal')?.remove();
       showToast('✅ تم تسجيل فريقك!');
+      logActivity('تسجيل بطولة', 'فريق: '+team.name);
       loadTournaments();
     } else { document.getElementById('tm-err').textContent = d.error || 'خطأ'; }
   } catch(e) { document.getElementById('tm-err').textContent = 'خطأ في الاتصال'; }
@@ -5535,6 +5775,56 @@ async function deleteTeam(tournId, teamIdx) {
     });
     const d = await res.json();
     if (d.success) { showToast('✅ تم حذف الفريق'); loadTournamentsAdmin(); }
+    else showToast(d.error||'خطأ','err');
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+
+async function loadMarketAdmin() {
+  const el = document.getElementById('marketAdminList');
+  if (!el) return;
+  try {
+    const res = await fetch(`${W}/api/admin/market`, { headers: { 'x-admin-key': ADMIN_KEY } });
+    const { posts } = await res.json();
+    if (!posts?.length) { el.innerHTML = '<div class="empty"><p>لا توجد منتجات</p></div>'; return; }
+    
+    const pending = posts.filter(p => p.status === 'pending');
+    const approved = posts.filter(p => p.status === 'approved');
+    
+    el.innerHTML = `
+      ${pending.length ? `<div style="font-size:13px;font-weight:700;color:var(--orange);margin-bottom:12px;">⏳ بانتظار الموافقة (${pending.length})</div>` : ''}
+      ${pending.map(p => renderMarketAdminCard(p)).join('')}
+      ${approved.length ? `<div style="font-size:13px;font-weight:700;color:var(--kick);margin:16px 0 12px;">✅ مقبولة (${approved.length})</div>` : ''}
+      ${approved.map(p => renderMarketAdminCard(p)).join('')}
+    `;
+  } catch(e) {}
+}
+
+function renderMarketAdminCard(p) {
+  const isPending = p.status === 'pending';
+  return `<div style="background:var(--surface);border:1px solid ${isPending?'rgba(255,140,0,.3)':'var(--border2)'};border-radius:var(--radius);padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;">
+    ${p.imgs?.length ? `<img src="${p.imgs[0]}" style="width:64px;height:64px;border-radius:8px;object-fit:cover;flex-shrink:0;"/>` : '<div style="width:64px;height:64px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📦</div>'}
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:700;">${p.name}</div>
+      <div style="font-size:12px;color:var(--muted);margin:3px 0;">${p.desc||''}</div>
+      <div style="font-size:12px;color:var(--muted);">@${p.seller} · ${p.type==='auction'?'مزاد':'بيع'} · ${p.price?'$'+p.price:''}</div>
+      <div style="font-size:11px;color:var(--muted);">واتساب: ${p.whatsapp}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+      ${isPending ? `<button onclick="approveMarket('${p.id}')" class="btn-sm btn-ok">✅ قبول</button>` : ''}
+      <button onclick="deleteMarketPost('${p.id}')" class="btn-sm btn-del">🗑 حذف</button>
+    </div>
+  </div>`;
+}
+
+async function approveMarket(id) {
+  try {
+    const res = await fetch(`${W}/api/admin/market/${id}/approve`, {
+      method: 'POST',
+      headers: { 'x-admin-key': ADMIN_KEY }
+    });
+    const d = await res.json();
+    if (d.success) { showToast('✅ تم قبول المنتج'); logActivity('قبول منتج سوق', id); loadMarketAdmin(); }
     else showToast(d.error||'خطأ','err');
   } catch(e) { showToast('خطأ','err'); }
 }

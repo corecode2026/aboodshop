@@ -6029,43 +6029,61 @@ async function spinWheel() {
       body: JSON.stringify({ token: sessionToken })
     });
     const d = await res.json();
-    if (!d.success) { showToast(d.error||'خطأ','err'); return; }
+    if (!d.success) { 
+      showToast(d.error||'خطأ','err');
+      wheelConfig.spinning = false;
+      document.getElementById('wheelSpinBtn').disabled = false;
+      document.getElementById('wheelSpinBtn').textContent = '🎡 الفة الدولاب';
+      return;
+    }
 
-    // حدّث نقاط المستخدم
+    // حدّث نقاط المستخدم بعد الخصم
     currentUser.points = d.remainingPoints;
     document.getElementById('navPtsVal').textContent = d.remainingPoints.toLocaleString();
 
-    // حرك الدولاب
     const targetIdx = d.resultIdx;
-    const arc = (2 * Math.PI) / wheelConfig.items.length;
-    const targetAngle = -(targetIdx * arc) - (arc/2);
-    const spins = 5 + Math.random() * 3;
-    const totalRotation = spins * 2 * Math.PI + targetAngle - wheelAngle;
-    const duration = 4000;
+    const items = wheelConfig.items;
+    const arc = (2 * Math.PI) / items.length;
+
+    // احسب الزاوية الصح للوصول للقطعة المطلوبة
+    // المؤشر في الأعلى (12 o'clock) = -PI/2
+    // كل قطعة تبدأ من wheelAngle
+    // نريد القطعة targetIdx تكون تحت المؤشر
+    const currentNorm = ((wheelAngle % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+    const targetCenter = targetIdx * arc + arc/2; // وسط القطعة المطلوبة
+    // الزاوية للوصول لها تحت المؤشر (= -PI/2 أو 3PI/2)
+    const needed = (3*Math.PI/2) - targetCenter;
+    let delta = needed - currentNorm;
+    // اجعلها موجبة وأضف 5 لفات
+    while (delta < 0) delta += 2*Math.PI;
+    delta += 2*Math.PI * 5;
+
+    const duration = 5000;
     const startTime = performance.now();
     const startAngle = wheelAngle;
 
     function animate(now) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 4);
-      wheelAngle = startAngle + totalRotation * ease;
+      // easing: slow down at end
+      const ease = 1 - Math.pow(1 - progress, 3);
+      wheelAngle = startAngle + delta * ease;
       drawWheel();
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
-        wheelAngle = startAngle + totalRotation;
+        wheelAngle = startAngle + delta;
         drawWheel(targetIdx);
-        const result = wheelConfig.items[targetIdx];
+        const result = items[targetIdx];
         document.getElementById('wheelResult').innerHTML = 
           '<div style="background:var(--kick-dim);border:1px solid var(--kick);border-radius:12px;padding:16px;margin:0 auto;max-width:300px;">' +
           '<div style="font-size:24px;margin-bottom:8px;">' + (result.emoji||'🎁') + '</div>' +
           '<div style="font-size:16px;font-weight:800;color:var(--kick);">'+result.label+'</div>' +
-          (d.pointsWon ? '<div style="font-size:13px;color:var(--muted);margin-top:6px;">+'+d.pointsWon+' نقطة أضيفت لحسابك</div>' : '') +
+          (d.pointsWon > 0 ? '<div style="font-size:13px;color:var(--muted);margin-top:6px;">+'+d.pointsWon+' نقطة أضيفت لحسابك</div>' : '') +
           '</div>';
         showToast('🎉 فزت بـ: '+result.label);
-        if(d.pointsWon && d.pointsWon > 0) {
-          currentUser.points += d.pointsWon;
+        if (d.pointsWon > 0) {
+          currentUser.points = (d.remainingPoints || currentUser.points) + d.pointsWon;
           document.getElementById('navPtsVal').textContent = currentUser.points.toLocaleString();
         }
         wheelConfig.spinning = false;
@@ -6082,6 +6100,7 @@ async function spinWheel() {
     document.getElementById('wheelSpinBtn').textContent = '🎡 الفة الدولاب';
   }
 }
+
 
 // ADMIN WHEEL
 function loadWheelAdmin() {

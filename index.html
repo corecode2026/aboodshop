@@ -2298,6 +2298,23 @@ body.ready .page.on { opacity:1; }
   </div>
 </div>
 
+
+<!-- PRODUCT CROP MODAL -->
+<div id="prodCropModal" style="position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;">
+  <div style="font-size:14px;font-weight:700;color:var(--kick);">اقتص الصورة</div>
+  <div style="position:relative;width:min(320px,85vw);height:min(320px,85vw);border:2px solid var(--kick);border-radius:12px;overflow:hidden;background:#000;cursor:grab;box-shadow:0 0 30px rgba(83,252,24,.2);">
+    <img id="prodCropImg" style="position:absolute;transform-origin:center;user-select:none;" draggable="false"/>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:min(320px,85vw);">
+    <div style="font-size:11px;color:var(--muted);">تكبير</div>
+    <input type="range" id="prodCropZoom" min="0.5" max="3" step="0.05" value="1" style="width:100%;accent-color:var(--kick);" oninput="updateProdCrop()"/>
+  </div>
+  <div style="display:flex;gap:10px;width:min(320px,85vw);">
+    <button onclick="confirmProdCrop()" style="flex:1;background:var(--kick);color:#000;border:none;padding:11px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Cairo',sans-serif;">✓ حفظ</button>
+    <button onclick="cancelProdCrop()" style="flex:1;background:var(--surface2);color:var(--muted);border:1px solid var(--border2);padding:11px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Cairo',sans-serif;">إلغاء</button>
+  </div>
+</div>
+
 <!-- CHAT BUBBLE -->
 <div class="chat-bubble">
   <div class="chat-box" id="chatBox">
@@ -3048,31 +3065,83 @@ function openProdModal(id) {
   openModal('prodModal');
 }
 
+let _prodCropState = { x:0, y:0, scale:1, dragging:false, startX:0, startY:0, origSrc:'' };
+
 function handleProdImg(e) {
   const f = e.target.files[0]; if(!f) return;
   const r = new FileReader();
   r.onload = ev => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      // حجم أكبر وجودة أعلى
-      const MAX = 800;
-      let w = img.width, h = img.height;
-      if (w > h) { if(w>MAX){h=Math.round(h*(MAX/w));w=MAX;} }
-      else { if(h>MAX){w=Math.round(w*(MAX/h));h=MAX;} }
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const compressed = canvas.toDataURL('image/jpeg', 0.9);
-      console.log('Compressed size:', Math.round(compressed.length/1024)+'KB');
-      pendingProdImg = compressed;
-      const prev = document.getElementById('prodImgPrev');
-      const emoji = document.getElementById('prodImgEmoji');
-      if(prev) { prev.src=compressed; prev.style.display='block'; }
-      if(emoji) emoji.style.display='none';
-    };
-    img.src = ev.target.result;
+    openProdCrop(ev.target.result);
   };
   r.readAsDataURL(f);
+}
+
+function cancelProdCrop() {
+  document.getElementById('prodCropModal').style.display='none';
+}
+
+function openProdCrop(src) {
+  _prodCropState = { x:0, y:0, scale:1, dragging:false, startX:0, startY:0, origSrc:src };
+  const modal = document.getElementById('prodCropModal');
+  const img = document.getElementById('prodCropImg');
+  const zoom = document.getElementById('prodCropZoom');
+  if(!modal||!img) return;
+  img.src = src;
+  zoom.value = 1;
+  modal.style.display = 'flex';
+  img.onload = () => updateProdCrop();
+  // Drag
+  const container = img.parentElement;
+  container.onmousedown = container.ontouchstart = e => {
+    _prodCropState.dragging = true;
+    const pt = e.touches ? e.touches[0] : e;
+    _prodCropState.startX = pt.clientX - _prodCropState.x;
+    _prodCropState.startY = pt.clientY - _prodCropState.y;
+    e.preventDefault();
+  };
+  window.onmousemove = window.ontouchmove = e => {
+    if (!_prodCropState.dragging) return;
+    const pt = e.touches ? e.touches[0] : e;
+    _prodCropState.x = pt.clientX - _prodCropState.startX;
+    _prodCropState.y = pt.clientY - _prodCropState.startY;
+    updateProdCrop();
+    e.preventDefault();
+  };
+  window.onmouseup = window.ontouchend = () => { _prodCropState.dragging = false; };
+}
+
+function updateProdCrop() {
+  const img = document.getElementById('prodCropImg');
+  const zoom = document.getElementById('prodCropZoom');
+  if(!img) return;
+  _prodCropState.scale = parseFloat(zoom.value);
+  const cSize = img.parentElement?.offsetWidth || 320;
+  img.style.width = (cSize * _prodCropState.scale) + 'px';
+  img.style.height = 'auto';
+  img.style.left = _prodCropState.x + 'px';
+  img.style.top = _prodCropState.y + 'px';
+}
+
+function confirmProdCrop() {
+  const img = document.getElementById('prodCropImg');
+  if(!img) return;
+  const cSize = img.parentElement?.offsetWidth || 320;
+  const canvas = document.createElement('canvas');
+  canvas.width = 800; canvas.height = 800;
+  const ctx = canvas.getContext('2d');
+  const scale = _prodCropState.scale;
+  const drawW = cSize * scale * (800/cSize);
+  const drawH = (img.naturalHeight/img.naturalWidth) * drawW;
+  const offX = _prodCropState.x * (800/cSize);
+  const offY = _prodCropState.y * (800/cSize);
+  ctx.drawImage(img, offX, offY, drawW, drawH);
+  const cropped = canvas.toDataURL('image/jpeg', 0.9);
+  pendingProdImg = cropped;
+  const prev = document.getElementById('prodImgPrev');
+  const emoji = document.getElementById('prodImgEmoji');
+  if(prev) { prev.src=cropped; prev.style.display='block'; }
+  document.getElementById('prodCropModal').style.display='none';
+  if(emoji) emoji.style.display='none';
 }
 
 async function saveProd() {

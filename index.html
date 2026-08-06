@@ -1329,8 +1329,152 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 .rule:hover { border-color:rgba(83,252,24,.15); background:rgba(83,252,24,.02); }
 
 </style>
+<style id="__siteProtectCSS">
+/* منع تحديد النص افتراضيًا (يُسمح داخل الحقول والمناطق القابلة للتحرير) */
+body.__protect-active {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+body.__protect-active input,
+body.__protect-active textarea,
+body.__protect-active [contenteditable="true"] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+#__devtoolsBlock {
+  position: fixed; inset: 0; z-index: 2147483647;
+  background: #07070F;
+  color: #EEEEF8;
+  display: none;
+  align-items: center; justify-content: center;
+  text-align: center;
+  font-family: 'Cairo', sans-serif;
+  direction: rtl;
+  padding: 24px;
+}
+#__devtoolsBlock.show { display: flex; }
+#__devtoolsBlock .box { max-width: 420px; }
+#__devtoolsBlock h2 { color:#53FC18; font-size:22px; margin-bottom:10px; }
+#__devtoolsBlock p { color:#C4C4D8; font-size:14px; line-height:1.8; }
+</style>
 </head>
 <body>
+
+<div id="__devtoolsBlock">
+  <div class="box">
+    <h2>🔒 الوصول محظور</h2>
+    <p>تم اكتشاف فتح أدوات المطوّر. الرجاء إغلاقها للمتابعة.</p>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   __SITE_PROTECT__  —  طبقة حماية عامة للزوار
+   ملاحظة: هذه إجراءات رادعة (deterrent) وليست حماية مطلقة.
+   أي حماية حقيقية لبيانات الأدمن يجب أن تكون على السيرفر (Worker).
+   يتم تعطيل كل هذه القيود تلقائيًا إذا كان المستخدم أدمن/موظف مسجل دخول.
+   ══════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  function isPrivileged() {
+    try {
+      return sessionStorage.getItem('adminIn') === '1' || !!sessionStorage.getItem('staffIn');
+    } catch (e) { return false; }
+  }
+
+  var blockEl, bodyEl;
+  function ensureRefs() {
+    if (!blockEl) blockEl = document.getElementById('__devtoolsBlock');
+    if (!bodyEl) bodyEl = document.body;
+  }
+
+  function applyProtectionState() {
+    ensureRefs();
+    if (!bodyEl) return;
+    if (isPrivileged()) {
+      bodyEl.classList.remove('__protect-active');
+    } else {
+      bodyEl.classList.add('__protect-active');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', applyProtectionState);
+  applyProtectionState();
+  // إعادة الفحص دوريًا لأن حالة الدخول ممكن تتغير بعد التحميل
+  setInterval(applyProtectionState, 1500);
+
+  // منع كليك يمين
+  document.addEventListener('contextmenu', function (e) {
+    if (!isPrivileged()) e.preventDefault();
+  });
+
+  // منع اختصارات فتح أدوات المطوّر وعرض المصدر
+  document.addEventListener('keydown', function (e) {
+    if (isPrivileged()) return;
+    var k = e.key ? e.key.toUpperCase() : '';
+    var blocked =
+      k === 'F12' ||
+      (e.ctrlKey && e.shiftKey && (k === 'I' || k === 'J' || k === 'C')) ||
+      (e.metaKey && e.altKey && (k === 'I' || k === 'J' || k === 'C')) || // Mac Safari/Chrome
+      (e.ctrlKey && (k === 'U' || k === 'S'));
+    if (blocked) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+
+  // كشف فتح DevTools عبر فرق أبعاد النافذة (يعمل جيدًا مع اللوحات المنفصلة/الدوكينغ)
+  var threshold = 160;
+  function sizeCheck() {
+    var widthDiff = window.outerWidth - window.innerWidth;
+    var heightDiff = window.outerHeight - window.innerHeight;
+    return widthDiff > threshold || heightDiff > threshold;
+  }
+
+  // كشف إضافي عبر توقيت debugger (يفشل بصمت إن تم تعطيله، وهذا مقبول كطبقة إضافية فقط)
+  function timingCheck() {
+    var start = performance.now();
+    // eslint-disable-next-line no-debugger
+    debugger;
+    return (performance.now() - start) > 100;
+  }
+
+  var detectedStreak = 0;
+  function runDetection() {
+    ensureRefs();
+    if (isPrivileged()) {
+      if (blockEl) blockEl.classList.remove('show');
+      detectedStreak = 0;
+      return;
+    }
+    var detected = sizeCheck() || timingCheck();
+    if (detected) {
+      detectedStreak++;
+    } else {
+      detectedStreak = 0;
+    }
+    // نطلب تكرار الكشف مرتين متتاليتين قبل الحجب لتقليل الإيجابيات الكاذبة
+    if (detectedStreak >= 2 && blockEl) {
+      blockEl.classList.add('show');
+    } else if (blockEl) {
+      blockEl.classList.remove('show');
+    }
+  }
+  setInterval(runDetection, 700);
+
+  // تحذير في الكونسول نفسه لمن يفتحه رغم كل شيء
+  try {
+    console.log('%c⚠ توقف!', 'color:#FF3B5C;font-size:34px;font-weight:900;');
+    console.log('%cهذا القسم مخصص للمطورين فقط. أي محاولة لصق كود هنا أو استخدام هذا المتصفح للوصول لبيانات لا تملك صلاحية عليها قد تُعرّض حسابك للحظر.', 'color:#EEEEF8;font-size:14px;');
+  } catch (e) {}
+})();
+</script>
+
 
 <!-- NAV -->
 

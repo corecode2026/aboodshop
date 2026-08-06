@@ -4021,8 +4021,9 @@ document.body.classList.add('ready');
 
 // ══ ACTIVITY LOG ══
 async function logActivity(action, details='') {
-  const role = isStaffMode ? 'موظف' : adminIn ? 'المدير' : currentUser ? 'عضو' : 'زائر';
-  const who = isStaffMode ? (currentStaff?.name||'موظف') : adminIn ? 'المدير' : (currentUser?.username||'زائر');
+  const isRealAdmin = adminIn && !currentUser;
+  const role = isStaffMode ? 'موظف' : isRealAdmin ? 'المدير' : currentUser ? 'عضو' : 'زائر';
+  const who = isStaffMode ? (currentStaff?.name||'موظف') : isRealAdmin ? 'المدير' : (currentUser?.username||'زائر');
   try {
     await fetch(`${W}/api/admin/log`, {
       method: 'POST',

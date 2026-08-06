@@ -1731,6 +1731,10 @@ body.ready .page.on { opacity:1; }
 
       <!-- ACTIVITY LOGS -->
       <div class="asub" id="asub-logs">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="section-title">سجل النشاط</div>
+        <button onclick="clearLogs()" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">🗑 حذف السجل</button>
+      </div>
         <div class="section-head">
           <div class="section-title">سجل الأنشطة</div>
           <button onclick="loadActivityLogs()" class="btn btn-ghost" style="font-size:12px;padding:6px 12px;">
@@ -5837,6 +5841,20 @@ async function approveMarket(id) {
     });
     const d = await res.json();
     if (d.success) { showToast('✅ تم قبول المنتج'); logActivity('قبول منتج سوق', id); loadMarketAdmin(); }
+    else showToast(d.error||'خطأ','err');
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+
+async function clearLogs() {
+  if (!confirm('حذف كل سجل النشاط؟')) return;
+  try {
+    const res = await fetch(`${W}/api/admin/logs/clear`, {
+      method: 'POST',
+      headers: { 'x-admin-key': ADMIN_KEY }
+    });
+    const d = await res.json();
+    if (d.success) { showToast('✅ تم حذف السجل'); loadActivityLogs(); }
     else showToast(d.error||'خطأ','err');
   } catch(e) { showToast('خطأ','err'); }
 }

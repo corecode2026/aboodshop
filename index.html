@@ -3024,6 +3024,7 @@ function openBuy(id) {
   if (!currentUser) { openModal('loginModal'); return; }
   const p = (window._prods||[]).find(x => x.id === id);
   if (!p) return;
+  if (currentUser.points < p.price) { showToast('نقاطك غير كافية للاستبدال','err'); return; }
   pendingProd = p;
   setEl('buyTitle', p.name);
   setEl('buyDesc', p.desc);

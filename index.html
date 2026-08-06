@@ -2379,6 +2379,15 @@ const SOCIAL_LABELS = { kick:'Kick', discord:'Discord', twitter:'Twitter', youtu
 // NAV
 // ═══════════════════════════════════════════
 function goTo(id, btn) {
+  // سجّل زيارة الصفحة للمستخدم
+  if (currentUser && id !== 'home' && id !== 'admin') {
+    var pageNames = {
+      'store': 'المتجر', 'market': 'السوق', 'tournaments': 'البطولات',
+      'points': 'النقاط', 'profile': 'ملفي', 'daily': 'التسجيل اليومي',
+      'about': 'من أنا', 'rules': 'القوانين'
+    };
+    if (pageNames[id]) logActivity('زيارة صفحة', currentUser.username + ' — ' + pageNames[id]);
+  }
   if (id === 'admin' && !adminIn) {
     if (sessionStorage.getItem('adminIn') === '1') {
       adminIn = true;
@@ -2939,10 +2948,10 @@ function renderStorePage() {
     priceEl.textContent = '⭐ ' + p.price.toLocaleString() + ' نقطة';
     infoRow.appendChild(priceEl);
 
-    if (qty !== null && (outOfStock || !canAffordNow)) {
+    if (qty !== null) {
       var qtyEl = document.createElement('span');
-      qtyEl.style.cssText = 'font-size:11px;background:var(--surface2);border:1px solid var(--border2);padding:2px 8px;border-radius:10px;color:var(--muted);';
-      qtyEl.textContent = 'متبقي: ' + qty;
+      qtyEl.style.cssText = 'font-size:11px;background:var(--surface2);border:1px solid var(--border2);padding:2px 8px;border-radius:10px;color:' + (outOfStock ? 'var(--red)' : 'var(--muted)') + ';';
+      qtyEl.textContent = outOfStock ? 'نفذت الكمية' : 'متبقي: ' + qty;
       infoRow.appendChild(qtyEl);
     }
     body.appendChild(infoRow);
@@ -4540,7 +4549,7 @@ async function claimDaily() {
     const d = await res.json();
     if(d.success) {
       showToast('🎉 كسبت '+d.points+' نقطة! سلسلة: '+d.streak+' يوم');
-      logActivity('تسجيل يومي', 'يوم '+d.streak+' — '+d.points+' نقطة');
+      logActivity('تسجيل يومي', (currentUser?.username||'') + ' — يوم '+d.streak+' — '+d.points+' نقطة');
       renderDailyDays(d.streak, true);
       if(currentUser) currentUser.points=(currentUser.points||0)+d.points;
       const ptsEl=document.getElementById('userPts'); if(ptsEl) ptsEl.textContent=(currentUser.points).toLocaleString()+' نقطة';

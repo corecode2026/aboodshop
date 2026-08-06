@@ -1639,7 +1639,7 @@ body.ready .page.on { opacity:1; }
 
         <!-- بحث -->
         <div style="display:flex;gap:8px;margin-bottom:14px;">
-          <input class="pf-input" id="userSearch" placeholder="🔍 ابحث عن مستخدم..." oninput="filterUsers()" style="flex:1;"/>
+          <input class="pf-input" id="userSearch" placeholder="🔍 ابحث عن مستخدم..." oninput="filterUsers()" onkeydown="if(event.key==='Enter'){filterUsers();}" style="flex:1;"/>
         </div>
 
         <!-- إضافة نقاط -->
@@ -5003,10 +5003,11 @@ let allUsers = [];
 
 function filterUsers() {
   const q = (document.getElementById('userSearch')?.value || '').toLowerCase().trim();
-  const filtered = q ? allUsers.filter(u => 
-    u.username.toLowerCase().includes(q) || 
+  if (!allUsers.length) { loadUsers(); return; }
+  const filtered = q ? allUsers.filter(u => u && (
+    (u.username||'').toLowerCase().includes(q) || 
     (u.kickUsername||'').toLowerCase().includes(q)
-  ) : allUsers;
+  )) : allUsers;
   renderUsersTable(filtered);
 }
 

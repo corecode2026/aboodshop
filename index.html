@@ -3715,6 +3715,20 @@ async function deleteChatMsg(sender, idx) {
   selChat(sender);
 }
 
+async function deleteAllChats() {
+  if (!confirm('حذف جميع المحادثات؟ لا يمكن التراجع!')) return;
+  try {
+    await fetch(`${W}/api/admin/chat-delete-all`, {
+      method: 'POST',
+      headers: { 'x-admin-key': ADMIN_KEY }
+    });
+    chats = {};
+    renderAdminChats();
+    document.getElementById('aChatView').innerHTML = '<div class="no-chat">اختر محادثة 👈</div>';
+    showToast('✅ تم حذف جميع المحادثات');
+  } catch(e) { showToast('خطأ','err'); }
+}
+
 async function deleteChat(sender) {
   if(!confirm(`حذف محادثة ${sender} كاملاً؟`)) return;
   delete chats[sender];

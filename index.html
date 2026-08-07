@@ -1336,6 +1336,51 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 
 
 
+
+<script>
+(function() {
+  // رسالة تحذير
+  try { console.clear(); } catch(e) {}
+  console.log('%c🚫 غير مصرح!', 'color:#FF3B5C;font-size:40px;font-weight:900;font-family:Cairo,sans-serif;');
+  console.log('%cإذا طلب منك أحد لصق كود هنا — هذا احتيال!', 'color:#fff;font-size:14px;background:#FF3B5C;padding:8px 16px;border-radius:6px;');
+  console.log('%c⚠️ أي محاولة للتلاعب ستؤدي لحظر حسابك.', 'color:#FFD700;font-size:13px;font-weight:600;');
+
+  // تعطيل console functions
+  const noop = () => {};
+  const warn = () => console.warn('%c🚫 غير مصرح بتنفيذ أوامر هنا!', 'color:#FF3B5C;font-size:16px;font-weight:800;');
+  
+  // override eval و Function
+  try {
+    const _eval = window.eval;
+    window.eval = function(code) {
+      warn();
+      console.log('%c🚫 تم منع تنفيذ الكود', 'color:#FF3B5C;font-size:14px;');
+      return undefined;
+    };
+    
+    const _Function = window.Function;
+    window.Function = function() {
+      warn();
+      return function() {};
+    };
+    window.Function.prototype = _Function.prototype;
+  } catch(e) {}
+
+  // منع F12
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) ||
+        (e.ctrlKey && e.key === 'U')) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  }, true);
+
+  // منع كليك يمين
+  document.addEventListener('contextmenu', e => e.preventDefault());
+})();
+</script>
 </head>
 <body>
 

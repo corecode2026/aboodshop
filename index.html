@@ -1399,8 +1399,8 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('tournaments',this)">البطولات</button>
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
     <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn">💬 رسائل</button>
-    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);">🆕 تحديثات</button>
     <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
+    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);font-weight:800;">🆕 تحديثات</button>
   </div>
   <div class="nav-right">
     <div class="pts-chip hidden" id="navPts">⭐ <span id="navPtsVal">0</span> نقطة</div>
@@ -6381,12 +6381,12 @@ async function loadUpdates() {
     const s = await res.json();
     if (s.updates) {
       updatesData = { enabled: false, items: [], ...s.updates };
-      // أظهر/أخفِ زر التحديثات
-      const btn = document.getElementById('updatesBtn');
-      const navBtn = document.getElementById('navUpdatesBtn');
-      if (btn) btn.style.display = s.updates.enabled ? 'block' : 'none';
-      if (navBtn) navBtn.style.display = s.updates.enabled ? 'inline-block' : 'none';
     }
+    // أظهر/أخفِ زر التحديثات دايماً
+    const _btn = document.getElementById('updatesBtn');
+    const _navBtn = document.getElementById('navUpdatesBtn');
+    if (_btn) _btn.style.display = updatesData.enabled ? 'block' : 'none';
+    if (_navBtn) _navBtn.style.display = updatesData.enabled ? 'inline-block' : 'none';
   } catch(e) {}
 }
 
@@ -6414,6 +6414,10 @@ async function renderUpdatesPage() {
 
 function toggleUpdatesBtn() {
   updatesData.enabled = document.getElementById('updatesEnabled')?.checked || false;
+  const btn = document.getElementById('updatesBtn');
+  const navBtn = document.getElementById('navUpdatesBtn');
+  if (btn) btn.style.display = updatesData.enabled ? 'block' : 'none';
+  if (navBtn) navBtn.style.display = updatesData.enabled ? 'inline-block' : 'none';
 }
 
 function updateItem(el) {

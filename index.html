@@ -1393,6 +1393,7 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('about',this)">من أنا</button>
     <button class="nl" onclick="goTo('store',this)">المتجر</button>
     <button class="nl" onclick="goTo('market',this)">السوق</button>
+    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;">🆕 تحديثات</button>
     <button class="nl" onclick="goTo('rules',this)">القوانين</button>
     <button class="nl" onclick="goTo('points',this)">النقاط</button>
     <button class="nl" onclick="goTo('tournaments',this)">البطولات</button>
@@ -2190,6 +2191,15 @@ body.ready .page.on { opacity:1; }
   </div>
 </section>
 
+
+<!-- UPDATES PAGE -->
+<section class="page" id="page-updates">
+  <div class="section-head">
+    <div class="section-title">🆕 <span class="green">التحديثات</span></div>
+  </div>
+  <div id="updatesList" style="display:flex;flex-direction:column;gap:14px;max-width:700px;margin:0 auto;"></div>
+</section>
+
 </main>
 <div class="footer" style="position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);text-align:center;padding:8px;font-size:11px;color:rgba(255,255,255,.2);z-index:50;">© 2026 <span style="color:var(--kick);opacity:.5;">corecode2026</span> — جميع الحقوق محفوظة</div>
 
@@ -2522,6 +2532,7 @@ function goTo(id, btn) {
   if (id === 'profile') loadProfile();
   if (id === 'daily') loadDaily();
   if (id === 'dms') loadDms();
+  if (id === 'updates') { loadUpdates(); setTimeout(renderUpdatesPage, 300); }
   else if (dmInterval) { clearInterval(dmInterval); dmInterval = null; }
 
   if (id === 'admin') {
@@ -6325,6 +6336,99 @@ async function sendDm() {
     });
     loadDmMessages();
   } catch(e) {}
+}
+
+
+// ══════════════════════════════════════════
+// UPDATES SYSTEM
+// ══════════════════════════════════════════
+let updatesData = { enabled: false, items: [] };
+
+async function loadUpdates() {
+  try {
+    const res = await fetch(`${W}/api/settings`);
+    const s = await res.json();
+    if (s.updates) {
+      updatesData = s.updates;
+      // أظهر/أخفِ زر التحديثات
+      const btn = document.getElementById('updatesBtn');
+      const navBtn = document.getElementById('navUpdatesBtn');
+      if (btn) btn.style.display = s.updates.enabled ? 'block' : 'none';
+      if (navBtn) navBtn.style.display = s.updates.enabled ? 'inline-block' : 'none';
+    }
+  } catch(e) {}
+}
+
+async function renderUpdatesPage() {
+  const el = document.getElementById('updatesList');
+  if (!el) return;
+  if (!updatesData.items?.length) {
+    el.innerHTML = '<div class="empty"><p style="color:var(--muted);">لا توجد تحديثات بعد</p></div>';
+    return;
+  }
+  el.innerHTML = updatesData.items.map(u => `
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--kick),transparent);"></div>
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <div style="font-size:28px;flex-shrink:0;">${u.emoji||'🆕'}</div>
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:800;margin-bottom:6px;">${u.title}</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7;">${u.desc||''}</div>
+          <div style="font-size:11px;color:var(--muted2);margin-top:8px;">${u.date||''}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleUpdatesBtn() {
+  updatesData.enabled = document.getElementById('updatesEnabled')?.checked || false;
+}
+
+function addUpdate() {
+  updatesData.items.unshift({
+    emoji: '🆕',
+    title: 'تحديث جديد',
+    desc: '',
+    date: new Date().toLocaleDateString('ar')
+  });
+  renderUpdatesAdmin();
+}
+
+function removeUpdate(i) {
+  updatesData.items.splice(i, 1);
+  renderUpdatesAdmin();
+}
+
+function renderUpdatesAdmin() {
+  const el = document.getElementById('updatesAdminList');
+  if (!el) return;
+  el.innerHTML = updatesData.items.map((u, i) => `
+    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input value="${u.emoji||'🆕'}" oninput="updatesData.items[${i}].emoji=this.value" style="width:44px;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:6px;border-radius:6px;font-size:18px;text-align:center;"/>
+        <input value="${u.title}" oninput="updatesData.items[${i}].title=this.value" class="pf-input" placeholder="عنوان التحديث" style="flex:1;"/>
+        <button onclick="removeUpdate(${i})" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;">✕</button>
+      </div>
+      <textarea oninput="updatesData.items[${i}].desc=this.value" class="pf-input" rows="2" style="resize:vertical;" placeholder="وصف التحديث...">${u.desc||''}</textarea>
+      <input value="${u.date||''}" oninput="updatesData.items[${i}].date=this.value" class="pf-input" placeholder="التاريخ" style="font-size:12px;"/>
+    </div>
+  `).join('');
+  // أظهر حالة الـ checkbox
+  const cb = document.getElementById('updatesEnabled');
+  if (cb) cb.checked = updatesData.enabled;
+}
+
+async function saveUpdates() {
+  try {
+    await fetch(`${W}/api/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json','x-admin-key':ADMIN_KEY },
+      body: JSON.stringify({ updates: updatesData })
+    });
+    showToast('✅ تم حفظ التحديثات');
+    loadUpdates();
+  } catch(e) { showToast('خطأ','err'); }
 }
 
 async function init() {

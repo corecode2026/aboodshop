@@ -6180,6 +6180,11 @@ function searchDmUsers() {
 
 async function openDmChat(userId, username, avatar) {
   dmCurrentUser = { id: userId, username, avatar };
+  // أضفه للقائمة لو ما موجود
+  if (!dmAllUsers.find(u => u.id === userId)) {
+    dmAllUsers.unshift({ id: userId, username, avatar, lastMsg: '', unread: 0 });
+    renderDmList(dmAllUsers);
+  }
   
   // حدث header
   const header = document.getElementById('dmChatHeader');

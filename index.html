@@ -2693,6 +2693,7 @@ async function loadAllSettings() {
       fetch(`${W}/api/settings`),
       fetch(`${W}/api/socials`),
     ]);
+
     const s = await sRes.json();
     const { socials } = await socRes.json();
 
@@ -2722,6 +2723,7 @@ async function loadAllSettings() {
     if (s.ptsCfg)         { ptsCfg = { ...ptsCfg, ...s.ptsCfg }; applyPtsCfg(); }
     if (s.levels && Array.isArray(s.levels) && s.levels.length > 0) { levelsConfig = s.levels; }
     if (s.wheel) { try {   } catch(e){} }
+    if (s.updates) { updatesData = { enabled: false, items: [], ...s.updates }; }
 
     renderStream();
     applyHeroSettings(s);

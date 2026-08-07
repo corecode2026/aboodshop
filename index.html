@@ -2731,6 +2731,10 @@ async function loadAllSettings() {
     if (socials && Array.isArray(socials)) { socialLinks = socials; renderSocials(); localStorage.setItem('sk_socials_cache', JSON.stringify(socials)); }
     // احفظ بالـ cache
     localStorage.setItem('sk_settings_cache', JSON.stringify(s));
+    // أظهر/أخفِ زر التحديثات
+    const ub=document.getElementById('updatesBtn'),nb=document.getElementById('navUpdatesBtn');
+    if(ub) ub.style.display=updatesData.enabled?'block':'none';
+    if(nb) nb.style.display=updatesData.enabled?'inline-block':'none';
   } catch(e) { console.log('Settings load failed:', e.message); }
 }
 

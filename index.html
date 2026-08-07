@@ -6416,6 +6416,13 @@ function toggleUpdatesBtn() {
   updatesData.enabled = document.getElementById('updatesEnabled')?.checked || false;
 }
 
+function updateItem(el) {
+  const i = Number(el.dataset.idx);
+  const field = el.dataset.field;
+  if (!updatesData.items[i]) return;
+  updatesData.items[i][field] = el.value;
+}
+
 function addUpdate() {
   if (!updatesData.items) updatesData.items = [];
   updatesData.items.unshift({
@@ -6435,17 +6442,17 @@ function removeUpdate(i) {
 function renderUpdatesAdmin() {
   const el = document.getElementById('updatesAdminList');
   if (!el) return;
-  el.innerHTML = updatesData.items.map((u, i) => `
-    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;">
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input value="${u.emoji||'🆕'}" oninput="updatesData.items[${i}].emoji=this.value" style="width:44px;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:6px;border-radius:6px;font-size:18px;text-align:center;"/>
-        <input value="${u.title}" oninput="updatesData.items[${i}].title=this.value" class="pf-input" placeholder="عنوان التحديث" style="flex:1;"/>
-        <button onclick="removeUpdate(${i})" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;">✕</button>
-      </div>
-      <textarea oninput="updatesData.items[${i}].desc=this.value" class="pf-input" rows="2" style="resize:vertical;" placeholder="وصف التحديث...">${u.desc||''}</textarea>
-      <input value="${u.date||''}" oninput="updatesData.items[${i}].date=this.value" class="pf-input" placeholder="التاريخ" style="font-size:12px;"/>
-    </div>
-  `).join('');
+  el.innerHTML = updatesData.items.map((u, i) => 
+    '<div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;">' +
+      '<div style="display:flex;gap:8px;align-items:center;">' +
+        '<input value="'+(u.emoji||'🆕')+'" data-idx="'+i+'" data-field="emoji" oninput="updateItem(this)" style="width:44px;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:6px;border-radius:6px;font-size:18px;text-align:center;"/>' +
+        '<input value="'+(u.title||'')+'" data-idx="'+i+'" data-field="title" oninput="updateItem(this)" class="pf-input" placeholder="عنوان التحديث" style="flex:1;"/>' +
+        '<button onclick="removeUpdate('+i+')" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;">✕</button>' +
+      '</div>' +
+      '<textarea data-idx="'+i+'" data-field="desc" oninput="updateItem(this)" class="pf-input" rows="2" style="resize:vertical;" placeholder="وصف التحديث...">'+(u.desc||'')+'</textarea>' +
+      '<input value="'+(u.date||'')+'" data-idx="'+i+'" data-field="date" oninput="updateItem(this)" class="pf-input" placeholder="التاريخ" style="font-size:12px;"/>' +
+    '</div>'
+  ).join('');
   // أظهر حالة الـ checkbox
   const cb = document.getElementById('updatesEnabled');
   if (cb) cb.checked = updatesData.enabled;

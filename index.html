@@ -1658,7 +1658,11 @@ body.ready .page.on { opacity:1; }
         </div>
 
         <div style="margin-bottom:12px;text-align:left;">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <input id="pts-all-amount" type="number" placeholder="النقاط" min="1" dir="ltr" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:7px 12px;border-radius:8px;font-size:13px;width:100px;"/>
+            <button onclick="addPointsAll()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">⭐ إضافة للجميع</button>
             <button onclick="resetAllPoints()" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.3);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">🗑 تصفير نقاط الجميع</button>
+          </div>
           </div>
           <div id="usersTable" style="overflow-x:auto;"></div>
       </div>
@@ -5368,6 +5372,26 @@ async function saveAdminPassword() {
   } catch(e) { if(err) err.textContent = 'خطأ في الاتصال'; }
 }
 
+
+async function addPointsAll() {
+  const amt = Number(document.getElementById('pts-all-amount')?.value);
+  if (!amt || amt <= 0) { showToast('أدخل عدد النقاط','err'); return; }
+  if (!confirm('إضافة '+amt+' نقطة لجميع المستخدمين؟')) return;
+  try {
+    showToast('⏳ جاري الإضافة...');
+    const res = await fetch(`${W}/api/admin/points-all`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-admin-key': ADMIN_KEY },
+      body: JSON.stringify({ amount: amt })
+    });
+    const d = await res.json();
+    if (d.success) {
+      logActivity('إضافة نقاط للجميع', amt + ' نقطة لـ ' + (d.count||0) + ' مستخدم');
+      showToast('✅ تم إضافة '+amt+' نقطة لـ '+(d.count||0)+' مستخدم');
+      loadUsers();
+    } else showToast(d.error||'خطأ','err');
+  } catch(e) { showToast('خطأ في الاتصال','err'); }
+}
 
 async function resetAllPoints() {
   if (!confirm('تصفير نقاط جميع المستخدمين (169+)؟ هذا لا يمكن التراجع عنه!')) return;

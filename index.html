@@ -3168,6 +3168,15 @@ function goStorePage(page) {
 async function loadStore() {
   const g = document.getElementById('storeGrid');
   if (!g) return;
+  // تحقق من تسجيل الدخول
+  if (!currentUser && sessionToken) {
+    // لسا بيحمّل — انتظر
+    await new Promise(r => setTimeout(r, 1000));
+  }
+  if (!currentUser) {
+    g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;"><div style="font-size:56px;margin-bottom:16px;">🔐</div><div style="font-size:20px;font-weight:800;margin-bottom:10px;">سجّل دخول أولاً</div><div style="font-size:14px;color:var(--muted);margin-bottom:24px;">يجب تسجيل الدخول للوصول للمتجر</div><button class="btn btn-kick" onclick="doLogin(&quot;kick&quot;)" style="font-size:15px;padding:12px 32px;">سجّل بـ Kick</button></div>';
+    return;
+  }
   g.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p>';
   fetch(`${W}/api/auctions`).then(r=>r.json()).then(({auctions})=>{ const dot=document.getElementById('auctionActiveDot'); if(dot&&auctions?.filter(a=>!a.finalized&&new Date(a.endTime)>new Date()).length) dot.style.display='block'; }).catch(()=>{});
   try {

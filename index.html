@@ -2714,19 +2714,19 @@ async function saveSettings() {
     spec:           gv('set-spec'),
     sched:          gv('set-sched'),
     country:        gv('set-country'),
-    channelImg:     channelImg || null,
-
     streamStatus:   streamState.status,
     streamUsername: gv('set-stream-user'),
     streamTitle:    gv('set-stream-title'),
     offlineMsg:     gv('set-offline-msg'),
     offlineIcon:    gv('set-offline-icon'),
-    offlineBg:      streamState.offlineBg || null,
     offlineColor:   document.getElementById('set-offline-color')?.value || '#0A0A0F',
-    heroAva:        window._heroAva || null,
     heroDiscord:    gv('set-hero-discord'),
     heroWatch:      gv('set-hero-watch'),
   };
+  // احفظ الصور منفصلة
+  if (channelImg && !channelImg.includes('REMOVED')) data.channelImg = channelImg;
+  if (window._heroAva) data.heroAva = window._heroAva;
+  if (streamState.offlineBg) data.offlineBg = streamState.offlineBg;
 
   // تحديث فوري على الواجهة
   if(data.channelName) { setEl('navName',data.channelName); setEl('adminName',data.channelName); setEl('aboutName',data.channelName); }
@@ -2764,8 +2764,7 @@ async function saveSettings() {
     renderStream();
     applyHeroSettings(data);
     showToast('✅ تم حفظ الإعدادات');
-    // أعد تحميل الإعدادات للتأكد
-    setTimeout(loadAllSettings, 1000);
+    setTimeout(loadAllSettings, 800);
   } catch(e) { showToast('❌ فشل الحفظ: ' + e.message, 'err'); }
 }
 

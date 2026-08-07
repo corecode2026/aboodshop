@@ -3671,7 +3671,16 @@ async function renderAdminChats(){
   
   const list=document.getElementById('aChatList'),keys=Object.keys(chats);
   if(!keys.length){list.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">لا توجد محادثات</div>';return;}
-  list.innerHTML=keys.map(n=>{const msgs=chats[n],last=msgs[msgs.length-1],unread=msgs.some(m=>m.from==='user'&&!m.read);return `<div class="chat-item ${selectedChat===n?'on':''}" onclick="selChat('${n}')"><div class="chat-item-name">${n}${unread?'<span class="chat-unread"></span>':''}</div><div class="chat-item-prev">${last?last.text:''}</div></div>`;}).join('');
+  list.innerHTML=keys.map(n=>{
+    const msgs=chats[n],last=msgs[msgs.length-1],unread=msgs.some(m=>m.from==='user'&&!m.read);
+    return '<div class="chat-item '+(selectedChat===n?'on':'')+'" style="display:flex;align-items:center;gap:4px;">'
+      +'<div onclick="selChat(\''+n+'\')" style="flex:1;min-width:0;cursor:pointer;">'
+      +'<div class="chat-item-name">'+n+(unread?'<span class="chat-unread"></span>':'')+'</div>'
+      +'<div class="chat-item-prev">'+(last?(last.text||'').substring(0,25):'')+'</div>'
+      +'</div>'
+      +'<button onclick="deleteChat(\''+n+'\')" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:4px 7px;border-radius:5px;font-size:11px;cursor:pointer;flex-shrink:0;">🗑</button>'
+      +'</div>';
+  }).join('');
 }
 function selChat(n){
   selectedChat=n;if(chats[n])chats[n].forEach(m=>{if(m.from==='user')m.read=true;});renderAdminChats();

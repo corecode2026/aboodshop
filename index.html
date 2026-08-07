@@ -6215,16 +6215,36 @@ async function loadDmMessages() {
       return;
     }
     const wasAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 50;
-    el.innerHTML = msgs.map(m => {
+    el.innerHTML = msgs.map((m,i) => {
       const isMe = m.fromId === currentUser.id;
-      return `<div style="display:flex;justify-content:${isMe?'flex-start':'flex-end'};">
-        <div style="max-width:70%;background:${isMe?'var(--kick-dim)':'var(--surface2)'};border:1px solid ${isMe?'var(--border)':'var(--border2)'};padding:9px 14px;border-radius:${isMe?'12px 12px 12px 4px':'12px 12px 4px 12px'};font-size:13px;line-height:1.5;">
-          ${m.text}
-          <div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:${isMe?'right':'left'}">${fmtDate(m.date)}</div>
-        </div>
-      </div>`;
+      const deleted = m.deleted;
+      return '<div style="display:flex;justify-content:'+(isMe?'flex-start':'flex-end')+';position:relative;" class="dm-msg-wrap">' +
+        '<div style="max-width:70%;background:'+(deleted?'var(--surface2)':isMe?'var(--kick-dim)':'var(--surface2)')+';border:1px solid '+(deleted?'var(--border2)':isMe?'var(--border)':'var(--border2)')+';padding:9px 14px;border-radius:'+(isMe?'12px 12px 12px 4px':'12px 12px 4px 12px')+';font-size:13px;line-height:1.5;position:relative;">' +
+          (deleted ? '<span style="color:var(--muted);font-style:italic;font-size:12px;">🚫 تم حذف هذه الرسالة</span>' : m.text) +
+          '<div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:'+(isMe?'right':'left')+'">'+fmtDate(m.date)+'</div>' +
+          (!deleted && isMe ? '<button onclick="deleteDmMsg('+i+')" style="position:absolute;top:4px;'+(isMe?'left':'right')+':4px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;opacity:0;" class="dm-del-btn">🗑</button>' : '') +
+        '</div>' +
+      '</div>';
     }).join('');
+    // أظهر زر الحذف عند hover
+    el.querySelectorAll('.dm-msg-wrap').forEach(wrap => {
+      wrap.onmouseenter = () => { const btn = wrap.querySelector('.dm-del-btn'); if(btn) btn.style.opacity='1'; };
+      wrap.onmouseleave = () => { const btn = wrap.querySelector('.dm-del-btn'); if(btn) btn.style.opacity='0'; };
+    });
     if (wasAtBottom) el.scrollTop = el.scrollHeight;
+  } catch(e) {}
+}
+
+async function deleteDmMsg(idx) {
+  if (!dmCurrentUser) return;
+  if (!confirm('حذف هذه الرسالة؟')) return;
+  try {
+    await fetch(`${W}/api/dm/${dmCurrentUser.id}/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ token: sessionToken, idx })
+    });
+    loadDmMessages();
   } catch(e) {}
 }
 

@@ -1396,7 +1396,6 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('rules',this)">القوانين</button>
     <button class="nl" onclick="goTo('points',this)">النقاط</button>
     <button class="nl" onclick="goTo('tournaments',this)">البطولات</button>
-    <button class="nl" onclick="goTo('wheel',this)">🎡 الدولاب</button>
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
     <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
   </div>
@@ -2159,27 +2158,7 @@ body.ready .page.on { opacity:1; }
 </section>
 
 
-<!-- WHEEL PAGE -->
-<section class="page" id="page-wheel">
-  <div class="section-head">
-    <div class="section-title">🎡 <span class="green">دولاب الحظ</span></div>
-    <div style="font-size:12px;color:var(--muted);">الف الدولاب وربح جوائز</div>
-  </div>
-  <div id="wheelContainer" style="text-align:center;padding:20px 0;">
-    <div id="wheelCostInfo" style="font-size:13px;color:var(--muted);margin-bottom:16px;"></div>
-    <div style="position:relative;display:inline-block;margin-bottom:20px;">
-      <div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);z-index:10;font-size:28px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));">▼</div>
-      <canvas id="wheelCanvas" width="320" height="320" style="border-radius:50%;box-shadow:0 0 40px rgba(83,252,24,.3);cursor:pointer;"></canvas>
-    </div>
-    <div id="wheelResult" style="margin-bottom:16px;min-height:40px;"></div>
-    <button id="wheelSpinBtn" onclick="spinWheel()" class="btn btn-kick" style="font-size:16px;padding:14px 40px;border-radius:12px;">
-      🎡 الفة الدولاب
-    </button>
-    <div id="wheelLoginMsg" style="display:none;margin-top:12px;">
-      <button onclick="doLogin('kick')" class="btn btn-kick">سجّل دخول للعب</button>
-    </div>
-  </div>
-</section>
+
 
 </main>
 <div class="footer" style="position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);text-align:center;padding:8px;font-size:11px;color:rgba(255,255,255,.2);z-index:50;">© 2026 <span style="color:var(--kick);opacity:.5;">corecode2026</span> — جميع الحقوق محفوظة</div>
@@ -2253,10 +2232,7 @@ body.ready .page.on { opacity:1; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 01-2-2V5h4"/><path d="M18 9h2a2 2 0 002-2V5h-4"/><path d="M12 17v4"/><path d="M8 21h8"/><path d="M6 3h12v8a6 6 0 01-12 0V3z"/></svg>
       البطولات
     </button>
-    <button class="dl" onclick="drawerGoTo('wheel')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v10l6 6"/></svg>
-      الدولاب
-    </button>
+
 
     <button class="dl" onclick="drawerGoTo('profile')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -2506,7 +2482,6 @@ function goTo(id, btn) {
   if (btn && btn.classList) btn.classList.add('on');
   if (id === 'store') loadStore();
   if (id === 'market') loadMarket();
-  if (id === 'wheel') loadWheel();
   if (id === 'tournaments') loadTournaments();
   if (id !== 'store') stopAuctionAutoRefresh();
   if (id === 'points') loadPoints();
@@ -5985,256 +5960,6 @@ async function logUserActivity(action, details='') {
       body: JSON.stringify({ token: sessionToken, action, details })
     });
   } catch(e) {}
-}
-
-
-// ══════════════════════════════════════════
-// WHEEL OF FORTUNE
-// ══════════════════════════════════════════
-let wheelConfig = { cost: 100, items: [], spinning: false };
-let wheelAngle = 0;
-
-async function loadWheel() {
-  try {
-    const res = await fetch(`${W}/api/wheel`);
-    const d = await res.json();
-    if (d.wheel) {
-      wheelConfig.cost = d.wheel.cost || 100;
-      wheelConfig.items = d.wheel.items || [];
-    }
-    const costEl = document.getElementById('wheelCostInfo');
-    if(costEl) costEl.innerHTML = 'تكلفة اللفة: <strong style="color:var(--kick);">⭐ '+wheelConfig.cost+' نقطة</strong>';
-    drawWheel();
-    // تحقق من تسجيل الدخول
-    const loginMsg = document.getElementById('wheelLoginMsg');
-    const spinBtn = document.getElementById('wheelSpinBtn');
-    if (!currentUser) {
-      if(loginMsg) loginMsg.style.display='block';
-      if(spinBtn) spinBtn.style.display='none';
-    } else {
-      if(loginMsg) loginMsg.style.display='none';
-      if(spinBtn) spinBtn.style.display='inline-flex';
-    }
-  } catch(e) {}
-}
-
-function drawWheel(highlightIdx=-1) {
-  const canvas = document.getElementById('wheelCanvas');
-  if (!canvas || !wheelConfig.items.length) return;
-  const ctx = canvas.getContext('2d');
-  const cx = canvas.width/2, cy = canvas.height/2, r = cx-4;
-  const items = wheelConfig.items;
-  const arc = (2 * Math.PI) / items.length;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // رسم القطع
-  const colors = ['#1a2a1a','#0d1f0d','#152815','#0a1a0a','#1f2f1f','#112011','#182818','#0e1e0e'];
-  items.forEach((item, i) => {
-    const startAngle = wheelAngle + i * arc - Math.PI/2;
-    const endAngle = startAngle + arc;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, startAngle, endAngle);
-    ctx.closePath();
-    ctx.fillStyle = i === highlightIdx ? 'rgba(83,252,24,.3)' : colors[i % colors.length];
-    ctx.fill();
-    ctx.strokeStyle = '#53FC18';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // نص
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(startAngle + arc/2);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = i === highlightIdx ? '#53FC18' : '#fff';
-    ctx.font = 'bold 12px Cairo';
-    ctx.fillText(item.label, r-10, 5);
-    // نسبة
-    ctx.font = '10px Cairo';
-    ctx.fillStyle = '#53FC18';
-    ctx.fillText(item.chance+'%', r-10, 18);
-    ctx.restore();
-  });
-
-  // دائرة وسط
-  ctx.beginPath();
-  ctx.arc(cx, cy, 22, 0, 2*Math.PI);
-  ctx.fillStyle = '#07070F';
-  ctx.fill();
-  ctx.strokeStyle = '#53FC18';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.fillStyle = '#53FC18';
-  ctx.font = 'bold 11px Cairo';
-  ctx.textAlign = 'center';
-  ctx.fillText('🎡', cx, cy+5);
-}
-
-async function spinWheel() {
-  if (!currentUser) { showToast('سجّل دخول أولاً','err'); return; }
-  if (wheelConfig.spinning) return;
-  if (!wheelConfig.items.length) { showToast('الدولاب فارغ','err'); return; }
-  if (currentUser.points < wheelConfig.cost) {
-    showToast('نقاطك غير كافية — تحتاج '+wheelConfig.cost+' نقطة','err');
-    return;
-  }
-
-  try {
-    wheelConfig.spinning = true;
-    document.getElementById('wheelSpinBtn').disabled = true;
-    document.getElementById('wheelSpinBtn').textContent = '⏳ جاري...';
-    document.getElementById('wheelResult').innerHTML = '';
-
-    const res = await fetch(`${W}/api/wheel/spin`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: sessionToken })
-    });
-    const d = await res.json();
-    if (!d.success) { 
-      showToast(d.error||'خطأ','err');
-      wheelConfig.spinning = false;
-      document.getElementById('wheelSpinBtn').disabled = false;
-      document.getElementById('wheelSpinBtn').textContent = '🎡 الفة الدولاب';
-      return;
-    }
-
-    // حدّث نقاط المستخدم بعد الخصم
-    currentUser.points = d.remainingPoints;
-    document.getElementById('navPtsVal').textContent = d.remainingPoints.toLocaleString();
-
-    const targetIdx = d.resultIdx;
-    const items = wheelConfig.items;
-    const arc = (2 * Math.PI) / items.length;
-
-    // المؤشر في الأعلى = زاوية -PI/2
-    // في drawWheel: القطعة i تبدأ من: wheelAngle + i*arc - PI/2
-    // نريد وسط القطعة targetIdx يكون عند -PI/2 (تحت المؤشر)
-    // وسط القطعة i = wheelAngle + i*arc - PI/2 + arc/2
-    // نريده = -PI/2
-    // => wheelAngle = -i*arc - arc/2
-    // الزاوية الهدف:
-    const targetAngleFinal = -targetIdx * arc - arc/2;
-    // حوّل wheelAngle الحالي لنفس النطاق
-    const curAngle = wheelAngle;
-    // كم لازم ندور؟ (موجب = عكس عقارب الساعة)
-    let delta = targetAngleFinal - curAngle;
-    // اجعل delta يمثل دورة كاملة + عدة لفات إضافية
-    delta = delta % (2*Math.PI);
-    if (delta > 0) delta -= 2*Math.PI; // اجعله سالب (اتجاه عقارب الساعة)
-    delta -= 2*Math.PI * 5; // 5 لفات كاملة
-
-    const duration = 5000;
-    const startTime = performance.now();
-    const startAngle = wheelAngle;
-
-    function animate(now) {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      // easing: slow down at end
-      const ease = 1 - Math.pow(1 - progress, 3);
-      wheelAngle = startAngle + delta * ease;
-      drawWheel();
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        wheelAngle = startAngle + delta;
-        drawWheel(targetIdx);
-        const result = items[targetIdx];
-        document.getElementById('wheelResult').innerHTML = 
-          '<div style="background:var(--kick-dim);border:1px solid var(--kick);border-radius:12px;padding:16px;margin:0 auto;max-width:300px;">' +
-          '<div style="font-size:24px;margin-bottom:8px;">' + (result.emoji||'🎁') + '</div>' +
-          '<div style="font-size:16px;font-weight:800;color:var(--kick);">'+result.label+'</div>' +
-          (d.pointsWon > 0 ? '<div style="font-size:13px;color:var(--muted);margin-top:6px;">+'+d.pointsWon+' نقطة أضيفت لحسابك</div>' : '') +
-          '</div>';
-        showToast('🎉 فزت بـ: '+result.label);
-        if (d.pointsWon > 0) {
-          currentUser.points = (d.remainingPoints || currentUser.points) + d.pointsWon;
-          document.getElementById('navPtsVal').textContent = currentUser.points.toLocaleString();
-        }
-        wheelConfig.spinning = false;
-        document.getElementById('wheelSpinBtn').disabled = false;
-        document.getElementById('wheelSpinBtn').textContent = '🎡 الفة الدولاب';
-        logUserActivity('دولاب الحظ', 'فاز بـ: '+result.label);
-      }
-    }
-    requestAnimationFrame(animate);
-  } catch(e) {
-    showToast('خطأ في الاتصال','err');
-    wheelConfig.spinning = false;
-    document.getElementById('wheelSpinBtn').disabled = false;
-    document.getElementById('wheelSpinBtn').textContent = '🎡 الفة الدولاب';
-  }
-}
-
-
-// ADMIN WHEEL
-function loadWheelAdmin() {
-  try {
-    const c = JSON.parse(localStorage.getItem('sk_settings_cache')||'{}');
-    if (c.wheel) {
-      wheelConfig.cost = c.wheel.cost || 100;
-      wheelConfig.items = c.wheel.items || [];
-    }
-  } catch(e) {}
-  renderWheelAdmin();
-}
-
-function renderWheelAdmin() {
-  const el = document.getElementById('wheelAdminItems');
-  if (!el) return;
-  document.getElementById('wheelCostAdmin').value = wheelConfig.cost || 100;
-  el.innerHTML = wheelConfig.items.map((item, i) => `
-    <div style="display:grid;grid-template-columns:36px 1fr 80px 60px auto;gap:8px;align-items:center;background:var(--surface2);padding:8px 12px;border-radius:8px;border:1px solid var(--border2);">
-      <input value="${item.emoji||'🎁'}" oninput="wheelConfig.items[${i}].emoji=this.value" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:4px;border-radius:6px;font-size:16px;text-align:center;width:100%;"/>
-      <div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:2px;">الجائزة</div>
-        <input value="${item.label}" oninput="wheelConfig.items[${i}].label=this.value" class="pf-input" placeholder="مثال: 500 نقطة"/>
-      </div>
-      <div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:2px;">نقاط</div>
-        <input value="${item.points||0}" type="number" oninput="wheelConfig.items[${i}].points=+this.value" class="pf-input" dir="ltr"/>
-      </div>
-      <div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:2px;">% نسبة</div>
-        <input value="${item.chance}" type="number" oninput="wheelConfig.items[${i}].chance=+this.value" class="pf-input" dir="ltr" min="1" max="100"/>
-      </div>
-      <button onclick="removeWheelItem(${i})" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;">✕</button>
-    </div>
-  `).join('');
-  
-  // عرض مجموع النسب
-  const total = wheelConfig.items.reduce((s,i)=>s+(i.chance||0),0);
-  document.getElementById('wheelChanceTotal').textContent = 'مجموع النسب: '+total+'%';
-  document.getElementById('wheelChanceTotal').style.color = total===100 ? 'var(--kick)' : 'var(--red)';
-}
-
-function addWheelItem() {
-  wheelConfig.items.push({ emoji:'🎁', label:'جائزة جديدة', points:0, chance:10 });
-  renderWheelAdmin();
-}
-
-function removeWheelItem(i) {
-  wheelConfig.items.splice(i,1);
-  renderWheelAdmin();
-}
-
-async function saveWheelConfig() {
-  const cost = Number(document.getElementById('wheelCostAdmin').value)||100;
-  const total = wheelConfig.items.reduce((s,i)=>s+(i.chance||0),0);
-  if (total !== 100) { showToast('مجموع النسب يجب أن يكون 100%','err'); return; }
-  wheelConfig.cost = cost;
-  try {
-    await fetch(`${W}/api/settings`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},
-      body:JSON.stringify({ wheel: { cost, items: wheelConfig.items } })
-    });
-    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.wheel={cost,items:wheelConfig.items}; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
-    showToast('✅ تم حفظ إعدادات الدولاب');
-    renderWheelAdmin();
-  } catch(e) { showToast('خطأ','err'); }
 }
 
 

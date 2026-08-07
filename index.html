@@ -1400,6 +1400,7 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
     <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn">💬 رسائل</button>
     <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
+    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);">🆕 تحديثات</button>
   </div>
   <div class="nav-right">
     <div class="pts-chip hidden" id="navPts">⭐ <span id="navPtsVal">0</span> نقطة</div>
@@ -1591,6 +1592,7 @@ body.ready .page.on { opacity:1; }
         <button class="am" onclick="aTab('tournaments-admin',this)" data-tab="tournaments-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 01-2-2V5h4"/><path d="M18 9h2a2 2 0 002-2V5h-4"/><path d="M12 17v4"/><path d="M8 21h8"/><path d="M6 3h12v8a6 6 0 01-12 0V3z"/></svg></span> البطولات</button>
         <button class="am" onclick="aTab('auction-admin',this)" data-tab="auction-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span> المزاد</button>
         <button class="am" onclick="aTab('rules-admin',this)" data-tab="rules-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> القوانين</button>
+        <button class="am" onclick="aTab('updates-admin',this)" data-tab="updates-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span> التحديثات</button>
         <button class="am" onclick="aTab('pts-cfg',this)" data-tab="pts-cfg"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> النقاط</button>
         <button class="am" onclick="aTab('logs',this)" data-tab="logs"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> السجل</button>
         <button class="am" onclick="aTab('password',this)" data-tab="password"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span> كلمة السر</button>
@@ -1679,6 +1681,26 @@ body.ready .page.on { opacity:1; }
 
 
 
+
+
+      <!-- UPDATES ADMIN -->
+      <div class="asub" id="asub-updates-admin">
+        <div class="section-head"><div class="section-title">🆕 التحديثات</div></div>
+        <div class="settings-box">
+          <div class="settings-box-title" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>زر التحديثات بالصفحة الرئيسية</span>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <span style="font-size:12px;color:var(--muted);">تفعيل</span>
+              <input type="checkbox" id="updatesEnabled" onchange="toggleUpdatesBtn()" style="accent-color:var(--kick);width:16px;height:16px;"/>
+            </label>
+          </div>
+          <div id="updatesAdminList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;margin-top:12px;"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="addUpdate()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">+ إضافة تحديث</button>
+            <button onclick="saveUpdates()" class="btn btn-kick" style="font-size:13px;padding:8px 16px;">💾 حفظ التحديثات</button>
+          </div>
+        </div>
+      </div>
 
       <!-- MESSAGES ADMIN -->
       <div class="asub" id="asub-messages-admin">
@@ -1849,21 +1871,7 @@ body.ready .page.on { opacity:1; }
 
         <button class="btn btn-kick" onclick="savePtsCfg()">💾 حفظ إعدادات النقاط</button>
 
-      <!-- UPDATES SECTION -->
-      <div class="settings-box" style="margin-top:16px;">
-        <div class="settings-box-title" style="display:flex;justify-content:space-between;align-items:center;">
-          <span>🆕 التحديثات</span>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-            <span style="font-size:12px;color:var(--muted);">تفعيل الزر</span>
-            <input type="checkbox" id="updatesEnabled" onchange="toggleUpdatesBtn()" style="accent-color:var(--kick);width:16px;height:16px;"/>
-          </label>
-        </div>
-        <div id="updatesAdminList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button onclick="addUpdate()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">+ إضافة تحديث</button>
-          <button onclick="saveUpdates()" class="btn btn-kick" style="font-size:13px;padding:8px 16px;">💾 حفظ التحديثات</button>
-        </div>
-      </div>
+
       </div>
       <!-- SETTINGS -->
       <div class="asub" id="asub-settings">
@@ -3287,6 +3295,7 @@ function aTab(tab, btn) {
   if(tab==='tournaments-admin') loadTournamentsAdmin();
   if(tab==='market-admin') loadMarketAdmin();
   if(tab==='messages-admin') loadAdminMessages();
+  if(tab==='updates-admin') { loadUpdates(); setTimeout(renderUpdatesAdmin, 300); }
 }
 
 async function loadDashboard() {
@@ -4315,7 +4324,8 @@ const PERM_TAB_MAP = {
   'password':'settings',
   'tournaments-admin':'orders',
   'market-admin':'orders',
-  'messages-admin':'orders'
+  'messages-admin':'orders',
+  'updates-admin':'orders'
 };
 
 function applyStaffPermissions(perms) {
@@ -6370,7 +6380,7 @@ async function loadUpdates() {
     const res = await fetch(`${W}/api/settings`);
     const s = await res.json();
     if (s.updates) {
-      updatesData = s.updates;
+      updatesData = { enabled: false, items: [], ...s.updates };
       // أظهر/أخفِ زر التحديثات
       const btn = document.getElementById('updatesBtn');
       const navBtn = document.getElementById('navUpdatesBtn');
@@ -6407,6 +6417,7 @@ function toggleUpdatesBtn() {
 }
 
 function addUpdate() {
+  if (!updatesData.items) updatesData.items = [];
   updatesData.items.unshift({
     emoji: '🆕',
     title: 'تحديث جديد',

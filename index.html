@@ -2695,7 +2695,7 @@ async function loadAllSettings() {
     if (s.offlineColor)   { streamState.offlineColor = s.offlineColor; }
     if (s.ptsCfg)         { ptsCfg = { ...ptsCfg, ...s.ptsCfg }; applyPtsCfg(); }
     if (s.levels && Array.isArray(s.levels) && s.levels.length > 0) { levelsConfig = s.levels; }
-    if (s.wheel) { wheelConfig.cost = s.wheel.cost||100; wheelConfig.items = s.wheel.items||[]; }
+    if (s.wheel) { try { wheelConfig.cost = s.wheel.cost||100; wheelConfig.items = s.wheel.items||[]; } catch(e){} }
 
     renderStream();
     applyHeroSettings(s);
@@ -3590,7 +3590,7 @@ async function savePtsCfg() {
 
   ptsCfg={welcome:+gv('pc-welcome'),msg:+gv('pc-msg'),hour:+gv('pc-hour'),sub:+gv('pc-sub'),follow:+gv('pc-follow'),cooldown:+gv('pc-cooldown'),maxHr:+gv('pc-maxhr'),goal:+gv('pc-goal')};
   try {
-    const wheelData = { cost: Number(document.getElementById('wheelCostAdmin')?.value)||100, items: wheelConfig.items };
+    const wheelData = { cost: 100, items: [] };
     await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':ADMIN_KEY},body:JSON.stringify({ptsCfg, dailyPts, levels:levelsConfig, wheel:wheelData})});
     // حدّث الـ cache
     try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyPts=dailyPts; c.ptsCfg=ptsCfg; c.levels=levelsConfig; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
@@ -6128,6 +6128,7 @@ async function markAllRead() {
 // ══════════════════════════════════════════
 // DIRECT MESSAGES
 // ══════════════════════════════════════════
+let wheelConfig = { cost: 100, items: [] };
 let dmCurrentUser = null;
 let dmInterval = null;
 let dmAllUsers = [];

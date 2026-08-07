@@ -2486,9 +2486,9 @@ body.ready .page.on { opacity:1; }
 // ═══════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════
-const W = 'https://storekick1-auth.hk983480.workers.dev'; // Worker URL
-const ADMIN_KEY = ''; // مش بتستخدم
-let adminSession = ''; // session token من الـ Worker
+const W=(s=>s)('https://storekick1-auth.hk983480.workers.dev');
+const ADMIN_KEY='';
+let adminSession='';
 
 // ═══════════════════════════════════════════
 // STATE

@@ -1396,6 +1396,7 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('rules',this)">القوانين</button>
     <button class="nl" onclick="goTo('points',this)">النقاط</button>
     <button class="nl" onclick="goTo('tournaments',this)">البطولات</button>
+    <button class="nl" onclick="goTo('wheel',this)">🎡 الدولاب</button>
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
     <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
   </div>
@@ -1524,9 +1525,7 @@ body.ready .page.on { opacity:1; }
       🏷️ المزاد
       <span id="auctionActiveDot" style="display:none;width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse 1.4s infinite;"></span>
     </button>
-    <button id="storeTab-wheel" onclick="switchStoreTab('wheel')" style="padding:10px 22px;border:none;background:transparent;color:var(--muted);font-size:14px;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;">
-      🎡 دولاب الحظ
-    </button>
+
   </div>
 
   <!-- المنتجات -->
@@ -1535,10 +1534,6 @@ body.ready .page.on { opacity:1; }
     <div class="store-grid" id="storeGrid"><p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p></div>
     </div>
 
-  <!-- الدولاب -->
-  <div id="storeTabWheel" style="display:none;">
-    <div id="wheelContainer" style="text-align:center;padding:20px 0;">
-      <div id="wheelCostInfo" style="font-size:13px;color:var(--muted);margin-bottom:16px;"></div>
       <div style="position:relative;display:inline-block;margin-bottom:20px;">
         <!-- مؤشر -->
         <div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);z-index:10;font-size:28px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));">▼</div>
@@ -1604,6 +1599,7 @@ body.ready .page.on { opacity:1; }
         <button class="am" onclick="aTab('products',this)" data-tab="products"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></span> المنتجات</button>
         <button class="am" onclick="aTab('users',this)" data-tab="users"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span> المستخدمون</button>
         <button class="am" onclick="aTab('staff',this)" data-tab="staff"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span> الموظفون</button>
+        <button class="am" onclick="aTab('messages-admin',this)" data-tab="messages-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span> رسائل</button>
         <button class="am" onclick="aTab('market-admin',this)" data-tab="market-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></span> السوق</button>
         <button class="am" onclick="aTab('tournaments-admin',this)" data-tab="tournaments-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 01-2-2V5h4"/><path d="M18 9h2a2 2 0 002-2V5h-4"/><path d="M12 17v4"/><path d="M8 21h8"/><path d="M6 3h12v8a6 6 0 01-12 0V3z"/></svg></span> البطولات</button>
         <button class="am" onclick="aTab('auction-admin',this)" data-tab="auction-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span> المزاد</button>
@@ -1691,6 +1687,30 @@ body.ready .page.on { opacity:1; }
 
 
 
+
+
+      <!-- MESSAGES ADMIN -->
+      <div class="asub" id="asub-messages-admin">
+        <div class="section-head"><div class="section-title">📨 الرسائل الخاصة</div></div>
+        <div class="settings-box" style="max-width:500px;margin-bottom:20px;">
+          <div class="settings-box-title">إرسال رسالة لعضو</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">اسم المستخدم</div>
+              <input class="pf-input" id="msg-to" placeholder="username" dir="ltr"/>
+            </div>
+            <div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">الرسالة</div>
+              <textarea class="pf-input" id="msg-body" rows="3" style="resize:vertical;" placeholder="اكتب رسالتك هنا..."></textarea>
+            </div>
+            <button onclick="sendAdminMessage()" class="btn btn-kick">📨 إرسال</button>
+          </div>
+        </div>
+        <div class="settings-box">
+          <div class="settings-box-title">الرسائل المرسلة</div>
+          <div id="adminSentMessages"></div>
+        </div>
+      </div>
 
       <!-- MARKET ADMIN -->
       <div class="asub" id="asub-market-admin">
@@ -2040,6 +2060,18 @@ body.ready .page.on { opacity:1; }
       </div>
     </div>
 
+    <!-- INBOX -->
+    <div id="userInbox" style="display:none;margin-bottom:20px;">
+      <div class="settings-box">
+        <div class="settings-box-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          📨 رسائلك
+          <span id="inboxCount" style="background:var(--red);color:#fff;font-size:10px;padding:2px 7px;border-radius:10px;margin-right:6px;"></span>
+        </div>
+        <div id="inboxMessages"></div>
+      </div>
+    </div>
+
     <!-- TOP 5 -->
     <div class="settings-box" style="margin-bottom:20px;">
       <div class="settings-box-title">
@@ -2126,6 +2158,29 @@ body.ready .page.on { opacity:1; }
   </div>
 </section>
 
+
+<!-- WHEEL PAGE -->
+<section class="page" id="page-wheel">
+  <div class="section-head">
+    <div class="section-title">🎡 <span class="green">دولاب الحظ</span></div>
+    <div style="font-size:12px;color:var(--muted);">الف الدولاب وربح جوائز</div>
+  </div>
+  <div id="wheelContainer" style="text-align:center;padding:20px 0;">
+    <div id="wheelCostInfo" style="font-size:13px;color:var(--muted);margin-bottom:16px;"></div>
+    <div style="position:relative;display:inline-block;margin-bottom:20px;">
+      <div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);z-index:10;font-size:28px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));">▼</div>
+      <canvas id="wheelCanvas" width="320" height="320" style="border-radius:50%;box-shadow:0 0 40px rgba(83,252,24,.3);cursor:pointer;"></canvas>
+    </div>
+    <div id="wheelResult" style="margin-bottom:16px;min-height:40px;"></div>
+    <button id="wheelSpinBtn" onclick="spinWheel()" class="btn btn-kick" style="font-size:16px;padding:14px 40px;border-radius:12px;">
+      🎡 الفة الدولاب
+    </button>
+    <div id="wheelLoginMsg" style="display:none;margin-top:12px;">
+      <button onclick="doLogin('kick')" class="btn btn-kick">سجّل دخول للعب</button>
+    </div>
+  </div>
+</section>
+
 </main>
 <div class="footer" style="position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);text-align:center;padding:8px;font-size:11px;color:rgba(255,255,255,.2);z-index:50;">© 2026 <span style="color:var(--kick);opacity:.5;">corecode2026</span> — جميع الحقوق محفوظة</div>
 
@@ -2197,6 +2252,10 @@ body.ready .page.on { opacity:1; }
     <button class="dl" onclick="drawerGoTo('tournaments')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 01-2-2V5h4"/><path d="M18 9h2a2 2 0 002-2V5h-4"/><path d="M12 17v4"/><path d="M8 21h8"/><path d="M6 3h12v8a6 6 0 01-12 0V3z"/></svg>
       البطولات
+    </button>
+    <button class="dl" onclick="drawerGoTo('wheel')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v10l6 6"/></svg>
+      الدولاب
     </button>
 
     <button class="dl" onclick="drawerGoTo('profile')">
@@ -2447,6 +2506,7 @@ function goTo(id, btn) {
   if (btn && btn.classList) btn.classList.add('on');
   if (id === 'store') loadStore();
   if (id === 'market') loadMarket();
+  if (id === 'wheel') loadWheel();
   if (id === 'tournaments') loadTournaments();
   if (id !== 'store') stopAuctionAutoRefresh();
   if (id === 'points') loadPoints();
@@ -3217,6 +3277,7 @@ function aTab(tab, btn) {
   if(tab==='auction-admin') loadAuctionAdmin();
   if(tab==='tournaments-admin') loadTournamentsAdmin();
   if(tab==='market-admin') loadMarketAdmin();
+  if(tab==='messages-admin') loadAdminMessages();
 }
 
 async function loadDashboard() {
@@ -4202,7 +4263,8 @@ const PERM_TAB_MAP = {
   'auction-admin':'orders',
   'password':'settings',
   'tournaments-admin':'orders',
-  'market-admin':'orders'
+  'market-admin':'orders',
+  'messages-admin':'orders'
 };
 
 function applyStaffPermissions(perms) {
@@ -4266,6 +4328,7 @@ async function loadProfile() {
     
     setEl('profilePoints', (d.points||0).toLocaleString());
     updateProfileLevel(d.points||0);
+    loadUserInbox();
     
     const joined = currentUser.joinedAt ? new Date(currentUser.joinedAt).toLocaleDateString('ar') : '-';
     setEl('profileJoined', joined);
@@ -6172,6 +6235,128 @@ async function saveWheelConfig() {
     showToast('✅ تم حفظ إعدادات الدولاب');
     renderWheelAdmin();
   } catch(e) { showToast('خطأ','err'); }
+}
+
+
+// ══════════════════════════════════════════
+// PRIVATE MESSAGES
+// ══════════════════════════════════════════
+
+function encryptMsg(text, key) {
+  // XOR تشفير بسيط
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+  }
+  return btoa(unescape(encodeURIComponent(result)));
+}
+
+function decryptMsg(encoded, key) {
+  try {
+    const text = decodeURIComponent(escape(atob(encoded)));
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+      result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+    }
+    return result;
+  } catch(e) { return '⚠️ تعذر قراءة الرسالة'; }
+}
+
+const MSG_KEY = 'aboodshop_msg_2026';
+
+async function sendAdminMessage() {
+  const to = document.getElementById('msg-to')?.value.trim();
+  const body = document.getElementById('msg-body')?.value.trim();
+  if (!to || !body) { showToast('أدخل المستخدم والرسالة','err'); return; }
+  
+  const encrypted = encryptMsg(body, MSG_KEY);
+  
+  try {
+    const res = await fetch(`${W}/api/admin/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json','x-admin-key':ADMIN_KEY },
+      body: JSON.stringify({ to, message: encrypted, plain: body.substring(0,30)+'...' })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast('✅ تم إرسال الرسالة');
+      document.getElementById('msg-to').value = '';
+      document.getElementById('msg-body').value = '';
+      loadAdminMessages();
+    } else showToast(d.error||'خطأ','err');
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+async function loadAdminMessages() {
+  const el = document.getElementById('adminSentMessages');
+  if (!el) return;
+  try {
+    const res = await fetch(`${W}/api/admin/messages`,{headers:{'x-admin-key':ADMIN_KEY}});
+    const { messages } = await res.json();
+    if (!messages?.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">لا توجد رسائل</p>'; return; }
+    el.innerHTML = messages.slice(0,20).map(m => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);">
+        <div>
+          <div style="font-size:13px;font-weight:700;">إلى: @${m.to}</div>
+          <div style="font-size:12px;color:var(--muted);">${m.plain} · ${fmtDate(m.date)}</div>
+        </div>
+        <button onclick="deleteAdminMsg('${m.id}')" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑</button>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+async function deleteAdminMsg(id) {
+  try {
+    await fetch(`${W}/api/admin/messages/${id}`,{method:'DELETE',headers:{'x-admin-key':ADMIN_KEY}});
+    showToast('تم الحذف'); loadAdminMessages();
+  } catch(e) {}
+}
+
+async function loadUserInbox() {
+  if (!currentUser) return;
+  try {
+    const res = await fetch(`${W}/api/messages?token=${sessionToken}`);
+    const { messages } = await res.json();
+    const inbox = document.getElementById('userInbox');
+    const el = document.getElementById('inboxMessages');
+    const countEl = document.getElementById('inboxCount');
+    
+    if (!messages?.length) { if(inbox) inbox.style.display='none'; return; }
+    if(inbox) inbox.style.display='block';
+    
+    const unread = messages.filter(m=>!m.read).length;
+    if(countEl) countEl.textContent = unread > 0 ? unread+' جديد' : '';
+    if(countEl) countEl.style.display = unread > 0 ? 'inline' : 'none';
+    
+    el.innerHTML = messages.map(m => {
+      const decrypted = decryptMsg(m.message, MSG_KEY);
+      return `<div style="background:${m.read?'var(--surface2)':'rgba(83,252,24,.05)'};border:1px solid ${m.read?'var(--border2)':'var(--kick)'};border-radius:10px;padding:14px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:11px;color:var(--kick);font-weight:700;">📨 رسالة من الإدارة</div>
+          <div style="font-size:11px;color:var(--muted);">${fmtDate(m.date)}</div>
+        </div>
+        <div style="font-size:14px;line-height:1.7;">${decrypted}</div>
+        ${!m.read ? '<div style="margin-top:8px;"><button onclick="markMsgRead(\'' + m.id + '\')" style="background:var(--kick-dim);color:var(--kick);border:none;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;">✓ تم القراءة</button></div>' : ''}
+      </div>`;
+    }).join('');
+    
+    // علّم كلها مقروءة تلقائياً
+    if(unread > 0) markAllRead();
+  } catch(e) {}
+}
+
+async function markMsgRead(id) {
+  try {
+    await fetch(`${W}/api/messages/${id}/read`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:sessionToken})});
+    loadUserInbox();
+  } catch(e) {}
+}
+
+async function markAllRead() {
+  try {
+    await fetch(`${W}/api/messages/read-all`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:sessionToken})});
+  } catch(e) {}
 }
 
 async function init() {

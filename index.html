@@ -1397,6 +1397,7 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('points',this)">النقاط</button>
     <button class="nl" onclick="goTo('tournaments',this)">البطولات</button>
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
+    <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn">💬 رسائل</button>
     <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
   </div>
   <div class="nav-right">
@@ -2146,6 +2147,41 @@ body.ready .page.on { opacity:1; }
 
 
 
+
+<!-- DMS PAGE -->
+<section class="page" id="page-dms">
+  <div style="display:flex;height:calc(100vh - 120px);gap:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;">
+    
+    <!-- قائمة المحادثات -->
+    <div id="dmsList" style="width:280px;flex-shrink:0;border-left:1px solid var(--border2);overflow-y:auto;display:flex;flex-direction:column;">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--border2);">
+        <div style="font-size:14px;font-weight:800;">💬 الرسائل</div>
+        <input id="dmSearch" oninput="searchDmUsers()" placeholder="ابحث عن مستخدم..." style="width:100%;margin-top:8px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;"/>
+      </div>
+      <div id="dmConvList" style="flex:1;overflow-y:auto;"></div>
+    </div>
+
+    <!-- صندوق الرسائل -->
+    <div id="dmChat" style="flex:1;display:flex;flex-direction:column;">
+      <div id="dmChatHeader" style="padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px;">
+        <div style="font-size:13px;color:var(--muted);">اختر محادثة للبدء</div>
+      </div>
+      <div id="dmMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;"></div>
+      <div id="dmInputArea" style="display:none;padding:12px 16px;border-top:1px solid var(--border2);display:flex;gap:8px;">
+        <input id="dmInput" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter')sendDm()" style="flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:9px 13px;border-radius:10px;font-size:13px;font-family:'Cairo',sans-serif;"/>
+        <button onclick="sendDm()" class="btn btn-kick" style="padding:9px 16px;">إرسال</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- غير مسجل -->
+  <div id="dmsGuestMsg" style="display:none;text-align:center;padding:60px 0;">
+    <div style="font-size:48px;margin-bottom:16px;">💬</div>
+    <p style="color:var(--muted);margin-bottom:20px;">سجّل دخول لاستخدام الرسائل</p>
+    <button class="btn btn-kick" onclick="doLogin('kick')">تسجيل دخول</button>
+  </div>
+</section>
+
 </main>
 <div class="footer" style="position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);text-align:center;padding:8px;font-size:11px;color:rgba(255,255,255,.2);z-index:50;">© 2026 <span style="color:var(--kick);opacity:.5;">corecode2026</span> — جميع الحقوق محفوظة</div>
 
@@ -2223,6 +2259,10 @@ body.ready .page.on { opacity:1; }
     <button class="dl" onclick="drawerGoTo('profile')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       ملفي
+    </button>
+    <button class="dl" onclick="drawerGoTo('dms')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      رسائل
     </button>
     <button class="dl" onclick="drawerGoTo('daily')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -2473,6 +2513,8 @@ function goTo(id, btn) {
   if (id === 'points') loadPoints();
   if (id === 'profile') loadProfile();
   if (id === 'daily') loadDaily();
+  if (id === 'dms') loadDms();
+  else if (dmInterval) { clearInterval(dmInterval); dmInterval = null; }
 
   if (id === 'admin') {
     loadDashboard();
@@ -6054,6 +6096,135 @@ async function markMsgRead(id) {
 async function markAllRead() {
   try {
     await fetch(`${W}/api/messages/read-all`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:sessionToken})});
+  } catch(e) {}
+}
+
+
+// ══════════════════════════════════════════
+// DIRECT MESSAGES
+// ══════════════════════════════════════════
+let dmCurrentUser = null;
+let dmInterval = null;
+let dmAllUsers = [];
+
+async function loadDms() {
+  if (!currentUser) {
+    document.getElementById('dmsList').style.display = 'none';
+    document.getElementById('dmChat').style.display = 'none';
+    document.getElementById('dmsGuestMsg').style.display = 'block';
+    return;
+  }
+  document.getElementById('dmsList').style.display = 'flex';
+  document.getElementById('dmChat').style.display = 'flex';
+  document.getElementById('dmsGuestMsg').style.display = 'none';
+
+  // جيب قائمة المستخدمين
+  try {
+    const res = await fetch(`${W}/api/dm/users?token=${sessionToken}`);
+    const d = await res.json();
+    dmAllUsers = d.users || [];
+    renderDmList(dmAllUsers);
+  } catch(e) {}
+}
+
+function renderDmList(users) {
+  const el = document.getElementById('dmConvList');
+  if (!el) return;
+  if (!users.length) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">ابحث عن مستخدم للبدء</div>';
+    return;
+  }
+  el.innerHTML = users.map(u => `
+    <div onclick="openDmChat('${u.id}','${u.username}','${u.avatar||''}')"
+      style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border2);transition:var(--transition);${dmCurrentUser?.id===u.id?'background:var(--kick-dim);':''}"
+      onmouseover="this.style.background='rgba(255,255,255,.03)'" onmouseout="this.style.background='${dmCurrentUser?.id===u.id?'var(--kick-dim)':'transparent'}'">
+      ${u.avatar ? `<img src="${u.avatar}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;"/>` : `<div style="width:36px;height:36px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;">${(u.username||'?').charAt(0).toUpperCase()}</div>`}
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;">${u.username}</div>
+        ${u.lastMsg ? `<div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.lastMsg}</div>` : ''}
+      </div>
+      ${u.unread ? `<span style="background:var(--kick);color:#000;font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;">${u.unread}</span>` : ''}
+    </div>
+  `).join('');
+}
+
+function searchDmUsers() {
+  const q = document.getElementById('dmSearch')?.value.toLowerCase().trim();
+  if (!q) { renderDmList(dmAllUsers); return; }
+  const filtered = dmAllUsers.filter(u => u.username.toLowerCase().includes(q));
+  renderDmList(filtered);
+  // لو ما في نتائج ابحث عبر API
+  if (!filtered.length && q.length >= 2) {
+    fetch(`${W}/api/dm/search?q=${encodeURIComponent(q)}&token=${sessionToken}`)
+      .then(r=>r.json())
+      .then(d=>{ if(d.users?.length) renderDmList(d.users); })
+      .catch(()=>{});
+  }
+}
+
+async function openDmChat(userId, username, avatar) {
+  dmCurrentUser = { id: userId, username, avatar };
+  
+  // حدث header
+  const header = document.getElementById('dmChatHeader');
+  header.innerHTML = `
+    <div style="${avatar ? '' : 'width:36px;height:36px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;'}">
+      ${avatar ? `<img src="${avatar}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;"/>` : username.charAt(0).toUpperCase()}
+    </div>
+    <div>
+      <div style="font-size:14px;font-weight:700;">${username}</div>
+    </div>
+  `;
+  
+  const inputArea = document.getElementById('dmInputArea');
+  if(inputArea) { inputArea.style.display='flex'; inputArea.style.cssText = inputArea.style.cssText.replace('display:none','display:flex'); }
+
+  await loadDmMessages();
+  
+  // Auto-refresh
+  if (dmInterval) clearInterval(dmInterval);
+  dmInterval = setInterval(loadDmMessages, 5000);
+}
+
+async function loadDmMessages() {
+  if (!dmCurrentUser) return;
+  try {
+    const res = await fetch(`${W}/api/dm/${dmCurrentUser.id}?token=${sessionToken}`);
+    const d = await res.json();
+    const el = document.getElementById('dmMessages');
+    if (!el) return;
+    const msgs = d.messages || [];
+    if (!msgs.length) {
+      el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;margin-top:40px;">ابدأ المحادثة...</div>';
+      return;
+    }
+    const wasAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 50;
+    el.innerHTML = msgs.map(m => {
+      const isMe = m.fromId === currentUser.id;
+      return `<div style="display:flex;justify-content:${isMe?'flex-start':'flex-end'};">
+        <div style="max-width:70%;background:${isMe?'var(--kick-dim)':'var(--surface2)'};border:1px solid ${isMe?'var(--border)':'var(--border2)'};padding:9px 14px;border-radius:${isMe?'12px 12px 12px 4px':'12px 12px 4px 12px'};font-size:13px;line-height:1.5;">
+          ${m.text}
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:${isMe?'right':'left'}">${fmtDate(m.date)}</div>
+        </div>
+      </div>`;
+    }).join('');
+    if (wasAtBottom) el.scrollTop = el.scrollHeight;
+  } catch(e) {}
+}
+
+async function sendDm() {
+  if (!currentUser || !dmCurrentUser) return;
+  const input = document.getElementById('dmInput');
+  const text = input?.value.trim();
+  if (!text) return;
+  input.value = '';
+  try {
+    await fetch(`${W}/api/dm/${dmCurrentUser.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ token: sessionToken, text })
+    });
+    loadDmMessages();
   } catch(e) {}
 }
 

@@ -2155,8 +2155,11 @@ body.ready .page.on { opacity:1; }
     <!-- قائمة المحادثات -->
     <div id="dmsList" style="width:280px;flex-shrink:0;border-left:1px solid var(--border2);overflow-y:auto;display:flex;flex-direction:column;">
       <div style="padding:14px 16px;border-bottom:1px solid var(--border2);">
-        <div style="font-size:14px;font-weight:800;">💬 الرسائل</div>
-        <input id="dmSearch" oninput="searchDmUsers()" placeholder="ابحث عن مستخدم..." style="width:100%;margin-top:8px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;"/>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="font-size:14px;font-weight:800;">💬 دردشاتي</div>
+          <button onclick="showNewDmSearch()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:4px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">+ جديد</button>
+        </div>
+        <input id="dmSearch" oninput="searchDmUsers()" placeholder="ابحث في دردشاتي..." style="width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;display:none;"/>
       </div>
       <div id="dmConvList" style="flex:1;overflow-y:auto;"></div>
     </div>
@@ -6107,6 +6110,19 @@ let dmCurrentUser = null;
 let dmInterval = null;
 let dmAllUsers = [];
 
+function showNewDmSearch() {
+  const input = document.getElementById('dmSearch');
+  if (!input) return;
+  input.style.display = input.style.display === 'none' ? 'block' : 'none';
+  if (input.style.display === 'block') {
+    input.placeholder = 'ابحث عن مستخدم للمراسلة...';
+    input.value = '';
+    input.focus();
+  } else {
+    renderDmList(dmAllUsers);
+  }
+}
+
 async function loadDms() {
   if (!currentUser) {
     document.getElementById('dmsList').style.display = 'none';
@@ -6131,7 +6147,7 @@ function renderDmList(users) {
   const el = document.getElementById('dmConvList');
   if (!el) return;
   if (!users.length) {
-    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">ابحث عن مستخدم للبدء</div>';
+    el.innerHTML = '<div style="padding:24px 16px;text-align:center;"><div style="font-size:32px;margin-bottom:8px;">💬</div><div style="color:var(--muted);font-size:13px;margin-bottom:12px;">لا توجد محادثات بعد</div><button onclick="showNewDmSearch()" style="background:var(--kick);color:#000;border:none;padding:8px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">ابدأ محادثة</button></div>';
     return;
   }
   el.innerHTML = users.map(u => `

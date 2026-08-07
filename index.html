@@ -6045,18 +6045,22 @@ async function spinWheel() {
     const items = wheelConfig.items;
     const arc = (2 * Math.PI) / items.length;
 
-    // احسب الزاوية الصح للوصول للقطعة المطلوبة
-    // المؤشر في الأعلى (12 o'clock) = -PI/2
-    // كل قطعة تبدأ من wheelAngle
-    // نريد القطعة targetIdx تكون تحت المؤشر
-    const currentNorm = ((wheelAngle % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
-    const targetCenter = targetIdx * arc + arc/2; // وسط القطعة المطلوبة
-    // الزاوية للوصول لها تحت المؤشر (= -PI/2 أو 3PI/2)
-    const needed = (3*Math.PI/2) - targetCenter;
-    let delta = needed - currentNorm;
-    // اجعلها موجبة وأضف 5 لفات
-    while (delta < 0) delta += 2*Math.PI;
-    delta += 2*Math.PI * 5;
+    // المؤشر في الأعلى = زاوية -PI/2
+    // في drawWheel: القطعة i تبدأ من: wheelAngle + i*arc - PI/2
+    // نريد وسط القطعة targetIdx يكون عند -PI/2 (تحت المؤشر)
+    // وسط القطعة i = wheelAngle + i*arc - PI/2 + arc/2
+    // نريده = -PI/2
+    // => wheelAngle = -i*arc - arc/2
+    // الزاوية الهدف:
+    const targetAngleFinal = -targetIdx * arc - arc/2;
+    // حوّل wheelAngle الحالي لنفس النطاق
+    const curAngle = wheelAngle;
+    // كم لازم ندور؟ (موجب = عكس عقارب الساعة)
+    let delta = targetAngleFinal - curAngle;
+    // اجعل delta يمثل دورة كاملة + عدة لفات إضافية
+    delta = delta % (2*Math.PI);
+    if (delta > 0) delta -= 2*Math.PI; // اجعله سالب (اتجاه عقارب الساعة)
+    delta -= 2*Math.PI * 5; // 5 لفات كاملة
 
     const duration = 5000;
     const startTime = performance.now();

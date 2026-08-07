@@ -6482,6 +6482,10 @@ async function saveUpdates() {
 
 async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);
+  // أظهر زر التحديثات
+  const _ub=document.getElementById('updatesBtn'),_nb=document.getElementById('navUpdatesBtn');
+  if(_ub)_ub.style.display=updatesData.enabled?'block':'none';
+  if(_nb)_nb.style.display=updatesData.enabled?'inline-block':'none';
   loadStore();
   renderStream();
   loadStaff();

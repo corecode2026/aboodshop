@@ -5397,25 +5397,25 @@ async function submitAdmin() {
 
   if (!user || !pass) { setEl('aErr', '❌ أدخل البيانات'); return; }
 
-  // جيب كلمة السر من Firebase مباشرة
+  // تسجيل دخول المدير عبر الـ Worker
   try {
-    const res = await fetch(`${W}/api/admin/settings`, {
-      headers: { 'x-admin-session': adminSession }
+    const loginRes = await fetch(`${W}/api/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass })
     });
-    const s = await res.json();
-    const correctUser = s.adminUser || 'admin';
-    const correctPass = s.adminPass || 'admin';
-
-    if (user === correctUser && pass === correctPass) {
-      // مدير
+    const loginD = await loginRes.json();
+    if (loginD.success && loginD.token) {
+      adminSession = loginD.token;
       adminIn = true; isStaffMode = false; currentStaff = null;
       sessionStorage.setItem('adminIn', '1');
-
+      sessionStorage.setItem('adminSession', loginD.token);
       sessionStorage.removeItem('staffIn');
       const am = document.getElementById('adminModal');
       if (am) am.style.display = 'none';
       closeModal('adminModal');
       goTo('admin', null);
+      loadStaff();
       logActivity('تسجيل دخول', 'دخل كمدير');
       showToast('أهلاً بك في الإدارة 🛡️');
       return;

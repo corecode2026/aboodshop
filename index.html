@@ -6576,7 +6576,7 @@ async function init() {
   if(_nb)_nb.style.display=updatesData.enabled?'inline-block':'none';
   loadStore();
   renderStream();
-  loadStaff();
+  if(adminIn) loadStaff();
   loadRules();
 
   // ارجع للإدارة إذا كان مسجل دخول

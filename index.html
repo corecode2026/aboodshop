@@ -1426,7 +1426,7 @@ body.ready .page.on { opacity:1; }
 
   </div>
 </nav>
-<div id="updatesBtn" style="display:none;position:sticky;top:62px;z-index:8999;padding:0 200px;">
+<div id="updatesBtn" style="display:none;position:sticky;top:62px;z-index:8999;padding:0;">
   <button onclick="goTo('updates',null)" style="width:100%;background:#FF7000;color:#fff;border:none;padding:4px 0;font-size:12px;line-height:1;font-weight:800;cursor:pointer;font-family:Cairo,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;animation:orangePulse 1.5s infinite;">
     🆕 &nbsp; تحديثات جديدة — اضغط هنا!
   </button>
@@ -6413,14 +6413,15 @@ async function renderUpdatesPage() {
     return;
   }
   el.innerHTML = updatesData.items.map(u => `
-    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden;">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--kick),transparent);"></div>
-      <div style="display:flex;align-items:flex-start;gap:12px;">
-        <div style="font-size:28px;flex-shrink:0;">${u.emoji||'🆕'}</div>
+    <div style="background:rgba(255,120,0,.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,120,0,.3);border-radius:var(--radius-lg);padding:24px;position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(255,100,0,.15);">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#FF6000,#FF8C00,transparent);"></div>
+      <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at top right,rgba(255,120,0,.08),transparent 60%);pointer-events:none;"></div>
+      <div style="display:flex;align-items:flex-start;gap:16px;position:relative;">
+        <div style="font-size:36px;flex-shrink:0;filter:drop-shadow(0 0 8px rgba(255,120,0,.6));">${u.emoji||'🆕'}</div>
         <div style="flex:1;">
-          <div style="font-size:15px;font-weight:800;margin-bottom:6px;">${u.title}</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.7;">${u.desc||''}</div>
-          <div style="font-size:11px;color:var(--muted2);margin-top:8px;">${u.date||''}</div>
+          <div style="font-size:18px;font-weight:900;margin-bottom:8px;color:#FF8C00;text-shadow:0 0 20px rgba(255,140,0,.4);">${u.title}</div>
+          <div style="font-size:14px;color:var(--text2);line-height:1.8;">${u.desc||''}</div>
+          <div style="font-size:12px;color:rgba(255,140,0,.6);margin-top:10px;font-weight:600;">${u.date||''}</div>
         </div>
       </div>
     </div>

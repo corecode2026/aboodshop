@@ -6470,7 +6470,19 @@ function renderUpdatesAdmin() {
         '<button onclick="removeUpdate('+i+')" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;">✕</button>' +
       '</div>' +
       '<textarea data-idx="'+i+'" data-field="desc" oninput="updateItem(this)" class="pf-input" rows="2" style="resize:vertical;" placeholder="وصف التحديث...">'+(u.desc||'')+'</textarea>' +
-      '<input value="'+(u.date||'')+'" data-idx="'+i+'" data-field="date" oninput="updateItem(this)" class="pf-input" placeholder="التاريخ" style="font-size:12px;"/>' +
+      '<input value="'+(u.date||'')+'" data-idx="'+i+'" data-field="date" oninput="updateItem(this)" class="pf-input" placeholder="التاريخ" style="font-size:12px;"/>'+
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:4px;margin-top:4px;">الصفحة عند الضغط</div>'+
+      '<select data-idx="'+i+'" data-field="link" onchange="updateItem(this)" class="pf-input" style="font-size:12px;">'+
+        '<option value="" '+(!u.link?'selected':'')+'>بدون رابط</option>'+
+        '<option value="store" '+(u.link==="store"?'selected':'')+'>🛍️ المتجر</option>'+
+        '<option value="market" '+(u.link==="market"?'selected':'')+'>🛒 السوق</option>'+
+        '<option value="tournaments" '+(u.link==="tournaments"?'selected':'')+'>🏆 البطولات</option>'+
+        '<option value="daily" '+(u.link==="daily"?'selected':'')+'>📅 التسجيل اليومي</option>'+
+        '<option value="points" '+(u.link==="points"?'selected':'')+'>⭐ النقاط</option>'+
+        '<option value="profile" '+(u.link==="profile"?'selected':'')+'>👤 ملفي</option>'+
+        '<option value="rules" '+(u.link==="rules"?'selected':'')+'>📋 القوانين</option>'+
+        '<option value="about" '+(u.link==="about"?'selected':'')+'>ℹ️ من أنا</option>'+
+      '</select>'+
     '</div>'
   ).join('');
   // أظهر حالة الـ checkbox

@@ -4313,7 +4313,7 @@ async function submitStaffLogin() {
       currentStaff = { username:d.username, name:d.username, roleTitle:d.roleTitle, perms:d.perms };
       isStaffMode = true;
       adminIn = true;
-      sessionStorage.setItem('staffIn', JSON.stringify(currentStaff));
+      sessionStorage.setItem('staffIn', JSON.stringify({...currentStaff, token: d.sessionToken}));
       closeModal('staffLoginModal');
       const sm=document.getElementById('staffLoginModal');if(sm)sm.style.display='none';
       goTo('admin',null);
@@ -5387,7 +5387,7 @@ async function submitAdmin() {
       const s = d.staff;
       isStaffMode = true; adminIn = true;
       currentStaff = { id: s.id, username: s.username, name: s.name || s.username, roleTitle: s.roleTitle || 'موظف', perms: s.perms || [] };
-      sessionStorage.setItem('staffIn', JSON.stringify(currentStaff));
+      sessionStorage.setItem('staffIn', JSON.stringify({...currentStaff, token: d.sessionToken}));
       sessionStorage.removeItem('adminIn');
       const am = document.getElementById('adminModal');
       if (am) am.style.display = 'none';
@@ -6526,9 +6526,21 @@ async function init() {
   // ارجع للإدارة إذا كان مسجل دخول
   if (sessionStorage.getItem('staffIn')) {
     const s=JSON.parse(sessionStorage.getItem('staffIn'));
-    currentStaff=s; isStaffMode=true; adminIn=true;
-    goTo('admin',null);
-    applyStaffPermissions(s.perms||[]);
+    // تحقق من الـ token مع الـ Worker
+    if (!s.token) { sessionStorage.removeItem('staffIn'); }
+    else {
+      const verifyRes = await fetch(`${W}/api/staff/verify`, {
+        headers: { 'x-staff-token': s.token }
+      }).catch(()=>null);
+      const verifyD = verifyRes ? await verifyRes.json().catch(()=>({})) : {};
+      if (!verifyD.valid) {
+        sessionStorage.removeItem('staffIn');
+      } else {
+        currentStaff=s; isStaffMode=true; adminIn=true;
+        goTo('admin',null);
+        applyStaffPermissions(s.perms||[]);
+      }
+    }
   } else if (sessionStorage.getItem('adminIn') === '1') {
     adminIn = true;
     goTo('admin', null);

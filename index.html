@@ -3415,8 +3415,9 @@ async function markDone(id) {
   loadOrders(); loadDashboard(); showToast('✅ تم');
 }
 async function delOrder(id) {
-  await fetch(`${W}/api/admin/orders/${id}`);
-  loadOrders(); loadDashboard(); showToast('تم الحذف');
+  if(!confirm("حذف الطلب؟")) return;
+  await fetch(`${W}/api/admin/orders/${id}`, {method:"DELETE"});
+  loadOrders(); loadDashboard(); showToast("تم الحذف");
 }
 
 // PRODUCTS ADMIN

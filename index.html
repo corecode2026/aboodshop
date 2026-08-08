@@ -3370,8 +3370,8 @@ function aTab(tab, btn) {
 
 async function loadDashboard() {
   try {
-    const { orders } = await (await fetch(`${W}/api/admin/orders`)).json();
-    const { users } = await (await fetch(`${W}/api/admin/users`)).json();
+    const { orders } = await (await fetch(`${W}/api/admin/orders`, {headers:{'x-admin-session':adminSession}})).json();
+    const { users } = await (await fetch(`${W}/api/admin/users`, {headers:{'x-admin-session':adminSession}})).json();
     const pending = orders.filter(o=>o.status==='pending').length;
     setEl('st-total',orders.length); setEl('st-pending',pending); setEl('st-done',orders.filter(o=>o.status==='done').length); setEl('st-users',users.length);
     const pb = document.getElementById('pendingBadge'); if(pb){pb.textContent=pending; pending?pb.classList.remove('hidden'):pb.classList.add('hidden');}

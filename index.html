@@ -1499,9 +1499,9 @@ body.ready .page.on { opacity:1; }
     </div>
   </div>
   <div class="stats">
-    <div class="stat"><div class="stat-n">50</div><div class="stat-l">نقطة كل ساعة</div></div>
-    <div class="stat"><div class="stat-n">100</div><div class="stat-l">نقطة ترحيبية</div></div>
-    <div class="stat"><div class="stat-n">∞</div><div class="stat-l">جوائز للاستبدال</div></div>
+    <div class="stat"><div class="stat-n" id="statHourlyPts">50</div><div class="stat-l">نقطة كل ساعة</div></div>
+    <div class="stat"><div class="stat-n" id="statWelcomePts">100</div><div class="stat-l">نقطة ترحيبية</div></div>
+    <div class="stat"><div class="stat-n" id="statGifts">∞</div><div class="stat-l">جوائز للاستبدال</div></div>
   </div>
   <div class="feats">
     <div class="feat"><div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--kick)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="feat-title">نقاط الولاء</div><div class="feat-desc">شاهد البث وتفاعل واكسب نقاط تلقائياً</div></div>
@@ -1919,6 +1919,19 @@ body.ready .page.on { opacity:1; }
         </div>
 
 
+        <div class="settings-box" style="margin-bottom:12px;">
+          <div class="settings-box-title">📊 إحصائيات الصفحة الرئيسية</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:5px;">نقطة كل ساعة</div>
+              <input class="pf-input" id="cfg-hourly" type="number" value="50" dir="ltr"/>
+            </div>
+            <div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:5px;">نقطة ترحيبية</div>
+              <input class="pf-input" id="cfg-welcome" type="number" value="100" dir="ltr"/>
+            </div>
+          </div>
+        </div>
         <button class="btn btn-kick" onclick="savePtsCfg()">💾 حفظ إعدادات النقاط</button>
 
 
@@ -2793,6 +2806,10 @@ async function loadAllSettings() {
     if (s.levels && Array.isArray(s.levels) && s.levels.length > 0) { levelsConfig = s.levels; }
     if (s.wheel) { try {   } catch(e){} }
     if (s.updates) { updatesData = { enabled: false, items: [], ...s.updates }; }
+    if (s.hourlyPts) { const e=document.getElementById('statHourlyPts'); if(e) e.textContent=s.hourlyPts; if(document.getElementById('cfg-hourly')) document.getElementById('cfg-hourly').value=s.hourlyPts; }
+    if (s.welcomePts) { const e=document.getElementById('statWelcomePts'); if(e) e.textContent=s.welcomePts; if(document.getElementById('cfg-welcome')) document.getElementById('cfg-welcome').value=s.welcomePts; }
+    const giftCount = (window._prods||[]).filter(p=>p.active!==false).length;
+    const sg=document.getElementById('statGifts'); if(sg) sg.textContent=giftCount||'∞';
 
     renderStream();
     applyHeroSettings(s);
@@ -3714,7 +3731,12 @@ async function savePtsCfg() {
 
   ptsCfg={welcome:+gv('pc-welcome'),msg:+gv('pc-msg'),hour:+gv('pc-hour'),sub:+gv('pc-sub'),follow:+gv('pc-follow'),cooldown:+gv('pc-cooldown'),maxHr:+gv('pc-maxhr'),goal:+gv('pc-goal')};
   try {
-    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ptsCfg, dailyPts, levels:levelsConfig})});
+    const hourlyPts = Number(document.getElementById('cfg-hourly')?.value)||50;
+    const welcomePts = Number(document.getElementById('cfg-welcome')?.value)||100;
+    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ptsCfg, dailyPts, levels:levelsConfig, hourlyPts, welcomePts})});
+    // حدّث الواجهة
+    const sh=document.getElementById('statHourlyPts'); if(sh) sh.textContent=hourlyPts;
+    const sw=document.getElementById('statWelcomePts'); if(sw) sw.textContent=welcomePts;
     // حدّث الـ cache
     try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyPts=dailyPts; c.ptsCfg=ptsCfg; c.levels=levelsConfig; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
     dailyConfig = dailyPts;

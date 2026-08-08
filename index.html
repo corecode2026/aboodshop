@@ -3619,6 +3619,7 @@ function openStaffModal(id) {
 function selPerms(v){['orders','products','users','chats','staff','settings'].forEach(p=>{const el=document.getElementById('perm-'+p);if(el)el.checked=v;});}
 
 async function loadStaff() {
+  if (!adminSession) adminSession = sessionStorage.getItem('adminSession') || '';
   try {
     const res = await fetch(`${W}/api/admin/staff`);
     const d = await res.json();
@@ -4271,6 +4272,7 @@ document.body.classList.add('ready');
 
 // ══ ACTIVITY LOG ══
 async function logActivity(action, details='') {
+  if (!adminSession) adminSession = sessionStorage.getItem('adminSession') || '';
   const isRealAdmin = adminIn && !currentUser;
   const role = isStaffMode ? 'موظف' : isRealAdmin ? 'المدير' : currentUser ? 'عضو' : 'زائر';
   const who = isStaffMode ? (currentStaff?.name||'موظف') : isRealAdmin ? 'المدير' : (currentUser?.username||'زائر');

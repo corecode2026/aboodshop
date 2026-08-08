@@ -6421,6 +6421,12 @@ async function loadDms() {
     const res = await fetch(`${W}/api/dm/users?token=${sessionToken}`);
     const d = await res.json();
     dmAllUsers = d.users || [];
+    // رتب المثبت أول
+    const pinned = window._pinnedDm || localStorage.getItem('pinnedDm') || '';
+    window._pinnedDm = pinned;
+    if (pinned) {
+      dmAllUsers.sort((a,b) => a.username===pinned ? -1 : b.username===pinned ? 1 : 0);
+    }
     renderDmList(dmAllUsers);
   } catch(e) {  }
 }

@@ -3076,6 +3076,17 @@ async function loadAuctionInStore(initial=false) {
       const cntEl = document.getElementById('auc-cnt-'+a.id);
       if(cntEl) cntEl.textContent = a.bids?.length||0;
 
+      // حدّث اسم المزايد الأعلى
+      const bidderEl = document.getElementById('auc-bidder-'+a.id);
+      if(bidderEl) {
+        if(topBidder) {
+          bidderEl.innerHTML = '🏆 آخر مزايدة: <strong style="color:var(--kick);font-size:14px;">' + topBidder.username + '</strong>';
+          bidderEl.style.display = 'block';
+        } else {
+          bidderEl.style.display = 'none';
+        }
+      }
+
       // حدّث مزايدتي
       const myEl = document.getElementById('auc-my-'+a.id);
       if(myEl) {
@@ -5265,7 +5276,7 @@ async function finalizeAuction(id) {
 async function deleteAuction(id) {
   if(!confirm('حذف المزاد؟')) return;
   try {
-    await fetch(`${W}/api/admin/auctions/${id}`);
+    await fetch(`${W}/api/admin/auctions/${id}`, {method:"DELETE"});
     showToast('تم الحذف'); loadAuctionAdmin();
   } catch(e) {}
 }

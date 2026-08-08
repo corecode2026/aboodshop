@@ -3529,7 +3529,7 @@ async function delProd(id){
 async function loadUsers() {
   console.log("loadUsers called");
   try {
-    const { users } = await (await fetch(`${W}/api/admin/users`)).json();
+    const { users } = await (await fetch(`${W}/api/admin/users`, {headers:{'x-admin-session':adminSession}})).json();
     allUsers = users;
     const countEl = document.getElementById('usersCount');
     if(countEl) countEl.textContent = `(${users.length})`;

@@ -6899,8 +6899,7 @@ async function loadPinnedMsg() {
 
 // ══ DM EXTRAS ══
 // تثبيت محادثة
-function togglePinDm(username) {
-  console.log('pin:', username, 'current:', window._pinnedDm);
+async function togglePinDm(username) {
   if (window._pinnedDm === username) {
     window._pinnedDm = '';
     localStorage.removeItem('pinnedDm');
@@ -6910,13 +6909,8 @@ function togglePinDm(username) {
     localStorage.setItem('pinnedDm', username);
     showToast('📌 تم تثبيت المحادثة');
   }
-  // رتب القائمة - المثبت أولاً
-  const sorted = [...dmAllUsers].sort((a,b) => {
-    if (a.username === window._pinnedDm) return -1;
-    if (b.username === window._pinnedDm) return 1;
-    return 0;
-  });
-  renderDmList(sorted);
+  // أعد تحميل القائمة من الـ API
+  await loadDms();
 }
 
 // حذف محادثة DM

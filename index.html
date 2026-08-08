@@ -2536,7 +2536,7 @@ const ADMIN_KEY='';
   window.fetch = function(url, opts) {
     opts = opts ? Object.assign({}, opts) : {};
     const urlStr = typeof url === 'string' ? url : (url.url || '');
-    if (urlStr.includes('/api/admin/') || urlStr.includes('/api/staff/')) {
+    if (urlStr.includes('/api/admin/') || urlStr.includes('/api/staff/') || urlStr.includes('/api/settings') || urlStr.includes('/api/socials')) {
       const s = sessionStorage.getItem('adminSession') || '';
       if (s) {
         opts.headers = Object.assign({'x-admin-session': s}, opts.headers || {});

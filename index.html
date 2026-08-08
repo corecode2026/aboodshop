@@ -3626,7 +3626,7 @@ function selPerms(v){['orders','products','users','chats','staff','settings'].fo
 async function loadStaff() {
   if (!adminSession) adminSession = sessionStorage.getItem('adminSession') || '';
   try {
-    const res = await fetch(`${W}/api/admin/staff`);
+    const res = await fetch(`${W}/api/admin/staff`, {headers:{'x-admin-session':adminSession}});
     const d = await res.json();
     if(d.staff) staff = d.staff;
   } catch(e){}
@@ -4282,9 +4282,9 @@ async function logActivity(action, details='') {
   const role = isStaffMode ? 'موظف' : isRealAdmin ? 'المدير' : currentUser ? 'عضو' : 'زائر';
   const who = isStaffMode ? (currentStaff?.name||'موظف') : isRealAdmin ? 'المدير' : (currentUser?.username||'زائر');
   try {
-    await fetch(`${W}/api/admin/log`, {'x-admin-session':adminSession, 
+    await fetch(`${W}/api/admin/log`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-admin-session': adminSession || sessionStorage.getItem('adminSession') || '' },
       body: JSON.stringify({ staffName: who, role, action, details, time: new Date().toISOString() })
     });
   } catch(e) {}

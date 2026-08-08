@@ -1777,7 +1777,10 @@ body.ready .page.on { opacity:1; }
         <div class="settings-box">
           <div class="settings-box-title" style="display:flex;justify-content:space-between;">
             <span>سجل النشاط المشبوه</span>
-            <button onclick="loadSecurityLogs()" style="background:var(--kick-dim);color:var(--kick);border:none;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif;">تحديث</button>
+            <div style="display:flex;gap:6px;">
+              <button onclick="loadSecurityLogs()" style="background:var(--kick-dim);color:var(--kick);border:none;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif;">تحديث</button>
+              <button onclick="clearSecurityLogs()" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.3);padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif;">🗑 حذف الكل</button>
+            </div>
           </div>
           <div id="securityLogsList"></div>
         </div>
@@ -6762,6 +6765,22 @@ setInterval(async function() {
 }, 300000); // كل 5 دقائق
 
 
+async function clearSecurityLogs() {
+  if (!confirm('حذف كل سجلات النشاط المشبوه؟')) return;
+  try {
+    await fetch(`${W}/api/admin/security/clear`, { method: 'POST' });
+    showToast('✅ تم حذف السجلات');
+    loadSecurityLogs();
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+async function deleteSecurityLog(idx) {
+  try {
+    await fetch(`${W}/api/admin/security/${idx}`, { method: 'DELETE' });
+    loadSecurityLogs();
+  } catch(e) { showToast('خطأ','err'); }
+}
+
 async function loadSecurityLogs() {
   const el = document.getElementById('securityLogsList');
   if (!el) return;
@@ -6769,13 +6788,14 @@ async function loadSecurityLogs() {
     const res = await fetch(`${W}/api/admin/security`);
     const { logs } = await res.json();
     if (!logs?.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">لا يوجد نشاط مشبوه ✅</p>'; return; }
-    el.innerHTML = logs.map(l => `
+    el.innerHTML = logs.map((l,i) => `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);">
         <div>
           <div style="font-size:13px;font-weight:700;color:var(--red);">🚨 ${l.action||'نشاط مشبوه'}</div>
           <div style="font-size:11px;color:var(--muted);">IP: ${l.ip} · ${fmtDate(l.time)}</div>
         </div>
         <div style="display:flex;gap:6px;">
+          <button onclick="deleteSecurityLog(${i})" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑</button>
           <button onclick="manualBan('${l.ip}')" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">🚫 حظر</button>
           <button onclick="unbanIpDirect('${l.ip}')" style="background:var(--kick-dim);color:var(--kick);border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">✅ رفع</button>
         </div>

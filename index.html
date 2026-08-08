@@ -6405,6 +6405,7 @@ function showNewDmSearch() {
 }
 
 async function loadDms() {
+  window._pinnedDm = localStorage.getItem('pinnedDm') || '';
   if (!currentUser) {
     document.getElementById('dmsList').style.display = 'none';
     document.getElementById('dmChat').style.display = 'none';
@@ -6906,7 +6907,13 @@ function togglePinDm(username) {
     localStorage.setItem('pinnedDm', username);
     showToast('📌 تم تثبيت المحادثة');
   }
-  renderDmList(dmAllUsers);
+  // رتب القائمة - المثبت أولاً
+  const sorted = [...dmAllUsers].sort((a,b) => {
+    if (a.username === window._pinnedDm) return -1;
+    if (b.username === window._pinnedDm) return 1;
+    return 0;
+  });
+  renderDmList(sorted);
 }
 
 // حذف محادثة DM

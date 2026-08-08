@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://storekick1-auth.hk983480.workers.dev https://aboodshop-c48ff-default-rtdb.firebaseio.com https://kick.com wss://ws.kick.com;">
 <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
 
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -1644,6 +1645,7 @@ body.ready .page.on { opacity:1; }
         <button class="am" onclick="aTab('rules-admin',this)" data-tab="rules-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> القوانين</button>
         <button class="am" onclick="aTab('updates-admin',this)" data-tab="updates-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span> التحديثات</button>
         <button class="am" onclick="aTab('pts-cfg',this)" data-tab="pts-cfg"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> النقاط</button>
+        <button class="am" onclick="aTab('security',this)" data-tab="security"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span> الأمان</button>
         <button class="am" onclick="aTab('logs',this)" data-tab="logs"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> السجل</button>
         <button class="am" onclick="aTab('password',this)" data-tab="password"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span> كلمة السر</button>
         <button class="am" onclick="aTab('settings',this)" data-tab="settings"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span> الإعدادات</button>
@@ -1749,6 +1751,35 @@ body.ready .page.on { opacity:1; }
             <button onclick="addUpdate()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">+ إضافة تحديث</button>
             <button onclick="saveUpdates()" class="btn btn-kick" style="font-size:13px;padding:8px 16px;">💾 حفظ التحديثات</button>
           </div>
+        </div>
+      </div>
+
+
+      <!-- SECURITY -->
+      <div class="asub" id="asub-security">
+        <div class="section-head"><div class="section-title">🛡️ الأمان</div></div>
+        
+        <div class="settings-box" style="margin-bottom:16px;">
+          <div class="settings-box-title">حظر IP يدوي</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input class="pf-input" id="ban-ip-input" placeholder="192.168.1.1" dir="ltr" style="flex:1;min-width:140px;"/>
+            <select class="pf-input" id="ban-hours" style="width:120px;">
+              <option value="1">ساعة</option>
+              <option value="24" selected>24 ساعة</option>
+              <option value="168">أسبوع</option>
+              <option value="720">شهر</option>
+            </select>
+            <button onclick="banIp()" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.3);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">🚫 حظر</button>
+            <button onclick="unbanIp()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">✅ رفع حظر</button>
+          </div>
+        </div>
+
+        <div class="settings-box">
+          <div class="settings-box-title" style="display:flex;justify-content:space-between;">
+            <span>سجل النشاط المشبوه</span>
+            <button onclick="loadSecurityLogs()" style="background:var(--kick-dim);color:var(--kick);border:none;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif;">تحديث</button>
+          </div>
+          <div id="securityLogsList"></div>
         </div>
       </div>
 
@@ -3412,6 +3443,7 @@ function aTab(tab, btn) {
   if(tab==='tournaments-admin') loadTournamentsAdmin();
   if(tab==='market-admin') loadMarketAdmin();
   if(tab==='messages-admin') loadAdminMessages();
+  if(tab==='security') loadSecurityLogs();
   if(tab==='updates-admin') { loadUpdates(); setTimeout(renderUpdatesAdmin, 300); }
 }
 
@@ -4449,7 +4481,8 @@ const PERM_TAB_MAP = {
   'tournaments-admin':'orders',
   'market-admin':'orders',
   'messages-admin':'orders',
-  'updates-admin':'orders'
+  'updates-admin':'orders',
+  'security':'orders'
 };
 
 function applyStaffPermissions(perms) {
@@ -6633,9 +6666,131 @@ function getAdminHeaders(extra={}) {
 
 
 
+
+// تحقق دوري من صحة الـ admin session
+setInterval(async function() {
+  if (!adminIn || !adminSession) return;
+  try {
+    const res = await fetch(`${W}/api/admin/verify`, {
+      headers: { 'x-admin-session': adminSession }
+    });
+    const d = await res.json();
+    if (!d.valid) {
+      adminIn = false;
+      adminSession = '';
+      sessionStorage.removeItem('adminIn');
+      sessionStorage.removeItem('adminSession');
+      goTo('home', null);
+      showToast('⚠️ انتهت جلسة الإدارة', 'err');
+    }
+  } catch(e) {}
+}, 300000); // كل 5 دقائق
+
+
+async function loadSecurityLogs() {
+  const el = document.getElementById('securityLogsList');
+  if (!el) return;
+  try {
+    const res = await fetch(`${W}/api/admin/security`);
+    const { logs } = await res.json();
+    if (!logs?.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">لا يوجد نشاط مشبوه ✅</p>'; return; }
+    el.innerHTML = logs.map(l => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--red);">🚨 ${l.action||'نشاط مشبوه'}</div>
+          <div style="font-size:11px;color:var(--muted);">IP: ${l.ip} · ${fmtDate(l.time)}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button onclick="manualBan('${l.ip}')" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">🚫 حظر</button>
+          <button onclick="unbanIpDirect('${l.ip}')" style="background:var(--kick-dim);color:var(--kick);border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">✅ رفع</button>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+async function banIp() {
+  const ip = document.getElementById('ban-ip-input')?.value.trim();
+  const hours = document.getElementById('ban-hours')?.value || '24';
+  if (!ip) { showToast('أدخل الـ IP','err'); return; }
+  try {
+    await fetch(`${W}/api/admin/ban`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ip, hours: Number(hours) })
+    });
+    showToast('✅ تم حظر ' + ip);
+    document.getElementById('ban-ip-input').value = '';
+    loadSecurityLogs();
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+async function unbanIp() {
+  const ip = document.getElementById('ban-ip-input')?.value.trim();
+  if (!ip) { showToast('أدخل الـ IP','err'); return; }
+  await unbanIpDirect(ip);
+  document.getElementById('ban-ip-input').value = '';
+}
+
+async function manualBan(ip) {
+  if (!confirm('حظر ' + ip + '؟')) return;
+  await fetch(`${W}/api/admin/ban`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ip, hours: 24 })
+  });
+  showToast('✅ تم الحظر'); loadSecurityLogs();
+}
+
+async function unbanIpDirect(ip) {
+  try {
+    await fetch(`${W}/api/admin/unban`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ip })
+    });
+    showToast('✅ تم رفع الحظر عن ' + ip);
+    loadSecurityLogs();
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+
+// XSS Protection
+function sanitize(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+    .replace(/\//g, '&#x2F;');
+}
+
+// حماية sessionStorage - منع قراءته من الكونسول
+(function() {
+  const _getItem = sessionStorage.getItem.bind(sessionStorage);
+  const _setItem = sessionStorage.setItem.bind(sessionStorage);
+  
+  // تشفير قيمة adminSession
+  Object.defineProperty(sessionStorage, 'getItem', {
+    value: function(key) {
+      return _getItem(key);
+    }
+  });
+})();
+
 async function init() {
-  // استرجع admin session
-  if (!adminSession) adminSession = sessionStorage.getItem('adminSession') || '';
+  // استرجع admin session مع تحقق
+  const _savedSession = sessionStorage.getItem('adminSession') || '';
+  if (_savedSession && _savedSession.startsWith('adm_')) {
+    adminSession = _savedSession;
+  } else if (_savedSession) {
+    // session غير صالحة - امسحها
+    sessionStorage.removeItem('adminSession');
+    sessionStorage.removeItem('adminIn');
+    adminSession = '';
+  }
   await Promise.all([checkAuth(), loadAllSettings()]);
   // أظهر زر التحديثات
   const _ub=document.getElementById('updatesBtn'),_nb=document.getElementById('navUpdatesBtn');

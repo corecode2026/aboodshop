@@ -1444,7 +1444,7 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('points',this)">النقاط</button>
     <button class="nl" onclick="goTo('tournaments',this)">البطولات</button>
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
-    <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn">💬 رسائل</button>
+    <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn" style="position:relative;">💬 رسائل<span id="dmsBadge" style="display:none;position:absolute;top:2px;left:2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;min-width:14px;text-align:center;"></span></button>
     <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
     <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);font-weight:800;">🆕 تحديثات</button>
   </div>
@@ -2551,7 +2551,14 @@ body.ready .page.on { opacity:1; }
       <button class="chat-box-close" onclick="toggleChat()">✕</button>
     </div>
     <div class="chat-name-row" id="chatNameRow" style="display:none;"></div>
-    <div class="chat-msgs" id="chatMsgs">
+    <div id="pinnedMsgBox" style="display:none;background:rgba(83,252,24,.06);border:1px solid rgba(83,252,24,.2);border-radius:10px;padding:12px 16px;margin-bottom:10px;position:relative;">
+  <div style="font-size:10px;color:var(--kick);font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+    📌 رسالة مثبتة
+  </div>
+  <div id="pinnedMsgSender" style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px;"></div>
+  <div id="pinnedMsgText" style="font-size:13px;color:var(--text2);line-height:1.6;"></div>
+</div>
+<div class="chat-msgs" id="chatMsgs">
       <div class="cmsg support">أهلاً! كيف أقدر أساعدك؟ 👋</div>
     </div>
     <div class="chat-inp-row">
@@ -3840,7 +3847,7 @@ async function renderAdminChats(){
       +'<div class="chat-item-name">'+n+(unread?'<span class="chat-unread"></span>':'')+'</div>'
       +'<div class="chat-item-prev">'+(last?(last.text||'').substring(0,25):'')+'</div>'
       +'</div>'
-      +'<button onclick="deleteChat(\''+n+'\')" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:4px 7px;border-radius:5px;font-size:11px;cursor:pointer;flex-shrink:0;">🗑</button>'
+      +'<button onclick="deleteDmConv(\''+n+'\')" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:4px 7px;border-radius:5px;font-size:11px;cursor:pointer;flex-shrink:0;">🗑</button>'
       +'</div>';
   }).join('');
 }
@@ -3855,6 +3862,7 @@ function selChat(n){
     ${msgs.map((m,i)=>`<div style="display:flex;align-items:flex-end;gap:6px;${m.from==='admin'?'flex-direction:row-reverse':''}">
       <div class="cvm ${m.from==='admin'?'admin':'user'}" style="position:relative;group:true">${m.text}</div>
       <button onclick="deleteChatMsg('${n}',${i})" style="background:rgba(255,64,64,.1);color:var(--red);border:none;width:20px;height:20px;border-radius:50%;font-size:10px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;opacity:.6;" title="حذف">✕</button>
+      <button onclick="pinMessage('${n}','${m.text}','${n}')" style="background:rgba(83,252,24,.1);color:var(--kick);border:none;width:20px;height:20px;border-radius:50%;font-size:10px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;opacity:.6;" title="تثبيت">📌</button>
     </div>`).join('')}
   </div>
   <div class="chat-view-input">
@@ -6367,6 +6375,7 @@ async function markAllRead() {
 let dmCurrentUser = null;
 let dmInterval = null;
 let dmAllUsers = [];
+window._pinnedDm = localStorage.getItem('pinnedDm') || '';
 
 function backToDmList() {
   dmCurrentUser = null;
@@ -6781,6 +6790,124 @@ function sanitize(str) {
   });
 })();
 
+
+// ══ PINNED MESSAGE ══
+async function pinMessage(sender, text, username) {
+  try {
+    await fetch(`${W}/api/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pinnedMsg: { sender, text, username, time: new Date().toISOString() } })
+    });
+    showToast('📌 تم تثبيت الرسالة');
+    loadPinnedMsg();
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+async function unpinMessage() {
+  try {
+    await fetch(`${W}/api/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pinnedMsg: null })
+    });
+    showToast('تم إلغاء التثبيت');
+    const box = document.getElementById('pinnedMsgBox');
+    if (box) box.style.display = 'none';
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+async function loadPinnedMsg() {
+  try {
+    const res = await fetch(`${W}/api/settings`);
+    const s = await res.json();
+    const box = document.getElementById('pinnedMsgBox');
+    if (!box) return;
+    if (s.pinnedMsg && s.pinnedMsg.text) {
+      box.style.display = 'block';
+      const senderEl = document.getElementById('pinnedMsgSender');
+      const textEl = document.getElementById('pinnedMsgText');
+      if (senderEl) senderEl.textContent = '@' + s.pinnedMsg.sender;
+      if (textEl) textEl.textContent = s.pinnedMsg.text;
+      // زر إلغاء للإدارة
+      if (adminIn && !document.getElementById('unpinBtn')) {
+        const btn = document.createElement('button');
+        btn.id = 'unpinBtn';
+        btn.onclick = unpinMessage;
+        btn.textContent = '✕';
+        btn.style.cssText = 'position:absolute;top:8px;left:8px;background:rgba(255,59,92,.2);color:var(--red);border:none;width:20px;height:20px;border-radius:50%;font-size:11px;cursor:pointer;';
+        box.appendChild(btn);
+      }
+    } else {
+      box.style.display = 'none';
+    }
+  } catch(e) {}
+}
+
+
+// ══ DM EXTRAS ══
+// تثبيت محادثة
+function togglePinDm(username) {
+  if (window._pinnedDm === username) {
+    window._pinnedDm = '';
+    localStorage.removeItem('pinnedDm');
+    showToast('تم إلغاء التثبيت');
+  } else {
+    window._pinnedDm = username;
+    localStorage.setItem('pinnedDm', username);
+    showToast('📌 تم تثبيت المحادثة');
+  }
+  renderDmList(dmAllUsers);
+}
+
+// حذف محادثة DM
+async function deleteDmConv(username) {
+  if (!confirm('حذف محادثة ' + username + '؟')) return;
+  try {
+    await fetch(`${W}/api/dm/${username}/delete-conv`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: sessionToken })
+    });
+    dmAllUsers = dmAllUsers.filter(u => u.username !== username);
+    if (dmCurrentUser?.username === username) {
+      dmCurrentUser = null;
+      document.getElementById('dmMessages').innerHTML = '';
+      document.getElementById('dmChatHeader').innerHTML = '<div style="font-size:13px;color:var(--muted);">اختر محادثة للبدء</div>';
+      document.getElementById('dmInputArea').style.display = 'none';
+      if (dmInterval) { clearInterval(dmInterval); dmInterval = null; }
+    }
+    renderDmList(dmAllUsers);
+    showToast('تم الحذف');
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+// إشعار رسائل جديدة
+async function checkDmNotifications() {
+  if (!currentUser || !sessionToken) return;
+  try {
+    const res = await fetch(`${W}/api/dm/users?token=${sessionToken}`);
+    const d = await res.json();
+    const users = d.users || [];
+    const totalUnread = users.reduce((s, u) => s + (u.unread||0), 0);
+    const badge = document.getElementById('dmsBadge');
+    if (badge) {
+      if (totalUnread > 0) {
+        badge.style.display = 'inline';
+        badge.textContent = totalUnread > 9 ? '9+' : totalUnread;
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+    // حدّث القائمة
+    dmAllUsers = users;
+    // رتب المثبت أولاً
+    if (window._pinnedDm) {
+      dmAllUsers.sort((a,b) => a.username===window._pinnedDm ? -1 : b.username===window._pinnedDm ? 1 : 0);
+    }
+  } catch(e) {}
+}
+
 async function init() {
   // استرجع admin session مع تحقق
   const _savedSession = sessionStorage.getItem('adminSession') || '';
@@ -6793,6 +6920,8 @@ async function init() {
     adminSession = '';
   }
   await Promise.all([checkAuth(), loadAllSettings()]);
+  loadPinnedMsg();
+  setInterval(checkDmNotifications, 30000);
   // أظهر زر التحديثات
   const _ub=document.getElementById('updatesBtn'),_nb=document.getElementById('navUpdatesBtn');
   if(_ub)_ub.style.display=updatesData.enabled?'block':'none';

@@ -6909,8 +6909,20 @@ async function togglePinDm(username) {
     localStorage.setItem('pinnedDm', username);
     showToast('📌 تم تثبيت المحادثة');
   }
-  // أعد تحميل القائمة من الـ API
-  await loadDms();
+  
+  // أضف للقائمة لو مش موجود
+  if (username && !dmAllUsers.find(u => u.username === username)) {
+    dmAllUsers.unshift({ id: dmCurrentUser?.id||'', username, avatar: dmCurrentUser?.avatar||null, lastMsg:'', unread:0 });
+  }
+  
+  // رتب وأعرض
+  const pinned = window._pinnedDm;
+  const sorted = [...dmAllUsers].sort((a,b) => {
+    if (a.username === pinned) return -1;
+    if (b.username === pinned) return 1;
+    return 0;
+  });
+  renderDmList(sorted);
 }
 
 // حذف محادثة DM

@@ -6444,8 +6444,8 @@ function renderDmList(users) {
         ${u.unread ? `<span style="background:var(--kick);color:#000;font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;">${u.unread}</span>` : ''}
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;padding:8px 8px 8px 0;">
-        <button onclick="togglePinDm('${u.username}')" title="${isPinned?'إلغاء التثبيت':'تثبيت'}" style="background:${isPinned?'var(--kick-dim)':'rgba(83,252,24,.05)'};color:var(--kick);border:none;width:28px;height:28px;border-radius:6px;font-size:12px;cursor:pointer;">📌</button>
-        <button onclick="deleteDmConv('${u.username}')" title="حذف المحادثة" style="background:rgba(255,59,92,.1);color:var(--red);border:none;width:28px;height:28px;border-radius:6px;font-size:12px;cursor:pointer;">🗑</button>
+        <button onclick="event.stopPropagation();togglePinDm('${u.username}')" title="${isPinned?'إلغاء التثبيت':'تثبيت'}" style="background:${isPinned?'var(--kick-dim)':'rgba(83,252,24,.05)'};color:var(--kick);border:none;width:28px;height:28px;border-radius:6px;font-size:12px;cursor:pointer;">📌</button>
+        <button onclick="event.stopPropagation();deleteDmConv('${u.username}')" title="حذف المحادثة" style="background:rgba(255,59,92,.1);color:var(--red);border:none;width:28px;height:28px;border-radius:6px;font-size:12px;cursor:pointer;">🗑</button>
       </div>
     </div>`;
   }).join('');

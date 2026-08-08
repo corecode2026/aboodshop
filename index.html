@@ -3338,6 +3338,7 @@ function adminLogout() {
 }
 
 function aTab(tab, btn) {
+  if (!adminSession) adminSession = sessionStorage.getItem('adminSession') || '';
   // تحقق من الصلاحيات لو موظف
   if (isStaffMode && currentStaff && currentStaff.perms) {
     const permMap = { orders:'orders', products:'products', users:'users', chats:'chats', staff:'staff', settings:'settings', 'pts-cfg':'settings', logs:'settings', 'rules-admin':'settings' };
@@ -6570,6 +6571,8 @@ function getAdminHeaders(extra={}) {
 
 
 async function init() {
+  // استرجع admin session
+  if (!adminSession) adminSession = sessionStorage.getItem('adminSession') || '';
   await Promise.all([checkAuth(), loadAllSettings()]);
   // أظهر زر التحديثات
   const _ub=document.getElementById('updatesBtn'),_nb=document.getElementById('navUpdatesBtn');

@@ -1381,6 +1381,21 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
   document.addEventListener('contextmenu', e => e.preventDefault());
 })();
 </script>
+<script>
+// Auto-inject admin session for all admin API calls
+const _origFetch = window.fetch;
+window.fetch = function(url, opts={}) {
+  const urlStr = typeof url === 'string' ? url : url.toString();
+  if (urlStr.includes('/api/admin/') || urlStr.includes('/api/user/log') || urlStr.includes('/api/staff/')) {
+    const session = window.adminSession || sessionStorage.getItem('adminSession') || '';
+    if (session) {
+      opts = { ...opts };
+      opts.headers = { 'x-admin-session': session, ...(opts.headers || {}) };
+    }
+  }
+  return _origFetch(url, opts);
+};
+</script>
 </head>
 <body>
 

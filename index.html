@@ -6483,6 +6483,7 @@ async function openDmChat(userId, username, avatar) {
   const header = document.getElementById('dmChatHeader');
   const isMobile = window.innerWidth < 600;
   const backBtn = isMobile ? '<button onclick="backToDmList()" style="background:none;border:none;color:var(--kick);font-size:22px;cursor:pointer;padding:0 6px 0 0;">‹</button>' : '';
+  const pinBtn = '<button onclick="togglePinDm(\x27'+username+'\x27)" style="margin-right:auto;background:rgba(83,252,24,.1);color:var(--kick);border:1px solid rgba(83,252,24,.2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif;">📌 تثبيت</button>';
   header.innerHTML = backBtn + `
     <div style="${avatar ? '' : 'width:36px;height:36px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;'}">
       ${avatar ? `<img src="${avatar}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;"/>` : username.charAt(0).toUpperCase()}
@@ -6490,7 +6491,7 @@ async function openDmChat(userId, username, avatar) {
     <div>
       <div style="font-size:14px;font-weight:700;">${username}</div>
     </div>
-  `;
+  ` + pinBtn;
   
   const inputArea = document.getElementById('dmInputArea');
   if(inputArea) { inputArea.style.display='flex'; inputArea.style.cssText = inputArea.style.cssText.replace('display:none','display:flex'); }

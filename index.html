@@ -1341,10 +1341,7 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 (function() {
   // رسالة تحذير
   try { console.clear(); } catch(e) {}
-  console.log('%c🚫 غير مصرح!', 'color:#FF3B5C;font-size:40px;font-weight:900;font-family:Cairo,sans-serif;');
-  console.log('%cإذا طلب منك أحد لصق كود هنا — هذا احتيال!', 'color:#fff;font-size:14px;background:#FF3B5C;padding:8px 16px;border-radius:6px;');
-  console.log('%c⚠️ أي محاولة للتلاعب ستؤدي لحظر حسابك.', 'color:#FFD700;font-size:13px;font-weight:600;');
-
+      
   // تعطيل console functions
   const noop = () => {};
   const warn = () => console.warn('%c🚫 غير مصرح بتنفيذ أوامر هنا!', 'color:#FF3B5C;font-size:16px;font-weight:800;');
@@ -1354,8 +1351,7 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
     const _eval = window.eval;
     window.eval = function(code) {
       warn();
-      console.log('%c🚫 تم منع تنفيذ الكود', 'color:#FF3B5C;font-size:14px;');
-      return undefined;
+            return undefined;
     };
     
     const _Function = window.Function;
@@ -1380,21 +1376,6 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
   // منع كليك يمين
   document.addEventListener('contextmenu', e => e.preventDefault());
 })();
-</script>
-<script>
-// Auto-inject admin session for all admin API calls
-const _origFetch = window.fetch;
-window.fetch = function(url, opts={}) {
-  const urlStr = typeof url === 'string' ? url : url.toString();
-  if (urlStr.includes('/api/admin/') || urlStr.includes('/api/user/log') || urlStr.includes('/api/staff/')) {
-    const session = window.adminSession || sessionStorage.getItem('adminSession') || '';
-    if (session) {
-      opts = { ...opts };
-      opts.headers = { 'x-admin-session': session, ...(opts.headers || {}) };
-    }
-  }
-  return _origFetch(url, opts);
-};
 </script>
 </head>
 <body>
@@ -1693,7 +1674,7 @@ body.ready .page.on { opacity:1; }
       </div>
       <!-- CHATS -->
       <div class="asub" id="asub-chats">
-        <div class="section-head"><div class="section-title">الدردشات</div></div>
+        <div class="section-head"><div class="section-title">الدردشات</div><button onclick="deleteAllChats()" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.3);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">🗑 حذف الكل</button></div>
         <div class="chat-panel">
           <div class="chat-list" id="aChatList"><div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">لا توجد محادثات</div></div>
           <div class="chat-view" id="aChatView"><div class="no-chat">اختر محادثة 👈</div></div>
@@ -2548,6 +2529,23 @@ body.ready .page.on { opacity:1; }
 // ═══════════════════════════════════════════
 const W=atob('aHR0cHM6Ly9zdG9yZWtpY2sxLWF1dGguaGs5ODM0ODAud29ya2Vycy5kZXY=');
 const ADMIN_KEY='';
+
+// Auto-inject admin session
+(function() {
+  const _orig = window.fetch;
+  window.fetch = function(url, opts) {
+    opts = opts ? Object.assign({}, opts) : {};
+    const urlStr = typeof url === 'string' ? url : (url.url || '');
+    if (urlStr.includes('/api/admin/') || urlStr.includes('/api/staff/')) {
+      const s = sessionStorage.getItem('adminSession') || '';
+      if (s) {
+        opts.headers = Object.assign({'x-admin-session': s}, opts.headers || {});
+      }
+    }
+    return _orig.call(this, url, opts);
+  };
+})();
+
 // adminSession getter - دايماً يرجع من sessionStorage
 let _adminSession = sessionStorage.getItem('adminSession') || '';
 Object.defineProperty(window, 'adminSession', {
@@ -2806,7 +2804,7 @@ async function loadAllSettings() {
     const ub=document.getElementById('updatesBtn'),nb=document.getElementById('navUpdatesBtn');
     if(ub) ub.style.display=updatesData.enabled?'block':'none';
     if(nb) nb.style.display=updatesData.enabled?'inline-block':'none';
-  } catch(e) { console.log('Settings load failed:', e.message); }
+  } catch(e) {  }
 }
 
 async function saveSettings() {
@@ -3548,8 +3546,7 @@ async function delProd(id){
 
 // USERS
 async function loadUsers() {
-  console.log("loadUsers called");
-  try {
+    try {
     const { users } = await (await fetch(`${W}/api/admin/users`, {headers:{'x-admin-session':adminSession}})).json();
     allUsers = users;
     const countEl = document.getElementById('usersCount');
@@ -6333,7 +6330,7 @@ async function loadDms() {
     const d = await res.json();
     dmAllUsers = d.users || [];
     renderDmList(dmAllUsers);
-  } catch(e) { console.log('DM users error:', e); }
+  } catch(e) {  }
 }
 
 function renderDmList(users) {

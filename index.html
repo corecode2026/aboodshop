@@ -5055,6 +5055,15 @@ function renderAuctionCard(a) {
         </div>
       </div>
 
+      <!-- اسم المزايد الأعلى -->
+      ${topBidder ? `<div id="auc-bidder-${a.id}" style="background:rgba(83,252,24,.08);border:1px solid rgba(83,252,24,.2);border-radius:10px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:18px;">🏆</span>
+        <div>
+          <div style="font-size:11px;color:var(--muted);">آخر مزايدة بـ</div>
+          <div style="font-size:16px;font-weight:900;color:var(--kick);">${topBidder.username}</div>
+        </div>
+      </div>` : `<div id="auc-bidder-${a.id}" style="display:none;"></div>`}
+
       <!-- العداد التنازلي -->
       ${!ended ? `
       <div style="background:var(--kick-dim);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;margin-bottom:16px;">

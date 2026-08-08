@@ -6194,7 +6194,8 @@ async function loadAdminMessages() {
   const el = document.getElementById('adminSentMessages');
   if (!el) return;
   try {
-    const res = await fetch(`${W}/api/admin/messages`);
+    if (!adminSession) adminSession = sessionStorage.getItem('adminSession') || '';
+    const res = await fetch(`${W}/api/admin/messages`, {headers:{'x-admin-session':adminSession}});
     const { messages } = await res.json();
     if (!messages?.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">لا توجد رسائل</p>'; return; }
     el.innerHTML = messages.slice(0,20).map(m => `

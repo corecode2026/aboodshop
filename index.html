@@ -5495,7 +5495,7 @@ async function addPointsAll() {
     const res = await fetch(`${W}/api/admin/points-all`, {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'x-admin-session': adminSession },
-      body: JSON.stringify({ amount: amt })
+      body: JSON.stringify({ amount: amt, session: adminSession })
     });
     const d = await res.json();
     if (d.success) {

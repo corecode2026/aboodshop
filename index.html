@@ -2836,12 +2836,12 @@ async function saveSettings() {
   try {
     await fetch(`${W}/api/settings`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-session': adminSession },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     await fetch(`${W}/api/socials`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-session': adminSession },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ socials: socialLinks }),
     });
     renderStream();
@@ -2864,7 +2864,7 @@ async function setStream(status) {
   try {
     await fetch(`${W}/api/settings`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-session': adminSession },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ streamStatus: status, streamUsername: gv('set-stream-user') || streamState.username })
     });
     showToast(status==='live'?'🔴 البث شغال!':'😴 البث أوقف');
@@ -3370,8 +3370,8 @@ function aTab(tab, btn) {
 
 async function loadDashboard() {
   try {
-    const { orders } = await (await fetch(`${W}/api/admin/orders`,{headers:{'x-admin-session':adminSession}})).json();
-    const { users } = await (await fetch(`${W}/api/admin/users`,{headers:{'x-admin-session':adminSession}})).json();
+    const { orders } = await (await fetch(`${W}/api/admin/orders`)).json();
+    const { users } = await (await fetch(`${W}/api/admin/users`)).json();
     const pending = orders.filter(o=>o.status==='pending').length;
     setEl('st-total',orders.length); setEl('st-pending',pending); setEl('st-done',orders.filter(o=>o.status==='done').length); setEl('st-users',users.length);
     const pb = document.getElementById('pendingBadge'); if(pb){pb.textContent=pending; pending?pb.classList.remove('hidden'):pb.classList.add('hidden');}
@@ -3383,7 +3383,7 @@ async function loadDashboard() {
 
 async function loadOrders() {
   try {
-    const { orders } = await (await fetch(`${W}/api/admin/orders`,{headers:{'x-admin-session':adminSession}})).json();
+    const { orders } = await (await fetch(`${W}/api/admin/orders`)).json();
     document.getElementById('ordersTable').innerHTML = orders.length
       ? `<table class="table"><thead><tr><th>#</th><th>المستخدم</th><th>التواصل</th><th>المنتج</th><th>السعر</th><th>التاريخ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>${orders.map((o,i)=>`<tr><td style="color:var(--muted);font-size:12px;">${orders.length-i}</td><td style="color:var(--kick);font-weight:700;">${o.kickUsername||o.username}</td><td style="font-size:12px;color:var(--text);">${o.contact||'—'}</td><td>${o.icon||''} ${o.product}</td><td style="color:var(--kick);font-weight:700;">${(o.price||0).toLocaleString()} نق</td><td style="color:var(--muted);font-size:12px;">${fmtDate(o.date)}</td><td><span class="sbadge ${o.status==='pending'?'s-pending':'s-done'}">${o.status==='pending'?'⏳ معلق':'✅ منجز'}</span></td><td><div class="td-acts">${o.status==='pending'?`<button class="btn-sm btn-ok" onclick="markDone(${o.id})">✓</button>`:''}<button class="btn-sm btn-del" onclick="delOrder(${o.id})">🗑</button></div></td></tr>`).join('')}</tbody></table>`
       : '<div class="empty"><p>لا توجد طلبات</p></div>';
@@ -3391,19 +3391,19 @@ async function loadOrders() {
 }
 
 async function markDone(id) {
-  await fetch(`${W}/api/admin/orders/${id}`,{method:'PUT',headers:{'Content-Type':'application/json','x-admin-session':adminSession},body:JSON.stringify({status:'done'})});
+  await fetch(`${W}/api/admin/orders/${id}`, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'done'})});
   logActivity('إنجاز طلب', 'رقم '+id);
   loadOrders(); loadDashboard(); showToast('✅ تم');
 }
 async function delOrder(id) {
-  await fetch(`${W}/api/admin/orders/${id}`,{method:'DELETE',headers:{'x-admin-session':adminSession}});
+  await fetch(`${W}/api/admin/orders/${id}`);
   loadOrders(); loadDashboard(); showToast('تم الحذف');
 }
 
 // PRODUCTS ADMIN
 async function loadAdminProds() {
   try {
-    const { products } = await (await fetch(`${W}/api/admin/products`,{headers:{'x-admin-session':adminSession}})).json();
+    const { products } = await (await fetch(`${W}/api/admin/products`)).json();
     window._adminProds = products;
     const g = document.getElementById('prodsGrid');
     g.innerHTML = products.length ? products.map(p => {
@@ -3510,17 +3510,17 @@ async function saveProd() {
   const qty = qtyVal === '' ? null : Number(qtyVal);
   const body={name,price,icon,desc,active,qty};if(pendingProdImg)body.img=pendingProdImg;
   try {
-    if(editingProdId) await fetch(`${W}/api/admin/products/${editingProdId}`,{method:'PUT',headers:{'Content-Type':'application/json','x-admin-session':adminSession},body:JSON.stringify(body)});
-    else await fetch(`${W}/api/admin/products`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-session':adminSession},body:JSON.stringify(body)});
+    if(editingProdId) await fetch(`${W}/api/admin/products/${editingProdId}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    else await fetch(`${W}/api/admin/products`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
     closeModal('prodModal'); loadAdminProds(); loadStore(); showToast('✅ تم حفظ المنتج');
   } catch(e){showToast('خطأ','err');}
 }
 
-async function toggleProd(id,active){await fetch(`${W}/api/admin/products/${id}`,{method:'PUT',headers:{'Content-Type':'application/json','x-admin-session':adminSession},body:JSON.stringify({active})});loadAdminProds();loadStore();}
+async function toggleProd(id,active){await fetch(`${W}/api/admin/products/${id}`);loadAdminProds();loadStore();}
 async function delProd(id){
   if(!confirm('حذف المنتج؟'))return;
   const prod=(window._adminProds||[]).find(p=>p.id===id);
-  await fetch(`${W}/api/admin/products/${id}`,{method:'DELETE',headers:{'x-admin-session':adminSession}});
+  await fetch(`${W}/api/admin/products/${id}`);
   logActivity('حذف منتج', prod?prod.name:'');
   loadAdminProds();loadStore();showToast('تم الحذف');
 }
@@ -3529,7 +3529,7 @@ async function delProd(id){
 async function loadUsers() {
   console.log("loadUsers called");
   try {
-    const { users } = await (await fetch(`${W}/api/admin/users`,{headers:{'x-admin-session':adminSession}})).json();
+    const { users } = await (await fetch(`${W}/api/admin/users`)).json();
     allUsers = users;
     const countEl = document.getElementById('usersCount');
     if(countEl) countEl.textContent = `(${users.length})`;
@@ -3560,7 +3560,7 @@ async function resetPts(userId, username) {
   if (!confirm(`تصفير نقاط ${username}؟`)) return;
   try {
     const res = await fetch(`${W}/api/admin/reset-points`, {
-      method:'POST', headers:{'Content-Type':'application/json','x-admin-session':adminSession},
+      method:'POST', headers:{'x-admin-session':adminSession,'Content-Type':'application/json'},
       body: JSON.stringify({ userId })
     });
     const d = await res.json();
@@ -3574,7 +3574,7 @@ async function deleteUser(userId, username) {
 سيتم حذف نقاطه وسجله نهائياً!`)) return;
   try {
     const res = await fetch(`${W}/api/admin/delete-user`, {
-      method:'POST', headers:{'Content-Type':'application/json','x-admin-session':adminSession},
+      method:'POST', headers:{'x-admin-session':adminSession,'Content-Type':'application/json'},
       body: JSON.stringify({ userId })
     });
     const d = await res.json();
@@ -3619,7 +3619,7 @@ function selPerms(v){['orders','products','users','chats','staff','settings'].fo
 
 async function loadStaff() {
   try {
-    const res = await fetch(`${W}/api/admin/staff`,{headers:{'x-admin-session':adminSession}});
+    const res = await fetch(`${W}/api/admin/staff`);
     const d = await res.json();
     if(d.staff) staff = d.staff;
   } catch(e){}
@@ -3656,9 +3656,9 @@ async function delStaff(id){
 
 async function saveStaffToServer() {
   try {
-    await fetch(`${W}/api/admin/staff`,{
+    await fetch(`${W}/api/admin/staff`, {
       method:'POST',
-      headers:{'Content-Type':'application/json','x-admin-session':adminSession},
+      headers:{'x-admin-session':adminSession,'Content-Type':'application/json'},
       body:JSON.stringify({staff})
     });
   } catch(e){}
@@ -3683,7 +3683,7 @@ async function savePtsCfg() {
 
   ptsCfg={welcome:+gv('pc-welcome'),msg:+gv('pc-msg'),hour:+gv('pc-hour'),sub:+gv('pc-sub'),follow:+gv('pc-follow'),cooldown:+gv('pc-cooldown'),maxHr:+gv('pc-maxhr'),goal:+gv('pc-goal')};
   try {
-    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json','x-admin-session':adminSession},body:JSON.stringify({ptsCfg, dailyPts, levels:levelsConfig})});
+    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ptsCfg, dailyPts, levels:levelsConfig})});
     // حدّث الـ cache
     try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyPts=dailyPts; c.ptsCfg=ptsCfg; c.levels=levelsConfig; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
     dailyConfig = dailyPts;
@@ -3741,7 +3741,7 @@ async function sendChat(){
 async function renderAdminChats(){
   // جيب من Firebase
   try {
-    const res = await fetch(`${W}/api/admin/chats`,{headers:{'x-admin-session':adminSession}});
+    const res = await fetch(`${W}/api/admin/chats`);
     const d = await res.json();
     if(d.chats) chats = d.chats;
   } catch(e){}
@@ -3785,7 +3785,7 @@ async function deleteChatMsg(sender, idx) {
   try {
     await fetch(`${W}/api/admin/chat-delete-msg`, {
       method:'POST',
-      headers:{'Content-Type':'application/json','x-admin-session':adminSession},
+      headers:{'x-admin-session':adminSession,'Content-Type':'application/json'},
       body:JSON.stringify({sender, idx})
     });
   } catch(e){}
@@ -3797,7 +3797,7 @@ async function deleteAllChats() {
   try {
     await fetch(`${W}/api/admin/chat-delete-all`, {
       method: 'POST',
-      headers: { 'x-admin-session': adminSession }
+      headers:{'x-admin-session':adminSession}
     });
     chats = {};
     renderAdminChats();
@@ -3812,7 +3812,7 @@ async function deleteChat(sender) {
   try {
     await fetch(`${W}/api/admin/chat-delete`, {
       method:'POST',
-      headers:{'Content-Type':'application/json','x-admin-session':adminSession},
+      headers:{'x-admin-session':adminSession,'Content-Type':'application/json'},
       body:JSON.stringify({sender})
     });
   } catch(e){}
@@ -3828,9 +3828,9 @@ async function aReplyFn(n){
   inp.value='';
   // حفظ الرد على Firebase
   try {
-    await fetch(`${W}/api/admin/chat-reply`,{
+    await fetch(`${W}/api/admin/chat-reply`, {
       method:'POST',
-      headers:{'Content-Type':'application/json','x-admin-session':adminSession},
+      headers:{'x-admin-session':adminSession,'Content-Type':'application/json'},
       body:JSON.stringify({sender:n,msg:txt})
     });
   } catch(e){}
@@ -4093,7 +4093,7 @@ async function saveRulesToServer() {
   try {
     await fetch(`${W}/api/rules`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-session': adminSession },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
   } catch(e) {}
@@ -4195,7 +4195,7 @@ async function saveSecretCodes() {
   try {
     await fetch(`${W}/api/secret-codes`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-session': adminSession },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ codes: secretCodes })
     });
   } catch(e) {}
@@ -4274,9 +4274,9 @@ async function logActivity(action, details='') {
   const role = isStaffMode ? 'موظف' : isRealAdmin ? 'المدير' : currentUser ? 'عضو' : 'زائر';
   const who = isStaffMode ? (currentStaff?.name||'موظف') : isRealAdmin ? 'المدير' : (currentUser?.username||'زائر');
   try {
-    await fetch(`${W}/api/admin/log`, {
+    await fetch(`${W}/api/admin/log`, {'x-admin-session':adminSession, 
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-session': adminSession },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ staffName: who, role, action, details, time: new Date().toISOString() })
     });
   } catch(e) {}
@@ -4284,7 +4284,7 @@ async function logActivity(action, details='') {
 
 async function loadActivityLogs() {
   try {
-    const res = await fetch(`${W}/api/admin/logs`, { headers: { 'x-admin-session': adminSession } });
+    const res = await fetch(`${W}/api/admin/logs`);
     const { logs } = await res.json();
     const el = document.getElementById('activityLogsList');
     if (!el) return;
@@ -5184,7 +5184,7 @@ async function saveAuction(editId='') {
   try {
     const res = await fetch(`${W}/api/admin/auctions${editId?'/'+editId:''}`, {
       method: editId ? 'PUT' : 'POST',
-      headers:{'Content-Type':'application/json','x-admin-session':adminSession},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({name,desc,icon,minBid,endTime,mode})
     });
     const d = await res.json();
@@ -5198,7 +5198,7 @@ async function saveAuction(editId='') {
 
 async function loadAuctionAdmin() {
   try {
-    const res = await fetch(`${W}/api/admin/auctions`,{headers:{'x-admin-session':adminSession}});
+    const res = await fetch(`${W}/api/admin/auctions`);
     const { auctions } = await res.json();
     window._auctions = auctions;
     const el = document.getElementById('auctionAdminList');
@@ -5229,7 +5229,7 @@ async function loadAuctionAdmin() {
 async function finalizeAuction(id) {
   if(!confirm('إغلاق المزاد وإرسال الجائزة للفائز؟')) return;
   try {
-    const res = await fetch(`${W}/api/admin/auctions/${id}/finalize`,{
+    const res = await fetch(`${W}/api/admin/auctions/${id}/finalize`, {
       method:'POST',
       headers:{'x-admin-session':adminSession}
     });
@@ -5244,7 +5244,7 @@ async function finalizeAuction(id) {
 async function deleteAuction(id) {
   if(!confirm('حذف المزاد؟')) return;
   try {
-    await fetch(`${W}/api/admin/auctions/${id}`,{method:'DELETE',headers:{'x-admin-session':adminSession}});
+    await fetch(`${W}/api/admin/auctions/${id}`);
     showToast('تم الحذف'); loadAuctionAdmin();
   } catch(e) {}
 }
@@ -5372,7 +5372,7 @@ async function checkGoogleAdminToken() {
       sessionStorage.setItem('gadminToken', gadmin);
       // حدّث الـ adminPass من Firebase
       try {
-        const sr = await fetch(`${W}/api/admin/settings`,{headers:{'x-admin-session':adminSession}});
+        const sr = await fetch(`${W}/api/admin/settings`);
         const sd = await sr.json();
         if(sd.adminPass) adminPass = sd.adminPass;
         if(sd.adminUser) adminUser = sd.adminUser;
@@ -5401,7 +5401,7 @@ async function submitAdmin() {
   try {
     const loginRes = await fetch(`${W}/api/admin/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers:{'x-admin-session':adminSession, 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: user, password: pass })
     });
     const loginD = await loginRes.json();
@@ -5470,7 +5470,7 @@ async function saveAdminPassword() {
   try {
     const res = await fetch(`${W}/api/settings`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-session': adminSession },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
     if (res.ok) {
@@ -5494,7 +5494,7 @@ async function addPointsAll() {
     showToast('⏳ جاري الإضافة...');
     const res = await fetch(`${W}/api/admin/points-all`, {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-admin-session': adminSession },
+      headers:{'x-admin-session':adminSession, 'Content-Type':'application/json' },
       body: JSON.stringify({ amount: amt, session: adminSession })
     });
     const d = await res.json();
@@ -5513,7 +5513,7 @@ async function resetAllPoints() {
     showToast('⏳ جاري التصفير...');
     const res = await fetch(`${W}/api/admin/reset-all-points`, {
       method: 'POST',
-      headers: { 'x-admin-session': adminSession }
+      headers:{'x-admin-session':adminSession}
     });
     const d = await res.json();
     if (d.success) {
@@ -6004,7 +6004,7 @@ async function saveTournament(editId='') {
   try {
     const res = await fetch(`${W}/api/admin/tournaments${editId?'/'+editId:''}`, {
       method: editId ? 'PUT' : 'POST',
-      headers: { 'Content-Type':'application/json','x-admin-session':adminSession },
+      headers: { 'Content-Type':'application/json' },
       body: JSON.stringify(data)
     });
     const d = await res.json();
@@ -6018,7 +6018,7 @@ async function saveTournament(editId='') {
 
 async function loadTournamentsAdmin() {
   try {
-    const res = await fetch(`${W}/api/admin/tournaments`,{headers:{'x-admin-session':adminSession}});
+    const res = await fetch(`${W}/api/admin/tournaments`);
     const { tournaments } = await res.json();
     window._tournaments = tournaments;
     const el = document.getElementById('tournamentsAdminList');
@@ -6044,7 +6044,7 @@ async function loadTournamentsAdmin() {
 async function deleteTournament(id) {
   if (!confirm('حذف البطولة؟')) return;
   try {
-    await fetch(`${W}/api/admin/tournaments/${id}`,{method:'DELETE',headers:{'x-admin-session':adminSession}});
+    await fetch(`${W}/api/admin/tournaments/${id}`);
     showToast('تم الحذف'); loadTournamentsAdmin();
   } catch(e) {}
 }
@@ -6055,7 +6055,7 @@ async function deleteTeam(tournId, teamIdx) {
   try {
     const res = await fetch(`${W}/api/admin/tournaments/${tournId}/teams/${teamIdx}`, {
       method: 'DELETE',
-      headers: { 'x-admin-session': adminSession }
+      headers:{'x-admin-session':adminSession}
     });
     const d = await res.json();
     if (d.success) { showToast('✅ تم حذف الفريق'); loadTournamentsAdmin(); }
@@ -6068,7 +6068,7 @@ async function loadMarketAdmin() {
   const el = document.getElementById('marketAdminList');
   if (!el) return;
   try {
-    const res = await fetch(`${W}/api/admin/market`, { headers: { 'x-admin-session': adminSession } });
+    const res = await fetch(`${W}/api/admin/market`);
     const { posts } = await res.json();
     if (!posts?.length) { el.innerHTML = '<div class="empty"><p>لا توجد منتجات</p></div>'; return; }
     
@@ -6105,7 +6105,7 @@ async function approveMarket(id) {
   try {
     const res = await fetch(`${W}/api/admin/market/${id}/approve`, {
       method: 'POST',
-      headers: { 'x-admin-session': adminSession }
+      headers:{'x-admin-session':adminSession}
     });
     const d = await res.json();
     if (d.success) { showToast('✅ تم قبول المنتج'); logActivity('قبول منتج سوق', id); loadMarketAdmin(); }
@@ -6119,7 +6119,7 @@ async function clearLogs() {
   try {
     const res = await fetch(`${W}/api/admin/logs/clear`, {
       method: 'POST',
-      headers: { 'x-admin-session': adminSession }
+      headers:{'x-admin-session':adminSession}
     });
     const d = await res.json();
     if (d.success) { showToast('✅ تم حذف السجل'); loadActivityLogs(); }
@@ -6176,7 +6176,7 @@ async function sendAdminMessage() {
   try {
     const res = await fetch(`${W}/api/admin/messages`, {
       method: 'POST',
-      headers: { 'Content-Type':'application/json','x-admin-session':adminSession },
+      headers: { 'Content-Type':'application/json' },
       body: JSON.stringify({ to, message: encrypted, plain: body.substring(0,30)+'...' })
     });
     const d = await res.json();
@@ -6193,7 +6193,7 @@ async function loadAdminMessages() {
   const el = document.getElementById('adminSentMessages');
   if (!el) return;
   try {
-    const res = await fetch(`${W}/api/admin/messages`,{headers:{'x-admin-session':adminSession}});
+    const res = await fetch(`${W}/api/admin/messages`);
     const { messages } = await res.json();
     if (!messages?.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">لا توجد رسائل</p>'; return; }
     el.innerHTML = messages.slice(0,20).map(m => `
@@ -6210,7 +6210,7 @@ async function loadAdminMessages() {
 
 async function deleteAdminMsg(id) {
   try {
-    await fetch(`${W}/api/admin/messages/${id}`,{method:'DELETE',headers:{'x-admin-session':adminSession}});
+    await fetch(`${W}/api/admin/messages/${id}`);
     showToast('تم الحذف'); loadAdminMessages();
   } catch(e) {}
 }
@@ -6551,7 +6551,7 @@ async function saveUpdates() {
   try {
     await fetch(`${W}/api/settings`, {
       method: 'POST',
-      headers: { 'Content-Type':'application/json','x-admin-session':adminSession },
+      headers: { 'Content-Type':'application/json' },
       body: JSON.stringify({ updates: updatesData })
     });
     showToast('✅ تم حفظ التحديثات');
@@ -6563,10 +6563,11 @@ async function saveUpdates() {
 function getAdminHeaders(extra={}) {
   return {
     'Content-Type': 'application/json',
-    'x-admin-session': adminSession,
     ...extra
   };
 }
+
+
 
 async function init() {
   await Promise.all([checkAuth(), loadAllSettings()]);
@@ -6600,7 +6601,7 @@ async function init() {
   } else if (sessionStorage.getItem('adminIn') === '1') {
     const savedSession = sessionStorage.getItem('adminSession');
     if (savedSession) {
-      const vRes = await fetch(`${W}/api/admin/verify`, { headers: { 'x-admin-session': savedSession } }).catch(()=>null);
+      const vRes = await fetch(`${W}/api/admin/verify`).catch(()=>null);
       const vD = vRes ? await vRes.json().catch(()=>({})) : {};
       if (vD.valid) {
         adminSession = savedSession;

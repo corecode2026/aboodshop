@@ -2667,7 +2667,7 @@ function goTo(id, btn) {
   if (id === 'points') loadPoints();
   if (id === 'profile') loadProfile();
   if (id === 'daily') loadDaily();
-  if (id === 'dms') loadDms();
+  if (id === 'dms') { if (!dmAllUsers.length) loadDms(); else renderDmList(dmAllUsers); }
   if (id === 'updates') { loadUpdates(); setTimeout(renderUpdatesPage, 300); }
   else if (dmInterval) { clearInterval(dmInterval); dmInterval = null; }
 
@@ -6425,6 +6425,13 @@ async function loadDms() {
     const pinned = window._pinnedDm || localStorage.getItem('pinnedDm') || '';
     window._pinnedDm = pinned;
     if (pinned) {
+      // أضف المثبت لو مش موجود بالقائمة
+      if (!dmAllUsers.find(u => u.username === pinned)) {
+        try {
+          const pinnedData = JSON.parse(localStorage.getItem('pinnedDmData') || 'null');
+          if (pinnedData) dmAllUsers.unshift({...pinnedData, lastMsg:'', unread:0});
+        } catch(e) {}
+      }
       dmAllUsers.sort((a,b) => a.username===pinned ? -1 : b.username===pinned ? 1 : 0);
     }
     renderDmList(dmAllUsers);
@@ -6913,6 +6920,14 @@ async function togglePinDm(username) {
   } else {
     window._pinnedDm = username;
     localStorage.setItem('pinnedDm', username);
+    // احفظ بيانات المحادثة المثبتة
+    if (dmCurrentUser) {
+      localStorage.setItem('pinnedDmData', JSON.stringify({
+        id: dmCurrentUser.id,
+        username: dmCurrentUser.username,
+        avatar: dmCurrentUser.avatar||null
+      }));
+    }
     showToast('📌 تم تثبيت المحادثة');
   }
   

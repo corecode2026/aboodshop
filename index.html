@@ -5368,13 +5368,14 @@ function renderUsersTable(users) {
     var u = users[i];
     var pts = u.points || 0;
     var lvl = (typeof getUserLevel === 'function') ? getUserLevel(pts).level : 1;
+    var displayName = u.username || u.kickUsername || u.discordUsername || u.googleName || u.name || '#'+String(u.id||''). slice(-6);
     var ava = u.avatar
       ? '<img src="' + u.avatar + '" style="width:26px;height:26px;border-radius:50%;object-fit:cover;"/>'
-      : '<div style="width:26px;height:26px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">' + (u.username||'?').charAt(0).toUpperCase() + '</div>';
+      : '<div style="width:26px;height:26px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">' + displayName.charAt(0).toUpperCase() + '</div>';
     var uid = u.id;
     var uname = (u.username||'').replace(/\\/g,'').replace(/'/g,'');
     rows += '<tr style="' + (u.blocked ? 'opacity:.5;' : '') + '">';
-    rows += '<td><div style="display:flex;align-items:center;gap:6px;">' + ava + '<span style="font-size:12px;font-weight:700;">' + (u.username||'') + '</span></div></td>';
+    rows += '<td><div style="display:flex;align-items:center;gap:6px;">' + ava + '<span style="font-size:12px;font-weight:700;">' + displayName + '</span></div></td>';
     rows += '<td><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--kick-dim);color:var(--kick);">' + (u.provider==='discord'?'DC':'Kick') + '</span></td>';
     rows += '<td><span style="font-size:11px;font-weight:700;color:var(--kick);">Lv' + lvl + '</span></td>';
     rows += '<td style="color:var(--kick);font-weight:700;font-size:12px;">' + pts.toLocaleString() + '</td>';

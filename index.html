@@ -2276,7 +2276,12 @@ body.ready .page.on { opacity:1; }
         <button id="dmBackBtn" onclick="backToDmList()" style="display:none;background:none;border:none;color:var(--kick);font-size:20px;cursor:pointer;padding:0 4px;">‹</button>
         <div style="font-size:13px;color:var(--muted);">اختر محادثة للبدء</div>
       </div>
-      <div id="dmMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;"></div>
+      <div id="dmPinnedBox" style="display:none;background:rgba(83,252,24,.06);border-bottom:1px solid rgba(83,252,24,.2);padding:10px 16px;position:relative;">
+  <div style="font-size:10px;color:var(--kick);font-weight:700;margin-bottom:3px;">📌 رسالة مثبتة</div>
+  <div id="dmPinnedText" style="font-size:13px;color:var(--text2);"></div>
+  <button onclick="unpinDmMessage()" style="position:absolute;top:8px;left:8px;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;">✕</button>
+</div>
+<div id="dmMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;"></div>
       <div id="dmInputArea" style="display:none;padding:12px 16px;border-top:1px solid var(--border2);display:flex;gap:8px;">
         <input id="dmInput" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter')sendDm()" style="flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:9px 13px;border-radius:10px;font-size:13px;font-family:'Cairo',sans-serif;"/>
         <button onclick="sendDm()" class="btn btn-kick" style="padding:9px 16px;">إرسال</button>
@@ -6483,6 +6488,10 @@ async function openDmChat(userId, username, avatar) {
   if(inputArea) { inputArea.style.display='flex'; inputArea.style.cssText = inputArea.style.cssText.replace('display:none','display:flex'); }
 
   await loadDmMessages();
+  // أظهر الرسالة المثبتة
+  const pinned = localStorage.getItem('pinned_dm_' + userId);
+  if (pinned) showDmPinned(pinned);
+  else { const box=document.getElementById('dmPinnedBox'); if(box) box.style.display='none'; }
   
   // Auto-refresh
   if (dmInterval) clearInterval(dmInterval);
@@ -6510,12 +6519,46 @@ async function loadDmMessages() {
           (deleted ? '<span style="color:var(--muted);font-style:italic;font-size:12px;">🚫 تم حذف هذه الرسالة</span>' : m.text) +
           '<div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:'+(isMe?'right':'left')+'">'+fmtDate(m.date)+'</div>' +
           (!deleted && isMe ? '<button onclick="deleteDmMsg('+i+')" style="margin-top:5px;background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer;font-family:Cairo,sans-serif;">🗑 حذف</button>' : '') +
+          '<button onclick="pinDmMessage('+i+')" style="margin-top:5px;margin-right:4px;background:rgba(83,252,24,.1);color:var(--kick);border:1px solid rgba(83,252,24,.2);padding:2px 10px;border-radius:6px;font-size:10px;cursor:pointer;font-family:Cairo,sans-serif;">📌 تثبيت</button>' +
         '</div>' +
       '</div>';
     }).join('');
 
     if (wasAtBottom) el.scrollTop = el.scrollHeight;
   } catch(e) {}
+}
+
+async function pinDmMessage(idx) {
+  if (!dmCurrentUser) return;
+  try {
+    const res = await fetch(`${W}/api/dm/${dmCurrentUser.id}?token=${sessionToken}`);
+    const d = await res.json();
+    const msgs = d.messages || [];
+    const msg = msgs[idx];
+    if (!msg || msg.deleted) return;
+    // احفظ الرسالة المثبتة محلياً
+    const key = 'pinned_dm_' + dmCurrentUser.id;
+    localStorage.setItem(key, msg.text);
+    showDmPinned(msg.text);
+    showToast('📌 تم تثبيت الرسالة');
+  } catch(e) { showToast('خطأ','err'); }
+}
+
+function showDmPinned(text) {
+  const box = document.getElementById('dmPinnedBox');
+  const textEl = document.getElementById('dmPinnedText');
+  if (box && textEl) {
+    textEl.textContent = text;
+    box.style.display = 'block';
+  }
+}
+
+function unpinDmMessage() {
+  if (!dmCurrentUser) return;
+  localStorage.removeItem('pinned_dm_' + dmCurrentUser.id);
+  const box = document.getElementById('dmPinnedBox');
+  if (box) box.style.display = 'none';
+  showToast('تم إلغاء التثبيت');
 }
 
 async function deleteDmMsg(idx) {

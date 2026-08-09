@@ -1769,6 +1769,7 @@ body.ready .page.on { opacity:1; }
               <option value="24" selected>24 ساعة</option>
               <option value="168">أسبوع</option>
               <option value="720">شهر</option>
+              <option value="permanent">دائم 🚫</option>
             </select>
             <button onclick="banIp()" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.3);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">🚫 حظر</button>
             <button onclick="unbanIp()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">✅ رفع حظر</button>
@@ -1937,6 +1938,17 @@ body.ready .page.on { opacity:1; }
             <div><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:5px;">يوم 5</div><input class="pf-input" id="daily-4" type="number" value="200" min="1" dir="ltr" style="text-align:center;"/></div>
             <div><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:5px;">يوم 6</div><input class="pf-input" id="daily-5" type="number" value="250" min="1" dir="ltr" style="text-align:center;"/></div>
             <div><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:5px;">يوم 7+</div><input class="pf-input" id="daily-6" type="number" value="500" min="1" dir="ltr" style="text-align:center;"/></div>
+          </div>
+          <div style="border-top:1px solid var(--border2);margin-top:6px;padding-top:14px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px;">
+              <input type="checkbox" id="daily-video-enabled" onchange="toggleDailyVideoField()"/>
+              <span style="font-size:13px;font-weight:700;">🎬 عرض فيديو شرح في صفحة التسجيل اليومي</span>
+            </label>
+            <div id="daily-video-field" style="display:none;">
+              <label style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px;display:block;">رابط الفيديو</label>
+              <input class="pf-input" id="daily-video-url" placeholder="https://..." dir="ltr"/>
+              <div style="font-size:11px;color:var(--muted);margin-top:6px;">يظهر الفيديو للمستخدمين في صفحة التسجيل اليومي فقط لو مفعّل ومحدد رابط.</div>
+            </div>
           </div>
         </div>
 
@@ -2214,6 +2226,14 @@ body.ready .page.on { opacity:1; }
       </button>
       <div id="dailyTimer" style="margin-top:14px;font-size:13px;color:var(--muted);display:none;"></div>
       <div id="dailyMsg" style="margin-top:14px;font-size:13px;"></div>
+    </div>
+
+    <!-- فيديو شرح (يظهر فقط إذا فعّله الأدمن) -->
+    <div id="dailyVideoBox" class="settings-box" style="margin-bottom:20px;display:none;">
+      <div class="settings-box-title">🎬 شرح التسجيل اليومي</div>
+      <div style="position:relative;width:100%;padding-top:56.25%;border-radius:var(--radius);overflow:hidden;background:var(--surface2);">
+        <iframe id="dailyVideoFrame" src="" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allowfullscreen loading="lazy"></iframe>
+      </div>
     </div>
 
     <!-- أيام الأسبوع -->
@@ -3771,6 +3791,13 @@ function renderStaff() {
 }
 
 // POINTS CONFIG
+function toggleDailyVideoField() {
+  const cb = document.getElementById('daily-video-enabled');
+  const field = document.getElementById('daily-video-field');
+  if (!cb || !field) return;
+  field.style.display = cb.checked ? 'block' : 'none';
+  if (cb.checked) document.getElementById('daily-video-url')?.focus();
+}
 function applyPtsCfg() {
   setVal('pc-welcome',ptsCfg.welcome);setVal('pc-msg',ptsCfg.msg);setVal('pc-hour',ptsCfg.hour);
   setVal('pc-sub',ptsCfg.sub);setVal('pc-follow',ptsCfg.follow);setVal('pc-cooldown',ptsCfg.cooldown);
@@ -3779,17 +3806,21 @@ function applyPtsCfg() {
 async function savePtsCfg() {
   // جمع نقاط التسجيل اليومي
   const dailyPts = [0,1,2,3,4,5,6].map(i => parseInt(document.getElementById('daily-'+i)?.value)||50);
+  const dailyVideoEnabled = !!document.getElementById('daily-video-enabled')?.checked;
+  const dailyVideoUrl = document.getElementById('daily-video-url')?.value.trim() || '';
+  if (dailyVideoEnabled && !dailyVideoUrl) { showToast('أدخل رابط الفيديو أولاً','err'); return; }
+  const dailyVideo = { enabled: dailyVideoEnabled, url: dailyVideoUrl };
 
   ptsCfg={welcome:+gv('pc-welcome'),msg:+gv('pc-msg'),hour:+gv('pc-hour'),sub:+gv('pc-sub'),follow:+gv('pc-follow'),cooldown:+gv('pc-cooldown'),maxHr:+gv('pc-maxhr'),goal:+gv('pc-goal')};
   try {
     const hourlyPts = Number(document.getElementById('cfg-hourly')?.value)||50;
     const welcomePts = Number(document.getElementById('cfg-welcome')?.value)||100;
-    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ptsCfg, dailyPts, levels:levelsConfig, hourlyPts, welcomePts})});
+    await adminFetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ptsCfg, dailyPts, dailyVideo, levels:levelsConfig, hourlyPts, welcomePts})});
     // حدّث الواجهة
     const sh=document.getElementById('statHourlyPts'); if(sh) sh.textContent=hourlyPts;
     const sw=document.getElementById('statWelcomePts'); if(sw) sw.textContent=welcomePts;
     // حدّث الـ cache
-    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyPts=dailyPts; c.ptsCfg=ptsCfg; c.levels=levelsConfig; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
+    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyPts=dailyPts; c.dailyVideo=dailyVideo; c.ptsCfg=ptsCfg; c.levels=levelsConfig; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
     dailyConfig = dailyPts;
     showToast('✅ تم حفظ إعدادات النقاط');
   } catch(e){showToast('خطأ','err');}
@@ -4788,12 +4819,48 @@ try {
   if (_cached.dailyPts && Array.isArray(_cached.dailyPts)) dailyConfig = _cached.dailyPts;
 } catch(e){}
 
+function toEmbedUrl(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtube.com') && u.searchParams.get('v')) {
+      return 'https://www.youtube.com/embed/' + u.searchParams.get('v');
+    }
+    if (u.hostname === 'youtu.be') {
+      return 'https://www.youtube.com/embed/' + u.pathname.replace('/', '');
+    }
+    return url;
+  } catch(e) { return url; }
+}
+
+function renderDailyVideo(dailyVideo) {
+  const box = document.getElementById('dailyVideoBox');
+  if (!box) return;
+  if (!dailyVideo || !dailyVideo.enabled || !dailyVideo.url) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+  const url = dailyVideo.url.trim();
+  const isDirectFile = /\.(mp4|webm|ogg)(\?.*)?$/i.test(url);
+  if (isDirectFile) {
+    box.innerHTML = `<div class="settings-box-title">🎬 شرح التسجيل اليومي</div>
+      <video controls style="width:100%;border-radius:var(--radius);background:var(--surface2);" src="${url}"></video>`;
+  } else {
+    box.innerHTML = `<div class="settings-box-title">🎬 شرح التسجيل اليومي</div>
+      <div style="position:relative;width:100%;padding-top:56.25%;border-radius:var(--radius);overflow:hidden;background:var(--surface2);">
+        <iframe src="${toEmbedUrl(url)}" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allowfullscreen loading="lazy"></iframe>
+      </div>`;
+  }
+}
+
 async function loadDaily() {
   // جيب إعدادات النقاط اليومية
   try {
     const res = await fetch(`${W}/api/settings`);
     const d = await res.json();
     if (d.dailyPts && Array.isArray(d.dailyPts)) dailyConfig = d.dailyPts;
+    renderDailyVideo(d.dailyVideo);
+    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyVideo=d.dailyVideo; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
   } catch(e){}
 
   // أظهر الشبكة فوراً من الـ config المحلي
@@ -4930,6 +4997,14 @@ function loadDailySettings() {
         const el = document.getElementById('daily-'+i);
         if(el) el.value = v;
       });
+    }
+    if (cached.dailyVideo) {
+      const cb = document.getElementById('daily-video-enabled');
+      const urlEl = document.getElementById('daily-video-url');
+      const field = document.getElementById('daily-video-field');
+      if (cb) cb.checked = !!cached.dailyVideo.enabled;
+      if (urlEl) urlEl.value = cached.dailyVideo.url || '';
+      if (field) field.style.display = cached.dailyVideo.enabled ? 'block' : 'none';
     }
   } catch(e){}
 }
@@ -6813,15 +6888,16 @@ async function loadSecurityLogs() {
 
 async function banIp() {
   const ip = document.getElementById('ban-ip-input')?.value.trim();
-  const hours = document.getElementById('ban-hours')?.value || '24';
+  const hoursRaw = document.getElementById('ban-hours')?.value || '24';
+  const isPermanent = hoursRaw === 'permanent';
   if (!ip) { showToast('أدخل الـ IP','err'); return; }
   try {
     await adminFetch(`${W}/api/admin/ban`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ip, hours: Number(hours) })
+      body: JSON.stringify(isPermanent ? { ip, permanent: true } : { ip, hours: Number(hoursRaw) })
     });
-    showToast('✅ تم حظر ' + ip);
+    showToast(isPermanent ? '✅ تم حظر ' + ip + ' بشكل دائم' : '✅ تم حظر ' + ip);
     document.getElementById('ban-ip-input').value = '';
     loadSecurityLogs();
   } catch(e) { showToast('خطأ','err'); }

@@ -5516,7 +5516,7 @@ async function submitAdmin() {
 
   // تسجيل دخول المدير عبر الـ Worker
   try {
-    const loginRes = await adminFetch(`${W}/api/admin/login`, {
+    const loginRes = await fetch(`${W}/api/admin/login`, {
       method: 'POST',
       headers:{'x-admin-session':adminSession, 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: user, password: pass })

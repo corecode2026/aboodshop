@@ -4856,7 +4856,8 @@ function renderDailyDays(streak=0, claimedToday=false) {
   if (!el) return;
   const labels = ['١','٢','٣','٤','٥','٦','٧+'];
   el.innerHTML = dailyConfig.map((pts,i) => {
-    const done = i < (claimedToday ? streak : streak);
+    const streakMod = streak % dailyConfig.length;
+    const done = claimedToday ? i < streakMod || (streakMod === 0 && streak > 0) : i < streakMod;
     const isToday = claimedToday ? i === streak-1 : i === streak;
     let bg, border, numColor, badge='';
     if (done) {

@@ -2678,7 +2678,7 @@ function goTo(id, btn) {
   else if (dmInterval) { clearInterval(dmInterval); dmInterval = null; }
 
   if (id === 'admin') {
-    loadDashboard();
+    if (sessionStorage.getItem('adminSession') || sessionStorage.getItem('adminIn')) loadDashboard();
     // طبّق صلاحيات الموظف فقط
     if (isStaffMode && currentStaff && currentStaff.perms) {
       setTimeout(()=>applyStaffPermissions(currentStaff.perms), 100);

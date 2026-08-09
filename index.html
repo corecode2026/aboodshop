@@ -1447,7 +1447,6 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
     <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn" style="position:relative;">💬 رسائل<span id="dmsBadge" style="display:none;position:absolute;top:2px;left:2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;min-width:14px;text-align:center;"></span></button>
     <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
-    <button id="navTutBtn" class="nl" onclick="goTo('tutorial',this)" style="display:none;">📺 الشرح</button>
     <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);font-weight:800;">🆕 تحديثات</button>
   </div>
   <div class="nav-right">
@@ -2053,22 +2052,6 @@ body.ready .page.on { opacity:1; }
           <div class="settings-box-title">🔐 كلمة سر الإدارة</div>
 
         </div>
-
-        <div class="settings-box" style="margin-top:14px;">
-          <div class="settings-box-title" style="display:flex;justify-content:space-between;align-items:center;">
-            <span>📺 صفحة الشرح</span>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-              <span style="font-size:12px;color:var(--muted);">تفعيل</span>
-              <input type="checkbox" id="tutEnabled" style="accent-color:var(--kick);width:16px;height:16px;"/>
-            </label>
-          </div>
-          <div id="tutVideosList" style="display:flex;flex-direction:column;gap:8px;margin:12px 0;"></div>
-          <div style="display:flex;gap:8px;">
-            <button onclick="addTutVideo()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">+ إضافة فيديو</button>
-            <button onclick="saveTutorial()" class="btn btn-kick" style="font-size:13px;padding:8px 16px;">💾 حفظ</button>
-          </div>
-        </div>
-
         <button class="btn btn-kick" onclick="saveSettings()">💾 حفظ كل الإعدادات</button>
       </div>
     </div>
@@ -2325,32 +2308,6 @@ body.ready .page.on { opacity:1; }
     <div class="section-title">🆕 <span class="green">التحديثات</span></div>
   </div>
   <div id="updatesList" style="display:flex;flex-direction:column;gap:14px;max-width:700px;margin:0 auto;"></div>
-</section>
-
-
-<!-- AFTER BUY MODAL -->
-<div class="overlay hidden" id="afterBuyModal" style="position:fixed!important;inset:0!important;z-index:99999!important;display:none;align-items:center;justify-content:center;">
-  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:32px 28px;max-width:400px;width:90%;text-align:center;position:relative;">
-    <div style="font-size:40px;margin-bottom:12px;">🎫</div>
-    <div id="afterBuyTitle" style="font-size:17px;font-weight:800;margin-bottom:10px;color:var(--text);"></div>
-    <div id="afterBuyMsg" style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px;"></div>
-    <a id="afterBuyDiscordBtn" href="#" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#5865F2;color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;font-family:Cairo,sans-serif;margin-bottom:12px;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
-      انضم للديسكورد
-    </a>
-    <br>
-    <button onclick="closeModal('afterBuyModal')" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border2);padding:8px 20px;border-radius:8px;font-size:13px;cursor:pointer;font-family:Cairo,sans-serif;">إغلاق</button>
-  </div>
-</div>
-
-
-<!-- TUTORIAL PAGE -->
-<section class="page" id="page-tutorial">
-  <div class="section-head">
-    <div class="section-title">📺 <span class="green">الشرح</span></div>
-  </div>
-  <div id="tutorialVideos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;"></div>
-  <div id="tutorialEmpty" style="display:none;text-align:center;padding:60px 0;color:var(--muted);">لا يوجد فيديوهات بعد</div>
 </section>
 
 </main>
@@ -2717,7 +2674,6 @@ function goTo(id, btn) {
   if (id === 'profile') loadProfile();
   if (id === 'daily') loadDaily();
   if (id === 'dms') { if (!dmAllUsers.length) loadDms(); else renderDmList(dmAllUsers); }
-  if (id === 'tutorial') { loadTutorial(); setTimeout(renderTutorialPage, 300); }
   if (id === 'updates') { loadUpdates(); setTimeout(renderUpdatesPage, 300); }
   else if (dmInterval) { clearInterval(dmInterval); dmInterval = null; }
 
@@ -2933,9 +2889,6 @@ async function saveSettings() {
     offlineColor:   document.getElementById('set-offline-color')?.value || '#0A0A0F',
     heroDiscord:    gv('set-hero-discord'),
     heroWatch:      gv('set-hero-watch'),
-    buyTitle:       gv('set-buy-title'),
-    buyMsg:         gv('set-buy-msg'),
-    discordUrl:     gv('set-discord-url'),
   };
   // احفظ الصور منفصلة
   if (channelImg && !channelImg.includes('REMOVED')) data.channelImg = channelImg;
@@ -6713,22 +6666,12 @@ async function renderUpdatesPage() {
   `).join('');
 }
 
-async function toggleUpdatesBtn() {
+function toggleUpdatesBtn() {
   updatesData.enabled = document.getElementById('updatesEnabled')?.checked || false;
   const btn = document.getElementById('updatesBtn');
   const navBtn = document.getElementById('navUpdatesBtn');
   if (btn) btn.style.display = updatesData.enabled ? 'block' : 'none';
   if (navBtn) navBtn.style.display = updatesData.enabled ? 'inline-block' : 'none';
-  // احفظ تلقائياً
-  try {
-    await adminFetch(`${W}/api/settings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ updates: updatesData })
-    });
-    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.updates=updatesData; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
-    showToast(updatesData.enabled ? '✅ تم تفعيل التحديثات' : '⚫ تم إيقاف التحديثات');
-  } catch(e) {}
 }
 
 function updateItem(el) {
@@ -7098,119 +7041,6 @@ function adminFetch(url, opts) {
   return fetch(url, opts);
 }
 
-
-// ══ TUTORIAL ══
-let tutData = { enabled: false, videos: [] };
-
-function getYoutubeId(url) {
-  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
-  return m ? m[1] : null;
-}
-
-function getEmbedUrl(url) {
-  // YouTube
-  const ytId = getYoutubeId(url);
-  if (ytId) return `https://www.youtube.com/embed/${ytId}`;
-  // Google Drive
-  const driveM = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-  if (driveM) return `https://drive.google.com/file/d/${driveM[1]}/preview`;
-  // Streamable, direct mp4, etc
-  return url;
-}
-
-async function loadTutorial() {
-  try {
-    const s = JSON.parse(localStorage.getItem('sk_settings_cache') || '{}');
-    if (s.tutorial) {
-      tutData = { enabled: false, videos: [], ...s.tutorial };
-    } else {
-      const res = await fetch(`${W}/api/settings`);
-      const d = await res.json();
-      if (d.tutorial) tutData = { enabled: false, videos: [], ...d.tutorial };
-    }
-    // أظهر/أخفِ زر الشرح
-    const btn = document.getElementById('navTutBtn');
-    if (btn) btn.style.display = tutData.enabled ? 'inline-block' : 'none';
-    // render
-    renderTutorialPage();
-  } catch(e) {}
-}
-
-function renderTutorialPage() {
-  const el = document.getElementById('tutorialVideos');
-  const empty = document.getElementById('tutorialEmpty');
-  if (!el) return;
-  if (!tutData.videos?.length) {
-    el.style.display = 'none';
-    if (empty) empty.style.display = 'block';
-    return;
-  }
-  if (empty) empty.style.display = 'none';
-  el.style.display = 'grid';
-  el.innerHTML = tutData.videos.map(v => {
-    const embedUrl = getEmbedUrl(v.url);
-    return `<div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;">
-      <div style="position:relative;padding-top:56.25%;background:#000;">
-        <iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen allow="autoplay; fullscreen"></iframe>
-      </div>
-      <div style="padding:14px;">
-        <div style="font-size:15px;font-weight:800;margin-bottom:6px;">${v.title||'فيديو'}</div>
-        ${v.desc ? `<div style="font-size:13px;color:var(--muted);">${v.desc}</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderTutorialAdmin() {
-  const el = document.getElementById('tutVideosList');
-  const cb = document.getElementById('tutEnabled');
-  if (!el) return;
-  if (cb) cb.checked = tutData.enabled;
-  el.innerHTML = tutData.videos.map((v,i) => `
-    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;">
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input value="${v.title||''}" data-idx="${i}" data-field="title" oninput="updateTutItem(this)" class="pf-input" placeholder="عنوان الفيديو" style="flex:1;"/>
-        <button onclick="removeTutVideo(${i})" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">✕</button>
-      </div>
-      <input value="${v.url||''}" data-idx="${i}" data-field="url" oninput="updateTutItem(this)" class="pf-input" placeholder="رابط الفيديو (YouTube / Google Drive / MP4)" dir="ltr"/>
-      <input value="${v.desc||''}" data-idx="${i}" data-field="desc" oninput="updateTutItem(this)" class="pf-input" placeholder="وصف (اختياري)"/>
-    </div>
-  `).join('');
-}
-
-function updateTutItem(el) {
-  const i = Number(el.dataset.idx);
-  const f = el.dataset.field;
-  if (tutData.videos[i]) tutData.videos[i][f] = el.value;
-}
-
-function addTutVideo() {
-  if (!tutData.videos) tutData.videos = [];
-  tutData.videos.push({ title: '', url: '', desc: '' });
-  renderTutorialAdmin();
-}
-
-function removeTutVideo(i) {
-  tutData.videos.splice(i, 1);
-  renderTutorialAdmin();
-}
-
-async function saveTutorial() {
-  tutData.enabled = document.getElementById('tutEnabled')?.checked || false;
-  try {
-    await adminFetch(`${W}/api/settings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tutorial: tutData })
-    });
-    // حدّث الكاش
-    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.tutorial=tutData; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
-    showToast('✅ تم حفظ الشرح');
-    loadTutorial();
-    renderTutorialAdmin();
-  } catch(e) { showToast('خطأ','err'); }
-}
-
 async function init() {
   // استرجع admin session مع تحقق
   const _savedSession = sessionStorage.getItem('adminSession') || '';
@@ -7224,7 +7054,6 @@ async function init() {
   }
   await Promise.all([checkAuth(), loadAllSettings()]);
   loadPinnedMsg();
-  loadTutorial();
   setInterval(checkDmNotifications, 30000);
   // أظهر زر التحديثات
   const _ub=document.getElementById('updatesBtn'),_nb=document.getElementById('navUpdatesBtn');

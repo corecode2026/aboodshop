@@ -3492,7 +3492,7 @@ async function markDone(id) {
 }
 async function delOrder(id) {
   if(!confirm("حذف الطلب؟")) return;
-  await fetch(`${W}/api/admin/orders/${id}`, {method:"DELETE"});
+  await fetch(`${W}/api/admin/orders/${id}`, {method:"DELETE", headers:{"x-admin-session": adminSession || sessionStorage.getItem("adminSession") || ""}});
   loadOrders(); loadDashboard(); showToast("تم الحذف");
 }
 
@@ -5357,7 +5357,7 @@ async function finalizeAuction(id) {
 async function deleteAuction(id) {
   if(!confirm('حذف المزاد؟')) return;
   try {
-    await fetch(`${W}/api/admin/auctions/${id}`, {method:"DELETE"});
+    await fetch(`${W}/api/admin/auctions/${id}`, {method:"DELETE", headers:{"x-admin-session": adminSession || sessionStorage.getItem("adminSession") || ""}});
     showToast('تم الحذف'); loadAuctionAdmin();
   } catch(e) {}
 }
@@ -5521,9 +5521,10 @@ async function submitAdmin() {
     const loginD = await loginRes.json();
     if (loginD.success && loginD.token) {
       adminSession = loginD.token;
+      _adminSession = loginD.token;
+      sessionStorage.setItem('adminSession', loginD.token);
       adminIn = true; isStaffMode = false; currentStaff = null;
       sessionStorage.setItem('adminIn', '1');
-      sessionStorage.setItem('adminSession', loginD.token);
       sessionStorage.removeItem('staffIn');
       const am = document.getElementById('adminModal');
       if (am) am.style.display = 'none';

@@ -1939,18 +1939,25 @@ body.ready .page.on { opacity:1; }
             <div><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:5px;">يوم 6</div><input class="pf-input" id="daily-5" type="number" value="250" min="1" dir="ltr" style="text-align:center;"/></div>
             <div><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:5px;">يوم 7+</div><input class="pf-input" id="daily-6" type="number" value="500" min="1" dir="ltr" style="text-align:center;"/></div>
           </div>
-          <div style="border-top:1px solid var(--border2);margin-top:6px;padding-top:14px;">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px;">
-              <input type="checkbox" id="daily-video-enabled" onchange="toggleDailyVideoField()"/>
-              <span style="font-size:13px;font-weight:700;">🎬 عرض فيديو شرح في صفحة التسجيل اليومي</span>
-            </label>
-            <div id="daily-video-field" style="display:none;">
-              <label style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px;display:block;">رابط الفيديو</label>
-              <input class="pf-input" id="daily-video-url" placeholder="https://..." dir="ltr"/>
-              <div style="font-size:11px;color:var(--muted);margin-top:6px;">يظهر الفيديو للمستخدمين في صفحة التسجيل اليومي فقط لو مفعّل ومحدد رابط.</div>
-            </div>
-          </div>
         </div>
+
+
+        <div class="settings-box" style="margin-top:14px;">
+          <div class="settings-box-title">🎬 فيديو الشرح</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">فيديو شرح يظهر للمستخدمين لما يضغطوا زر "شرح" — رفعه من جهازك مباشرة.</div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px;">
+            <input type="checkbox" id="tv-enabled"/>
+            <span style="font-size:13px;font-weight:700;">تفعيل زر "شرح" للمستخدمين</span>
+          </label>
+          <input type="file" id="tv-file-input" accept="video/*" style="display:none;" onchange="handleTutorialVideoFile(event)"/>
+          <button onclick="document.getElementById('tv-file-input').click()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;width:100%;margin-bottom:10px;">
+            📁 اختر فيديو من جهازك
+          </button>
+          <div id="tv-file-info" style="font-size:12px;color:var(--muted);margin-bottom:10px;"></div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">الحد الأقصى تقريباً 8 ميغابايت (فيديو قصير) — لأن الفيديو يُخزَّن داخل قاعدة البيانات مباشرة.</div>
+          <button class="btn btn-kick" onclick="saveTutorialVideo()" style="width:100%;">💾 حفظ فيديو الشرح</button>
+        </div>
+
 
 
         <div class="settings-box" style="margin-top:14px;">
@@ -2209,6 +2216,9 @@ body.ready .page.on { opacity:1; }
       <div style="font-size:11px;font-weight:700;color:var(--kick);letter-spacing:2px;margin-bottom:8px;">DAILY CHECK-IN</div>
       <h2 style="font-size:28px;font-weight:900;margin-bottom:8px;">التسجيل <span style="color:var(--kick);">اليومي</span></h2>
       <p style="color:var(--muted);font-size:14px;">سجّل حضورك كل يوم واكسب نقاطاً متزايدة</p>
+      <button id="dailyTutorialBtn" onclick="openTutorialVideo()" style="display:none;margin-top:10px;background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">
+        ❓ شرح
+      </button>
     </div>
 
     <!-- حالة اليوم -->
@@ -2226,14 +2236,6 @@ body.ready .page.on { opacity:1; }
       </button>
       <div id="dailyTimer" style="margin-top:14px;font-size:13px;color:var(--muted);display:none;"></div>
       <div id="dailyMsg" style="margin-top:14px;font-size:13px;"></div>
-    </div>
-
-    <!-- فيديو شرح (يظهر فقط إذا فعّله الأدمن) -->
-    <div id="dailyVideoBox" class="settings-box" style="margin-bottom:20px;display:none;">
-      <div class="settings-box-title">🎬 شرح التسجيل اليومي</div>
-      <div style="position:relative;width:100%;padding-top:56.25%;border-radius:var(--radius);overflow:hidden;background:var(--surface2);">
-        <iframe id="dailyVideoFrame" src="" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allowfullscreen loading="lazy"></iframe>
-      </div>
     </div>
 
     <!-- أيام الأسبوع -->
@@ -3475,7 +3477,7 @@ function aTab(tab, btn) {
   if(tab==='chats') renderAdminChats();
   if(tab==='staff') loadStaff();
   if(tab==='settings') renderSocials();
-  if(tab==='pts-cfg') { loadSecretCodes(); loadDailySettings(); loadLevelsFromCache(); }
+  if(tab==='pts-cfg') { loadSecretCodes(); loadDailySettings(); loadLevelsFromCache(); loadTutorialVideoAdmin(); }
   if(tab==='logs') loadActivityLogs();
   if(tab==='auction-admin') loadAuctionAdmin();
   if(tab==='tournaments-admin') loadTournamentsAdmin();
@@ -3635,13 +3637,20 @@ async function saveProd() {
   } catch(e){showToast('خطأ','err');}
 }
 
-async function toggleProd(id,active){await adminFetch(`${W}/api/admin/products/${id}`);loadAdminProds();loadStore();}
+async function toggleProd(id,active){
+  await adminFetch(`${W}/api/admin/products/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({active})});
+  loadAdminProds();loadStore();
+}
 async function delProd(id){
   if(!confirm('حذف المنتج؟'))return;
   const prod=(window._adminProds||[]).find(p=>p.id===id);
-  await adminFetch(`${W}/api/admin/products/${id}`);
-  logActivity('حذف منتج', prod?prod.name:'');
-  loadAdminProds();loadStore();showToast('تم الحذف');
+  try {
+    const res = await adminFetch(`${W}/api/admin/products/${id}`, {method:'DELETE'});
+    const d = await res.json().catch(()=>({}));
+    if (!res.ok || d.error) { showToast(d.error||'فشل الحذف','err'); return; }
+    logActivity('حذف منتج', prod?prod.name:'');
+    loadAdminProds();loadStore();showToast('تم الحذف');
+  } catch(e){ showToast('خطأ بالاتصال','err'); }
 }
 
 // USERS
@@ -3791,13 +3800,6 @@ function renderStaff() {
 }
 
 // POINTS CONFIG
-function toggleDailyVideoField() {
-  const cb = document.getElementById('daily-video-enabled');
-  const field = document.getElementById('daily-video-field');
-  if (!cb || !field) return;
-  field.style.display = cb.checked ? 'block' : 'none';
-  if (cb.checked) document.getElementById('daily-video-url')?.focus();
-}
 function applyPtsCfg() {
   setVal('pc-welcome',ptsCfg.welcome);setVal('pc-msg',ptsCfg.msg);setVal('pc-hour',ptsCfg.hour);
   setVal('pc-sub',ptsCfg.sub);setVal('pc-follow',ptsCfg.follow);setVal('pc-cooldown',ptsCfg.cooldown);
@@ -3806,24 +3808,116 @@ function applyPtsCfg() {
 async function savePtsCfg() {
   // جمع نقاط التسجيل اليومي
   const dailyPts = [0,1,2,3,4,5,6].map(i => parseInt(document.getElementById('daily-'+i)?.value)||50);
-  const dailyVideoEnabled = !!document.getElementById('daily-video-enabled')?.checked;
-  const dailyVideoUrl = document.getElementById('daily-video-url')?.value.trim() || '';
-  if (dailyVideoEnabled && !dailyVideoUrl) { showToast('أدخل رابط الفيديو أولاً','err'); return; }
-  const dailyVideo = { enabled: dailyVideoEnabled, url: dailyVideoUrl };
 
   ptsCfg={welcome:+gv('pc-welcome'),msg:+gv('pc-msg'),hour:+gv('pc-hour'),sub:+gv('pc-sub'),follow:+gv('pc-follow'),cooldown:+gv('pc-cooldown'),maxHr:+gv('pc-maxhr'),goal:+gv('pc-goal')};
   try {
     const hourlyPts = Number(document.getElementById('cfg-hourly')?.value)||50;
     const welcomePts = Number(document.getElementById('cfg-welcome')?.value)||100;
-    await adminFetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ptsCfg, dailyPts, dailyVideo, levels:levelsConfig, hourlyPts, welcomePts})});
+    await adminFetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ptsCfg, dailyPts, levels:levelsConfig, hourlyPts, welcomePts})});
     // حدّث الواجهة
     const sh=document.getElementById('statHourlyPts'); if(sh) sh.textContent=hourlyPts;
     const sw=document.getElementById('statWelcomePts'); if(sw) sw.textContent=welcomePts;
     // حدّث الـ cache
-    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyPts=dailyPts; c.dailyVideo=dailyVideo; c.ptsCfg=ptsCfg; c.levels=levelsConfig; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
+    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyPts=dailyPts; c.ptsCfg=ptsCfg; c.levels=levelsConfig; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
     dailyConfig = dailyPts;
     showToast('✅ تم حفظ إعدادات النقاط');
   } catch(e){showToast('خطأ','err');}
+}
+
+// ══════════════════════════════════════════
+// TUTORIAL VIDEO (شرح) — رفع من جهاز الأدمن
+// ══════════════════════════════════════════
+let _tvPendingData = null; // base64 المختار حديثاً (لسا ما انحفظ)
+let _tvPendingMime = null;
+let _tvPendingName = null;
+
+function handleTutorialVideoFile(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const MAX_BYTES = 9 * 1024 * 1024; // ~9 ميغا قبل التحويل لـ base64
+  if (file.size > MAX_BYTES) {
+    showToast('الفيديو كبير جداً — اختر فيديو أصغر من 9 ميغا','err');
+    e.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    _tvPendingData = reader.result; // data:video/mp4;base64,....
+    _tvPendingMime = file.type || 'video/mp4';
+    _tvPendingName = file.name;
+    const info = document.getElementById('tv-file-info');
+    if (info) info.textContent = '✅ تم اختيار: ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + ' MB) — اضغط "حفظ" لتفعيله';
+  };
+  reader.onerror = () => showToast('فشل قراءة الملف','err');
+  reader.readAsDataURL(file);
+}
+
+async function saveTutorialVideo() {
+  const enabled = !!document.getElementById('tv-enabled')?.checked;
+  if (enabled && !_tvPendingData) {
+    // لو مفعّل بس ما اختار فيديو جديد، تحقق هل يوجد فيديو محفوظ مسبقاً
+    try {
+      const st = await (await adminFetch(`${W}/api/tutorial-video/status`)).json();
+      if (!st.enabled) { showToast('اختر فيديو أولاً من جهازك','err'); return; }
+    } catch(e){}
+  }
+  const body = { enabled };
+  if (_tvPendingData) {
+    // استخرج base64 الخام بدون الـ prefix (data:video/mp4;base64,)
+    body.data = _tvPendingData.split(',')[1] || _tvPendingData;
+    body.mime = _tvPendingMime;
+    body.name = _tvPendingName;
+  }
+  try {
+    const res = await adminFetch(`${W}/api/admin/tutorial-video`, {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    const d = await res.json();
+    if (!res.ok || d.error) { showToast(d.error||'فشل الحفظ','err'); return; }
+    showToast('✅ تم حفظ فيديو الشرح');
+    _tvPendingData = null; _tvPendingMime = null; _tvPendingName = null;
+  } catch(e) { showToast('خطأ بالاتصال','err'); }
+}
+
+async function loadTutorialVideoAdmin() {
+  try {
+    const st = await (await adminFetch(`${W}/api/tutorial-video/status`)).json();
+    const cb = document.getElementById('tv-enabled');
+    const info = document.getElementById('tv-file-info');
+    if (cb) cb.checked = !!st.enabled;
+    if (info) info.textContent = st.enabled ? '✅ يوجد فيديو محفوظ ومفعّل حالياً' : 'لا يوجد فيديو مفعّل حالياً';
+  } catch(e){}
+}
+
+// يظهر زر "شرح" للمستخدمين فقط لو الأدمن فعّل الفيديو
+async function checkTutorialVideoButton() {
+  const btn = document.getElementById('dailyTutorialBtn');
+  if (!btn) return;
+  try {
+    const st = await (await fetch(`${W}/api/tutorial-video/status`)).json();
+    btn.style.display = st.enabled ? 'inline-block' : 'none';
+  } catch(e) { btn.style.display = 'none'; }
+}
+
+// يفتح المودال ويجيب الفيديو فقط لما المستخدم يضغط (lazy load)
+async function openTutorialVideo() {
+  const modal = document.getElementById('tutorialVideoModal');
+  const wrap = document.getElementById('tutorialVideoWrap');
+  if (!modal || !wrap) return;
+  modal.classList.remove('hidden'); modal.style.display = 'flex';
+  wrap.innerHTML = '<span style="font-size:13px;color:var(--muted);">جاري التحميل...</span>';
+  try {
+    const res = await fetch(`${W}/api/tutorial-video`);
+    const d = await res.json();
+    if (!d.enabled || !d.data) {
+      wrap.innerHTML = '<span style="font-size:13px;color:var(--muted);">لا يوجد فيديو متاح حالياً</span>';
+      return;
+    }
+    const src = 'data:' + (d.mime||'video/mp4') + ';base64,' + d.data;
+    wrap.innerHTML = `<video controls autoplay style="width:100%;max-height:70vh;display:block;" src="${src}"></video>`;
+  } catch(e) {
+    wrap.innerHTML = '<span style="font-size:13px;color:var(--red);">تعذّر تحميل الفيديو</span>';
+  }
 }
 
 // CHATS
@@ -4819,49 +4913,14 @@ try {
   if (_cached.dailyPts && Array.isArray(_cached.dailyPts)) dailyConfig = _cached.dailyPts;
 } catch(e){}
 
-function toEmbedUrl(url) {
-  try {
-    const u = new URL(url);
-    if (u.hostname.includes('youtube.com') && u.searchParams.get('v')) {
-      return 'https://www.youtube.com/embed/' + u.searchParams.get('v');
-    }
-    if (u.hostname === 'youtu.be') {
-      return 'https://www.youtube.com/embed/' + u.pathname.replace('/', '');
-    }
-    return url;
-  } catch(e) { return url; }
-}
-
-function renderDailyVideo(dailyVideo) {
-  const box = document.getElementById('dailyVideoBox');
-  if (!box) return;
-  if (!dailyVideo || !dailyVideo.enabled || !dailyVideo.url) {
-    box.style.display = 'none';
-    return;
-  }
-  box.style.display = 'block';
-  const url = dailyVideo.url.trim();
-  const isDirectFile = /\.(mp4|webm|ogg)(\?.*)?$/i.test(url);
-  if (isDirectFile) {
-    box.innerHTML = `<div class="settings-box-title">🎬 شرح التسجيل اليومي</div>
-      <video controls style="width:100%;border-radius:var(--radius);background:var(--surface2);" src="${url}"></video>`;
-  } else {
-    box.innerHTML = `<div class="settings-box-title">🎬 شرح التسجيل اليومي</div>
-      <div style="position:relative;width:100%;padding-top:56.25%;border-radius:var(--radius);overflow:hidden;background:var(--surface2);">
-        <iframe src="${toEmbedUrl(url)}" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allowfullscreen loading="lazy"></iframe>
-      </div>`;
-  }
-}
-
 async function loadDaily() {
   // جيب إعدادات النقاط اليومية
   try {
     const res = await fetch(`${W}/api/settings`);
     const d = await res.json();
     if (d.dailyPts && Array.isArray(d.dailyPts)) dailyConfig = d.dailyPts;
-    renderDailyVideo(d.dailyVideo);
-    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyVideo=d.dailyVideo; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
   } catch(e){}
+  checkTutorialVideoButton();
 
   // أظهر الشبكة فوراً من الـ config المحلي
   renderDailyDays(0, false);
@@ -4997,14 +5056,6 @@ function loadDailySettings() {
         const el = document.getElementById('daily-'+i);
         if(el) el.value = v;
       });
-    }
-    if (cached.dailyVideo) {
-      const cb = document.getElementById('daily-video-enabled');
-      const urlEl = document.getElementById('daily-video-url');
-      const field = document.getElementById('daily-video-field');
-      if (cb) cb.checked = !!cached.dailyVideo.enabled;
-      if (urlEl) urlEl.value = cached.dailyVideo.url || '';
-      if (field) field.style.display = cached.dailyVideo.enabled ? 'block' : 'none';
     }
   } catch(e){}
 }
@@ -7308,6 +7359,20 @@ init();
     <div class="m-btns">
       <button class="m-ok" onclick="saveRule()">💾 حفظ</button>
       <button class="m-cancel" onclick="closeModal('ruleModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- TUTORIAL VIDEO MODAL -->
+<div class="overlay hidden" id="tutorialVideoModal" style="position:fixed!important;inset:0!important;z-index:99999!important;display:none;align-items:center;justify-content:center;padding:16px;">
+  <div class="modal" style="max-width:520px;width:100%;">
+    <h3 style="margin-bottom:14px;">🎬 شرح</h3>
+    <div id="tutorialVideoWrap" style="border-radius:var(--radius);overflow:hidden;background:var(--surface2);min-height:120px;display:flex;align-items:center;justify-content:center;">
+      <span style="font-size:13px;color:var(--muted);">جاري التحميل...</span>
+    </div>
+    <div class="m-btns" style="margin-top:14px;">
+      <button class="m-cancel" onclick="closeModal('tutorialVideoModal')">إغلاق</button>
     </div>
   </div>
 </div>

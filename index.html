@@ -2053,6 +2053,22 @@ body.ready .page.on { opacity:1; }
           <div class="settings-box-title">🔐 كلمة سر الإدارة</div>
 
         </div>
+
+        <div class="settings-box" style="margin-top:14px;">
+          <div class="settings-box-title" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>📺 صفحة الشرح</span>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <span style="font-size:12px;color:var(--muted);">تفعيل</span>
+              <input type="checkbox" id="tutEnabled" style="accent-color:var(--kick);width:16px;height:16px;"/>
+            </label>
+          </div>
+          <div id="tutVideosList" style="display:flex;flex-direction:column;gap:8px;margin:12px 0;"></div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="addTutVideo()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">+ إضافة فيديو</button>
+            <button onclick="saveTutorial()" class="btn btn-kick" style="font-size:13px;padding:8px 16px;">💾 حفظ</button>
+          </div>
+        </div>
+
         <button class="btn btn-kick" onclick="saveSettings()">💾 حفظ كل الإعدادات</button>
       </div>
     </div>

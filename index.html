@@ -1334,6 +1334,7 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 }
 .rule:hover { border-color:rgba(83,252,24,.15); background:rgba(83,252,24,.02); }
 
+
 </style>
 
 
@@ -1408,6 +1409,7 @@ body.ready .page.on { opacity:1; }
 .crop-btns { display:flex;gap:8px;width:100%;flex-wrap:wrap; }
 .crop-btns button { flex:1;min-width:80px;padding:11px 8px;border-radius:10px;font-weight:700;font-size:13px;font-family:"Cairo",sans-serif;cursor:pointer;border:none; }
 
+
 </style>
 <script>
 (function(){
@@ -1428,6 +1430,7 @@ body.ready .page.on { opacity:1; }
   } catch(e){}
 })();
 </script>
+<canvas id="bgCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
 <nav class="nav">
   <button onclick="toggleDrawer()" id="hamburgerBtn" style="display:none;flex-direction:column;gap:5px;border:1px solid var(--border);background:var(--card2);padding:8px;cursor:pointer;border-radius:8px;flex-shrink:0;"><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span></button>
   <div class="nav-logo" id="navLogo" onclick="goTo('home',this)">
@@ -7243,6 +7246,87 @@ async function saveTutorial() {
     renderTutorialAdmin();
   } catch(e) { showToast('خطأ','err'); }
 }
+
+
+// ══ PARTICLES BACKGROUND ══
+(function() {
+  const canvas = document.getElementById('bgCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+  const COUNT = 50;
+  const COLOR = '83,252,24';
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function createParticle(x, y) {
+    return {
+      x: x !== undefined ? x : Math.random() * W,
+      y: y !== undefined ? y : Math.random() * H,
+      r: Math.random() * 3 + 1.5,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      life: 0,
+      maxLife: 80 + Math.random() * 120,
+      born: false
+    };
+  }
+
+  function init() {
+    resize();
+    particles = Array.from({ length: COUNT }, () => {
+      const p = createParticle();
+      p.life = Math.random() * p.maxLife; // ابدأ من نقاط مختلفة
+      return p;
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach((p, i) => {
+      p.life++;
+      // fade in ثم fade out
+      const half = p.maxLife / 2;
+      const alpha = p.life < half
+        ? (p.life / half)
+        : (1 - (p.life - half) / half);
+
+      const size = Math.max(0.01, p.r * alpha);
+
+      // نقطة مضيئة واضحة
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${COLOR},${alpha * 0.9})`;
+      ctx.fill();
+
+      // هالة
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 6);
+      grad.addColorStop(0, `rgba(${COLOR},${alpha * 0.4})`);
+      grad.addColorStop(1, `rgba(${COLOR},0)`);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, size * 6, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // حركة
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // إعادة من مكان عشوائي بعد الاختفاء
+      if (p.life >= p.maxLife) {
+        particles[i] = createParticle();
+      }
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  init();
+  draw();
+})();
 
 async function init() {
   // استرجع admin session مع تحقق

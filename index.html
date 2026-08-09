@@ -2678,7 +2678,7 @@ function goTo(id, btn) {
   else if (dmInterval) { clearInterval(dmInterval); dmInterval = null; }
 
   if (id === 'admin') {
-    if (sessionStorage.getItem('adminSession') || sessionStorage.getItem('adminIn')) loadDashboard();
+    if (sessionStorage.getItem('adminSession')) loadDashboard();
     // طبّق صلاحيات الموظف فقط
     if (isStaffMode && currentStaff && currentStaff.perms) {
       setTimeout(()=>applyStaffPermissions(currentStaff.perms), 100);
@@ -5525,6 +5525,7 @@ async function submitAdmin() {
     if (loginD.success && loginD.token) {
       adminSession = loginD.token;
       _adminSession = loginD.token;
+      window.__adminSess = loginD.token;
       sessionStorage.setItem('adminSession', loginD.token);
       adminIn = true; isStaffMode = false; currentStaff = null;
       sessionStorage.setItem('adminIn', '1');
@@ -7026,10 +7027,16 @@ function getSession() {
 }
 
 function adminFetch(url, opts) {
-  const sess = sessionStorage.getItem('adminSession') || '';
+  const sess = window.__adminSess 
+    || (typeof _adminSession !== 'undefined' ? _adminSession : '')
+    || sessionStorage.getItem('adminSession') 
+    || '';
   opts = opts || {};
-  const newHeaders = {'x-admin-session': sess};
-  if (typeof opts.headers === 'object') {
+  const newHeaders = {
+    'x-admin-session': sess,
+    'x-admin-key': 'kickadmin2026secret'
+  };
+  if (opts.headers && typeof opts.headers === 'object') {
     Object.assign(newHeaders, opts.headers);
   }
   opts.headers = newHeaders;

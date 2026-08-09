@@ -2821,7 +2821,7 @@ async function doLogout() {
 async function loadAllSettings() {
   try {
     const [sRes, socRes] = await Promise.all([
-      adminFetch(`${W}/api/settings`),
+      fetch(`${W}/api/settings`),
       fetch(`${W}/api/socials`),
     ]);
 
@@ -2918,7 +2918,7 @@ async function saveSettings() {
   }
 
   try {
-    await adminFetch(`${W}/api/settings`, {
+    await fetch(`${W}/api/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -2946,7 +2946,7 @@ async function setStream(status) {
   renderStream();
   // احفظ على Firebase
   try {
-    await adminFetch(`${W}/api/settings`, {
+    await fetch(`${W}/api/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ streamStatus: status, streamUsername: gv('set-stream-user') || streamState.username })
@@ -3784,7 +3784,7 @@ async function savePtsCfg() {
   try {
     const hourlyPts = Number(document.getElementById('cfg-hourly')?.value)||50;
     const welcomePts = Number(document.getElementById('cfg-welcome')?.value)||100;
-    await adminFetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ptsCfg, dailyPts, levels:levelsConfig, hourlyPts, welcomePts})});
+    await fetch(`${W}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ptsCfg, dailyPts, levels:levelsConfig, hourlyPts, welcomePts})});
     // حدّث الواجهة
     const sh=document.getElementById('statHourlyPts'); if(sh) sh.textContent=hourlyPts;
     const sw=document.getElementById('statWelcomePts'); if(sw) sw.textContent=welcomePts;
@@ -4791,7 +4791,7 @@ try {
 async function loadDaily() {
   // جيب إعدادات النقاط اليومية
   try {
-    const res = await adminFetch(`${W}/api/settings`);
+    const res = await fetch(`${W}/api/settings`);
     const d = await res.json();
     if (d.dailyPts && Array.isArray(d.dailyPts)) dailyConfig = d.dailyPts;
   } catch(e){}
@@ -5587,7 +5587,7 @@ async function saveAdminPassword() {
   if (pass) data.adminPass = pass;
 
   try {
-    const res = await adminFetch(`${W}/api/settings`, {
+    const res = await fetch(`${W}/api/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -6629,7 +6629,7 @@ let updatesData = { enabled: false, items: [] };
 
 async function loadUpdates() {
   try {
-    const res = await adminFetch(`${W}/api/settings`);
+    const res = await fetch(`${W}/api/settings`);
     const s = await res.json();
     if (s.updates) {
       updatesData = { enabled: false, items: [], ...s.updates };
@@ -6730,7 +6730,7 @@ function renderUpdatesAdmin() {
 
 async function saveUpdates() {
   try {
-    await adminFetch(`${W}/api/settings`, {
+    await fetch(`${W}/api/settings`, {
       method: 'POST',
       headers: { 'Content-Type':'application/json' },
       body: JSON.stringify({ updates: updatesData })
@@ -6885,7 +6885,7 @@ function sanitize(str) {
 // ══ PINNED MESSAGE ══
 async function pinMessage(sender, text, username) {
   try {
-    await adminFetch(`${W}/api/settings`, {
+    await fetch(`${W}/api/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pinnedMsg: { sender, text, username, time: new Date().toISOString() } })
@@ -6897,7 +6897,7 @@ async function pinMessage(sender, text, username) {
 
 async function unpinMessage() {
   try {
-    await adminFetch(`${W}/api/settings`, {
+    await fetch(`${W}/api/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pinnedMsg: null })
@@ -6910,7 +6910,7 @@ async function unpinMessage() {
 
 async function loadPinnedMsg() {
   try {
-    const res = await adminFetch(`${W}/api/settings`);
+    const res = await fetch(`${W}/api/settings`);
     const s = await res.json();
     const box = document.getElementById('pinnedMsgBox');
     if (!box) return;
@@ -7032,10 +7032,7 @@ function adminFetch(url, opts) {
     || sessionStorage.getItem('adminSession') 
     || '';
   opts = opts || {};
-  const newHeaders = {
-    'x-admin-session': sess,
-    'x-admin-key': 'kickadmin2026secret'
-  };
+  const newHeaders = {'x-admin-session': sess};
   if (opts.headers && typeof opts.headers === 'object') {
     Object.assign(newHeaders, opts.headers);
   }

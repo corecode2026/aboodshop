@@ -6697,12 +6697,22 @@ async function renderUpdatesPage() {
   `).join('');
 }
 
-function toggleUpdatesBtn() {
+async function toggleUpdatesBtn() {
   updatesData.enabled = document.getElementById('updatesEnabled')?.checked || false;
   const btn = document.getElementById('updatesBtn');
   const navBtn = document.getElementById('navUpdatesBtn');
   if (btn) btn.style.display = updatesData.enabled ? 'block' : 'none';
   if (navBtn) navBtn.style.display = updatesData.enabled ? 'inline-block' : 'none';
+  // احفظ تلقائياً
+  try {
+    await adminFetch(`${W}/api/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ updates: updatesData })
+    });
+    try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.updates=updatesData; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
+    showToast(updatesData.enabled ? '✅ تم تفعيل التحديثات' : '⚫ تم إيقاف التحديثات');
+  } catch(e) {}
 }
 
 function updateItem(el) {

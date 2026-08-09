@@ -2597,7 +2597,9 @@ const ADMIN_KEY='';
     opts = opts ? Object.assign({}, opts) : {};
     const urlStr = typeof url === 'string' ? url : (url.url || '');
     if (urlStr.includes('/api/admin/') || urlStr.includes('/api/staff/') || urlStr.includes('/api/settings') || urlStr.includes('/api/socials')) {
-      const s = sessionStorage.getItem('adminSession') || '';
+      const s = (typeof _adminSession !== 'undefined' ? _adminSession : '') 
+             || sessionStorage.getItem('adminSession') 
+             || '';
       if (s) {
         opts.headers = Object.assign({'x-admin-session': s}, opts.headers || {});
       }

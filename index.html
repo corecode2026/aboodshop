@@ -2736,7 +2736,7 @@ function goTo(id, btn) {
   if (id === 'profile') loadProfile();
   if (id === 'daily') loadDaily();
   if (id === 'dms') { if (!dmAllUsers.length) loadDms(); else renderDmList(dmAllUsers); }
-  if (id === 'tutorial') { loadTutorial(); setTimeout(renderTutorialPage, 300); }
+  if (id === 'tutorial') { loadTutorial(); setTimeout(renderTutorialPage, 500); }
   if (id === 'updates') { loadUpdates(); setTimeout(renderUpdatesPage, 300); }
   else if (dmInterval) { clearInterval(dmInterval); dmInterval = null; }
 
@@ -3444,6 +3444,19 @@ async function confirmBuy() {
       document.getElementById('navPtsVal').textContent = d.remainingPoints.toLocaleString();
       closeModal('buyModal'); loadStore();
       showToast('✅ ' + d.message);
+      // أظهر مودال Discord
+      try {
+        const sett = JSON.parse(localStorage.getItem('sk_settings_cache') || '{}');
+        const title = sett.buyTitle || 'تم استلام طلبك! 🎉';
+        const msg = sett.buyMsg || 'يجب الدخول للديسكورد وفتح تذكرة بخصوص طلبك.';
+        const discordUrl = sett.discordUrl || '#';
+        document.getElementById('afterBuyTitle').textContent = title;
+        document.getElementById('afterBuyMsg').textContent = msg;
+        document.getElementById('afterBuyDiscordBtn').href = discordUrl;
+        const modal = document.getElementById('afterBuyModal');
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+      } catch(e2) {}
     } else showToast(d.error||'فشل الشراء','err');
   } catch(e) { showToast('خطأ','err'); }
 }

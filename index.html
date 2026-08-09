@@ -1334,7 +1334,6 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 }
 .rule:hover { border-color:rgba(83,252,24,.15); background:rgba(83,252,24,.02); }
 
-
 </style>
 
 
@@ -1409,7 +1408,6 @@ body.ready .page.on { opacity:1; }
 .crop-btns { display:flex;gap:8px;width:100%;flex-wrap:wrap; }
 .crop-btns button { flex:1;min-width:80px;padding:11px 8px;border-radius:10px;font-weight:700;font-size:13px;font-family:"Cairo",sans-serif;cursor:pointer;border:none; }
 
-
 </style>
 <script>
 (function(){
@@ -1430,7 +1428,6 @@ body.ready .page.on { opacity:1; }
   } catch(e){}
 })();
 </script>
-<canvas id="bgCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
 <nav class="nav">
   <button onclick="toggleDrawer()" id="hamburgerBtn" style="display:none;flex-direction:column;gap:5px;border:1px solid var(--border);background:var(--card2);padding:8px;cursor:pointer;border-radius:8px;flex-shrink:0;"><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span></button>
   <div class="nav-logo" id="navLogo" onclick="goTo('home',this)">
@@ -1443,15 +1440,15 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('about',this)">من أنا</button>
     <button class="nl" onclick="goTo('store',this)">المتجر</button>
     <button class="nl" onclick="goTo('market',this)">السوق</button>
-    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;">تحديثات</button>
+    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;">🆕 تحديثات</button>
     <button class="nl" onclick="goTo('rules',this)">القوانين</button>
     <button class="nl" onclick="goTo('points',this)">النقاط</button>
     <button class="nl" onclick="goTo('tournaments',this)">البطولات</button>
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
-    <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn" style="position:relative;">التواصل<span id="dmsBadge" style="display:none;position:absolute;top:2px;left:2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;min-width:14px;text-align:center;"></span></button>
+    <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn" style="position:relative;">💬 رسائل<span id="dmsBadge" style="display:none;position:absolute;top:2px;left:2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;min-width:14px;text-align:center;"></span></button>
     <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
     <button id="navTutBtn" class="nl" onclick="goTo('tutorial',this)" style="display:none;">📺 الشرح</button>
-    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);font-weight:800;">تحديثات</button>
+    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);font-weight:800;">🆕 تحديثات</button>
   </div>
   <div class="nav-right">
     <div class="pts-chip hidden" id="navPts">⭐ <span id="navPtsVal">0</span> نقطة</div>
@@ -2056,41 +2053,6 @@ body.ready .page.on { opacity:1; }
           <div class="settings-box-title">🔐 كلمة سر الإدارة</div>
 
         </div>
-
-        <div class="settings-box" style="margin-top:14px;">
-          <div class="settings-box-title" style="display:flex;justify-content:space-between;align-items:center;">
-            <span>📺 صفحة الشرح</span>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-              <span style="font-size:12px;color:var(--muted);">تفعيل</span>
-              <input type="checkbox" id="tutEnabled" style="accent-color:var(--kick);width:16px;height:16px;"/>
-            </label>
-          </div>
-          <div id="tutVideosList" style="display:flex;flex-direction:column;gap:8px;margin:12px 0;"></div>
-          <div style="display:flex;gap:8px;">
-            <button onclick="addTutVideo()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">+ إضافة فيديو</button>
-            <button onclick="saveTutorial()" class="btn btn-kick" style="font-size:13px;padding:8px 16px;">💾 حفظ</button>
-          </div>
-        </div>
-
-
-        <div class="settings-box" style="margin-top:14px;">
-          <div class="settings-box-title">🎫 رسالة ما بعد الشراء</div>
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <div>
-              <div style="font-size:12px;color:var(--muted);margin-bottom:5px;">عنوان الرسالة</div>
-              <input class="pf-input" id="set-buy-title" value="تم استلام طلبك! 🎉" placeholder="عنوان الرسالة"/>
-            </div>
-            <div>
-              <div style="font-size:12px;color:var(--muted);margin-bottom:5px;">نص الرسالة</div>
-              <textarea class="pf-input" id="set-buy-msg" rows="3">يجب الدخول للديسكورد وفتح تذكرة بخصوص طلبك للحصول على جائزتك.</textarea>
-            </div>
-            <div>
-              <div style="font-size:12px;color:var(--muted);margin-bottom:5px;">رابط الديسكورد</div>
-              <input class="pf-input" id="set-discord-url" placeholder="https://discord.gg/..." dir="ltr"/>
-            </div>
-          </div>
-        </div>
-
         <button class="btn btn-kick" onclick="saveSettings()">💾 حفظ كل الإعدادات</button>
       </div>
     </div>
@@ -2739,7 +2701,7 @@ function goTo(id, btn) {
   if (id === 'profile') loadProfile();
   if (id === 'daily') loadDaily();
   if (id === 'dms') { if (!dmAllUsers.length) loadDms(); else renderDmList(dmAllUsers); }
-  if (id === 'tutorial') { loadTutorial(); setTimeout(renderTutorialPage, 500); }
+  if (id === 'tutorial') { loadTutorial(); setTimeout(renderTutorialPage, 300); }
   if (id === 'updates') { loadUpdates(); setTimeout(renderUpdatesPage, 300); }
   else if (dmInterval) { clearInterval(dmInterval); dmInterval = null; }
 
@@ -3447,19 +3409,6 @@ async function confirmBuy() {
       document.getElementById('navPtsVal').textContent = d.remainingPoints.toLocaleString();
       closeModal('buyModal'); loadStore();
       showToast('✅ ' + d.message);
-      // أظهر مودال Discord
-      try {
-        const sett = JSON.parse(localStorage.getItem('sk_settings_cache') || '{}');
-        const title = sett.buyTitle || 'تم استلام طلبك! 🎉';
-        const msg = sett.buyMsg || 'يجب الدخول للديسكورد وفتح تذكرة بخصوص طلبك.';
-        const discordUrl = sett.discordUrl || '#';
-        document.getElementById('afterBuyTitle').textContent = title;
-        document.getElementById('afterBuyMsg').textContent = msg;
-        document.getElementById('afterBuyDiscordBtn').href = discordUrl;
-        const modal = document.getElementById('afterBuyModal');
-        modal.style.display = 'flex';
-        modal.classList.remove('hidden');
-      } catch(e2) {}
     } else showToast(d.error||'فشل الشراء','err');
   } catch(e) { showToast('خطأ','err'); }
 }
@@ -7233,10 +7182,9 @@ function removeTutVideo(i) {
 async function saveTutorial() {
   tutData.enabled = document.getElementById('tutEnabled')?.checked || false;
   try {
-    const sess = sessionStorage.getItem('adminSession') || ''; 
-    await fetch(`${W}/api/settings`, {
+    await adminFetch(`${W}/api/settings`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-session': sess },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tutorial: tutData })
     });
     // حدّث الكاش
@@ -7246,87 +7194,6 @@ async function saveTutorial() {
     renderTutorialAdmin();
   } catch(e) { showToast('خطأ','err'); }
 }
-
-
-// ══ PARTICLES BACKGROUND ══
-(function() {
-  const canvas = document.getElementById('bgCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let W, H, particles = [];
-  const COUNT = 50;
-  const COLOR = '83,252,24';
-
-  function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-
-  function createParticle(x, y) {
-    return {
-      x: x !== undefined ? x : Math.random() * W,
-      y: y !== undefined ? y : Math.random() * H,
-      r: Math.random() * 3 + 1.5,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.5,
-      life: 0,
-      maxLife: 80 + Math.random() * 120,
-      born: false
-    };
-  }
-
-  function init() {
-    resize();
-    particles = Array.from({ length: COUNT }, () => {
-      const p = createParticle();
-      p.life = Math.random() * p.maxLife; // ابدأ من نقاط مختلفة
-      return p;
-    });
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    particles.forEach((p, i) => {
-      p.life++;
-      // fade in ثم fade out
-      const half = p.maxLife / 2;
-      const alpha = p.life < half
-        ? (p.life / half)
-        : (1 - (p.life - half) / half);
-
-      const size = Math.max(0.01, p.r * alpha);
-
-      // نقطة مضيئة واضحة
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${COLOR},${alpha * 0.9})`;
-      ctx.fill();
-
-      // هالة
-      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 6);
-      grad.addColorStop(0, `rgba(${COLOR},${alpha * 0.4})`);
-      grad.addColorStop(1, `rgba(${COLOR},0)`);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, size * 6, 0, Math.PI * 2);
-      ctx.fillStyle = grad;
-      ctx.fill();
-
-      // حركة
-      p.x += p.vx;
-      p.y += p.vy;
-
-      // إعادة من مكان عشوائي بعد الاختفاء
-      if (p.life >= p.maxLife) {
-        particles[i] = createParticle();
-      }
-    });
-    requestAnimationFrame(draw);
-  }
-
-  window.addEventListener('resize', resize);
-  init();
-  draw();
-})();
 
 async function init() {
   // استرجع admin session مع تحقق

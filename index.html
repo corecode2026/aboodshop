@@ -7027,9 +7027,12 @@ function getSession() {
 
 function adminFetch(url, opts) {
   const sess = sessionStorage.getItem('adminSession') || '';
-  opts = opts ? JSON.parse(JSON.stringify(opts)) : {};
-  if (!opts.headers) opts.headers = {};
-  opts.headers['x-admin-session'] = sess;
+  opts = opts || {};
+  const newHeaders = {'x-admin-session': sess};
+  if (typeof opts.headers === 'object') {
+    Object.assign(newHeaders, opts.headers);
+  }
+  opts.headers = newHeaders;
   return fetch(url, opts);
 }
 

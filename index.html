@@ -1440,15 +1440,15 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('about',this)">من أنا</button>
     <button class="nl" onclick="goTo('store',this)">المتجر</button>
     <button class="nl" onclick="goTo('market',this)">السوق</button>
-    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;">🆕 تحديثات</button>
+    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;">تحديثات</button>
     <button class="nl" onclick="goTo('rules',this)">القوانين</button>
     <button class="nl" onclick="goTo('points',this)">النقاط</button>
     <button class="nl" onclick="goTo('tournaments',this)">البطولات</button>
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
-    <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn" style="position:relative;">💬 رسائل<span id="dmsBadge" style="display:none;position:absolute;top:2px;left:2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;min-width:14px;text-align:center;"></span></button>
+    <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn" style="position:relative;">التواصل<span id="dmsBadge" style="display:none;position:absolute;top:2px;left:2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;min-width:14px;text-align:center;"></span></button>
     <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
     <button id="navTutBtn" class="nl" onclick="goTo('tutorial',this)" style="display:none;">📺 الشرح</button>
-    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);font-weight:800;">🆕 تحديثات</button>
+    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);font-weight:800;">تحديثات</button>
   </div>
   <div class="nav-right">
     <div class="pts-chip hidden" id="navPts">⭐ <span id="navPtsVal">0</span> نقطة</div>
@@ -7230,9 +7230,10 @@ function removeTutVideo(i) {
 async function saveTutorial() {
   tutData.enabled = document.getElementById('tutEnabled')?.checked || false;
   try {
-    await adminFetch(`${W}/api/settings`, {
+    const sess = sessionStorage.getItem('adminSession') || ''; 
+    await fetch(`${W}/api/settings`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-admin-session': sess },
       body: JSON.stringify({ tutorial: tutData })
     });
     // حدّث الكاش

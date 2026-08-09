@@ -2590,6 +2590,13 @@ body.ready .page.on { opacity:1; }
 const W=atob('aHR0cHM6Ly9zdG9yZWtpY2sxLWF1dGguaGs5ODM0ODAud29ya2Vycy5kZXY=');
 const ADMIN_KEY='';
 
+// adminSession getter - دايماً يرجع من sessionStorage
+let _adminSession = sessionStorage.getItem('adminSession') || '';
+Object.defineProperty(window, 'adminSession', {
+  get: function() { return _adminSession || sessionStorage.getItem('adminSession') || ''; },
+  set: function(v) { _adminSession = v; if(v) sessionStorage.setItem('adminSession', v); }
+});
+
 // Auto-inject admin session
 (function() {
   const _orig = window.fetch;
@@ -2607,13 +2614,6 @@ const ADMIN_KEY='';
     return _orig.call(this, url, opts);
   };
 })();
-
-// adminSession getter - دايماً يرجع من sessionStorage
-let _adminSession = sessionStorage.getItem('adminSession') || '';
-Object.defineProperty(window, 'adminSession', {
-  get: function() { return _adminSession || sessionStorage.getItem('adminSession') || ''; },
-  set: function(v) { _adminSession = v; if(v) sessionStorage.setItem('adminSession', v); }
-});
 
 // ═══════════════════════════════════════════
 // STATE

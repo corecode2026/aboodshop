@@ -836,17 +836,6 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 .cv-send { background:var(--kick); color:#000; border:none; padding:9px 16px; border-radius:9px; font-weight:700; font-size:13px; font-family:'Cairo',sans-serif; cursor:pointer; }
 .no-chat { display:flex; align-items:center; justify-content:center; flex:1; color:var(--muted); font-size:14px; }
 
-/* STAFF */
-.staff-card { background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius); padding:18px; display:flex; align-items:flex-start; gap:14px; margin-bottom:12px; transition:var(--transition); }
-.staff-card:hover { border-color:var(--border); }
-.staff-ava { width:44px; height:44px; border-radius:50%; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; border:2px solid var(--border2); font-weight:700; }
-.staff-name { font-size:14px; font-weight:700; margin-bottom:3px; }
-.staff-user { font-size:12px; color:var(--muted); margin-bottom:7px; }
-.staff-role-tag { display:inline-block; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; margin-bottom:9px; }
-.staff-perms { display:flex; flex-wrap:wrap; gap:5px; }
-.perm-tag { font-size:11px; padding:2px 9px; border-radius:10px; background:var(--kick-dim); border:1px solid var(--border); color:var(--kick); font-weight:600; }
-.staff-acts { display:flex; flex-direction:column; gap:5px; margin-right:auto; }
-
 /* ══════════════════════════════
    MODALS
 ══════════════════════════════ */
@@ -1447,7 +1436,7 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
     <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn" style="position:relative;">💬 رسائل<span id="dmsBadge" style="display:none;position:absolute;top:2px;left:2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;min-width:14px;text-align:center;"></span></button>
     <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
-    <button class="nl" onclick="goTo('explain',this)">🎬 الشرح</button>
+    <button class="nl" id="navExplainBtn" onclick="goTo('explain',this)" style="display:none;">🎬 الشرح</button>
     <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);font-weight:800;">🆕 تحديثات</button>
   </div>
   <div class="nav-right">
@@ -1639,7 +1628,6 @@ body.ready .page.on { opacity:1; }
         <button class="am" onclick="aTab('chats',this)" data-tab="chats"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span> الدردشات</button>
         <button class="am" onclick="aTab('products',this)" data-tab="products"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></span> المنتجات</button>
         <button class="am" onclick="aTab('users',this)" data-tab="users"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span> المستخدمون</button>
-        <button class="am" onclick="aTab('staff',this)" data-tab="staff"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span> الموظفون</button>
         <button class="am" onclick="aTab('messages-admin',this)" data-tab="messages-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span> رسائل</button>
         <button class="am" onclick="aTab('market-admin',this)" data-tab="market-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></span> السوق</button>
         <button class="am" onclick="aTab('tournaments-admin',this)" data-tab="tournaments-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 01-2-2V5h4"/><path d="M18 9h2a2 2 0 002-2V5h-4"/><path d="M12 17v4"/><path d="M8 21h8"/><path d="M6 3h12v8a6 6 0 01-12 0V3z"/></svg></span> البطولات</button>
@@ -1722,14 +1710,6 @@ body.ready .page.on { opacity:1; }
           </div>
           </div>
           <div id="usersTable" style="overflow-x:auto;"></div>
-      </div>
-      <!-- STAFF -->
-      <div class="asub" id="asub-staff">
-        <div class="section-head">
-          <div class="section-title">الموظفون</div>
-          <button class="btn btn-kick" style="font-size:13px;padding:7px 14px;" onclick="openStaffModal(null)">+ إضافة موظف</button>
-        </div>
-        <div id="staffList"></div>
       </div>
 
 
@@ -1884,6 +1864,7 @@ body.ready .page.on { opacity:1; }
             تحديث
           </button>
         </div>
+        <input id="logsSearch" oninput="renderActivityLogs()" placeholder="🔍 ابحث بالاسم أو الـ IP أو نوع الحركة..." class="pf-input" style="margin-bottom:12px;"/>
         <div class="settings-box">
           <div id="activityLogsList"><div class="empty"><p>اضغط تحديث لتحميل السجل</p></div></div>
         </div>
@@ -1969,7 +1950,7 @@ body.ready .page.on { opacity:1; }
             </div>
           </div>
           <div style="display:flex;gap:8px;margin-top:14px;">
-            <button class="btn btn-kick" onclick="saveExplainVideo()" style="flex:1;">💾 حفظ فيديو الشرح</button>
+            <button class="btn btn-kick" onclick="savePtsCfg()" style="flex:1;">💾 حفظ فيديو الشرح</button>
             <button onclick="deleteExplainVideo()" style="background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.3);padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">🗑 حذف</button>
           </div>
         </div>
@@ -2457,7 +2438,7 @@ body.ready .page.on { opacity:1; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       التسجيل اليومي
     </button>
-    <button class="dl" onclick="drawerGoTo('explain')">
+    <button class="dl" id="drawerExplainBtn" onclick="drawerGoTo('explain')" style="display:none;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
       🎬 الشرح
     </button>
@@ -2686,8 +2667,6 @@ Object.defineProperty(window, 'adminSession', {
 let currentUser = null;
 let sessionToken = localStorage.getItem('sk_token') || null;
 let adminIn = false;
-let currentStaff = null; // الموظف الحالي لو مسجل دخول
-let isStaffMode = false; // وضع الموظف
 
 let pendingProd = null;
 let editingProdId = null;
@@ -2697,10 +2676,8 @@ let chatOpen = false;
 let selectedChat = null;
 let chats = {};
 let socialLinks = [];
-let staff = [];
 let streamState = { status:'offline', username:'', title:'', offlineMsg:'تابعنا على Kick!', offlineIcon:'😴', offlineBg:null, offlineColor:'#0A0A0F' };
 let ptsCfg = { welcome:100, msg:5, hour:50, sub:500, follow:50, cooldown:2, maxHr:100, goal:1500 };
-const PERM_LABELS = { orders:'🛒 الطلبات', products:'🎁 المنتجات', users:'👥 المستخدمون', chats:'💬 الدردشات', staff:'👮 الموظفون', settings:'📊 الرئيسية' };
 const SOCIAL_COLORS = { kick:'#53FC18', discord:'#5865F2', twitter:'#1DA1F2', youtube:'#FF0000', instagram:'#E1306C', tiktok:'#010101', telegram:'#2CA5E0', whatsapp:'#25D366', facebook:'#1877F2', twitch:'#9146FF', snapchat:'#FFFC00', website:'#888' };
 const SOCIAL_TC = { kick:'#000', discord:'#fff', twitter:'#fff', youtube:'#fff', instagram:'#fff', tiktok:'#fff', telegram:'#fff', whatsapp:'#fff', facebook:'#fff', twitch:'#fff', snapchat:'#000', website:'#fff' };
 const SOCIAL_LABELS = { kick:'Kick', discord:'Discord', twitter:'Twitter', youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok', telegram:'Telegram', whatsapp:'WhatsApp', facebook:'Facebook', twitch:'Twitch', snapchat:'Snapchat', website:'الموقع' };
@@ -2745,13 +2722,7 @@ function goTo(id, btn) {
 
   if (id === 'admin') {
     if (sessionStorage.getItem('adminSession')) loadDashboard();
-    // طبّق صلاحيات الموظف فقط
-    if (isStaffMode && currentStaff && currentStaff.perms) {
-      setTimeout(()=>applyStaffPermissions(currentStaff.perms), 100);
-    } else {
-      // مدير — أظهر كل الأزرار
-      document.querySelectorAll('.am[data-tab]').forEach(b=>b.style.display='');
-    }
+    document.querySelectorAll('.am[data-tab]').forEach(b=>b.style.display='');
   }
 }
 
@@ -2921,6 +2892,9 @@ async function loadAllSettings() {
     if (s.levels && Array.isArray(s.levels) && s.levels.length > 0) { levelsConfig = s.levels; }
     if (s.wheel) { try {   } catch(e){} }
     if (s.updates) { updatesData = { enabled: false, items: [], ...s.updates }; }
+    const explainOn = !!(s.dailyVideo && s.dailyVideo.enabled);
+    const nEB = document.getElementById('navExplainBtn'); if(nEB) nEB.style.display = explainOn ? '' : 'none';
+    const dEB = document.getElementById('drawerExplainBtn'); if(dEB) dEB.style.display = explainOn ? '' : 'none';
     if (s.hourlyPts) { const e=document.getElementById('statHourlyPts'); if(e) e.textContent=s.hourlyPts; if(document.getElementById('cfg-hourly')) document.getElementById('cfg-hourly').value=s.hourlyPts; }
     if (s.welcomePts) { const e=document.getElementById('statWelcomePts'); if(e) e.textContent=s.welcomePts; if(document.getElementById('cfg-welcome')) document.getElementById('cfg-welcome').value=s.welcomePts; }
     const giftCount = (window._prods||[]).filter(p=>p.active!==false).length;
@@ -3490,25 +3464,15 @@ function openAdminLogin() {
 
 function adminLogout() {
   logActivity('تسجيل خروج', 'خرج من لوحة الإدارة');
-  adminIn=false; isStaffMode=false; currentStaff=null;
+  adminIn=false;
   sessionStorage.removeItem('adminIn');
-  sessionStorage.removeItem('staffIn');
-  sessionStorage.removeItem('staffSession');
+  sessionStorage.removeItem('adminSession');
   goTo('home',document.querySelector('.nl'));
   showToast('تم الخروج من الإدارة');
 }
 
 function aTab(tab, btn) {
   if (!adminSession) adminSession = sessionStorage.getItem('adminSession') || '';
-  // تحقق من الصلاحيات لو موظف
-  if (isStaffMode && currentStaff && currentStaff.perms) {
-    const permMap = { orders:'orders', products:'products', users:'users', chats:'chats', staff:'staff', settings:'settings', 'pts-cfg':'settings', logs:'settings', 'rules-admin':'settings' };
-    const needed = permMap[tab];
-    if (needed && !currentStaff.perms.includes(needed) && tab !== 'dashboard') {
-      showToast('ليس لديك صلاحية لهذا القسم','err');
-      return;
-    }
-  }
   document.querySelectorAll('.asub').forEach(s => s.classList.remove('on'));
   document.querySelectorAll('.am').forEach(b => b.classList.remove('on'));
   document.getElementById('asub-'+tab)?.classList.add('on');
@@ -3519,7 +3483,6 @@ function aTab(tab, btn) {
   if(tab==='products') loadAdminProds();
   if(tab==='users') loadUsers();
   if(tab==='chats') renderAdminChats();
-  if(tab==='staff') loadStaff();
   if(tab==='settings') renderSocials();
   if(tab==='pts-cfg') { loadSecretCodes(); loadDailySettings(); loadLevelsFromCache(); }
   if(tab==='logs') loadActivityLogs();
@@ -3681,11 +3644,18 @@ async function saveProd() {
   } catch(e){showToast('خطأ','err');}
 }
 
-async function toggleProd(id,active){await adminFetch(`${W}/api/admin/products/${id}`);loadAdminProds();loadStore();}
+async function toggleProd(id,active){
+  await adminFetch(`${W}/api/admin/products/${id}`, {
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ active })
+  });
+  loadAdminProds();loadStore();
+}
 async function delProd(id){
   if(!confirm('حذف المنتج؟'))return;
   const prod=(window._adminProds||[]).find(p=>p.id===id);
-  await adminFetch(`${W}/api/admin/products/${id}`);
+  await adminFetch(`${W}/api/admin/products/${id}`, { method:'DELETE' });
   logActivity('حذف منتج', prod?prod.name:'');
   loadAdminProds();loadStore();showToast('تم الحذف');
 }
@@ -3760,82 +3730,6 @@ async function addPtsManual(dir=1) {
   } catch(e){showToast('خطأ','err');}
 }
 
-// STAFF
-function openStaffModal(id) {
-  const sm=document.getElementById('staffModal');
-  if(!sm) return;
-  sm.style.display='flex';
-  sm.dataset.editId = id || '';
-  const s = id ? staff.find(x=>String(x.id)===String(id)) : null;
-  setEl('staffModalTitle',id?'تعديل موظف':'إضافة موظف');
-  setVal('sf-name',s?s.name:'');
-  setVal('sf-user',s?s.username:'');
-  setVal('sf-role',s?s.roleTitle:'');
-  setVal('sf-pass','');
-  document.getElementById('sf-color').value=s?s.color:'#53FC18';
-  ['orders','products','users','chats','staff','settings'].forEach(p=>{
-    const el=document.getElementById('perm-'+p);
-    if(el) el.checked=s?(s.perms||[]).includes(p):false;
-  });
-  sm.classList.remove('hidden');
-}
-function selPerms(v){['orders','products','users','chats','staff','settings'].forEach(p=>{const el=document.getElementById('perm-'+p);if(el)el.checked=v;});}
-
-async function loadStaff() {
-  if (!adminSession) adminSession = sessionStorage.getItem('adminSession') || '';
-  try {
-    const res = await adminFetch(`${W}/api/admin/staff`, {headers:{'x-admin-session':adminSession}});
-    const d = await res.json();
-    if(d.staff) staff = d.staff;
-  } catch(e){}
-  renderStaff();
-}
-
-
-
-async function saveStaff() {
-  const name=gv('sf-name'),username=gv('sf-user'),roleTitle=gv('sf-role'),color=document.getElementById('sf-color').value;
-  const password=gv('sf-pass');
-  if(!name||!username){showToast('أدخل الاسم واليوزرنيم','err');return;}
-  const perms=['orders','products','users','chats','staff','settings'].filter(p=>{const el=document.getElementById('perm-'+p);return el&&el.checked;});
-  if(!perms.length){showToast('اختر صلاحية واحدة','err');return;}
-  const editingId = document.getElementById('staffModal').dataset.editId;
-  const existing = editingId ? staff.find(x=>String(x.id)===String(editingId)) : null;
-  if(existing) {
-    Object.assign(existing,{name,username,roleTitle,color,perms});
-    if(password) existing.password = password;
-  } else {
-    if(!password){showToast('أدخل كلمة السر','err');return;}
-    staff.push({id:Date.now(),name,username,roleTitle,color,perms,password,joinedAt:new Date().toLocaleString('ar')});
-  }
-  await saveStaffToServer();
-  closeModal('staffModal');renderStaff();showToast('✅ تم حفظ الموظف');
-}
-
-async function delStaff(id){
-  if(!confirm('حذف؟'))return;
-  staff=staff.filter(x=>String(x.id)!==String(id));
-  await saveStaffToServer();
-  renderStaff();showToast('تم الحذف');
-}
-
-async function saveStaffToServer() {
-  try {
-    await adminFetch(`${W}/api/admin/staff`, {
-      method:'POST',
-      headers:{'x-admin-session':adminSession,'Content-Type':'application/json'},
-      body:JSON.stringify({staff})
-    });
-  } catch(e){}
-}
-
-
-function renderStaff() {
-  const el=document.getElementById('staffList');if(!el)return;
-  el.innerHTML=staff.length?staff.map(s=>`<div class="staff-card"><div class="staff-ava" style="border-color:${s.color};">${s.username.charAt(0).toUpperCase()}</div><div style="flex:1;"><div class="staff-name">${s.name}</div><div class="staff-user">@${s.username} · ${s.joinedAt}</div><div class="staff-role-tag" style="background:${s.color};color:${s.color==='#53FC18'||s.color==='#FFA500'?'#000':'#fff'}">${s.roleTitle||'موظف'}</div><div class="staff-perms">${s.perms.map(p=>`<span class="perm-tag">${PERM_LABELS[p]||p}</span>`).join('')}</div></div><div class="staff-acts"><button class="btn-sm btn-edit" onclick="openStaffModal('${s.id}')">✏️</button><button class="btn-sm btn-del" onclick="delStaff(${s.id})">🗑</button></div></div>`).join('')
-    :'<div class="empty"><p>لا يوجد موظفون</p></div>';
-}
-
 // POINTS CONFIG
 function toggleDailyVideoField() {
   const cb = document.getElementById('daily-video-enabled');
@@ -3850,7 +3744,6 @@ let dailyVideoMode = 'url'; // 'url' | 'upload'
 let pendingVideoUpload = null; // {data(data-URI), name, mime} — ملف جديد جاهز للرفع
 let dailyVideoHasSavedUpload = false; // في فيديو مرفوع سابقاً على السيرفر
 let dailyVideoSavedName = '';
-const DAILY_VIDEO_MAX_MB = 40;
 
 function setDailyVideoMode(mode) {
   dailyVideoMode = mode;
@@ -3869,12 +3762,7 @@ function handleDailyVideoFile(e) {
   const info = document.getElementById('dv-file-info');
   if (!f) return;
   const sizeMB = f.size / (1024 * 1024);
-  if (sizeMB > DAILY_VIDEO_MAX_MB) {
-    if (info) info.innerHTML = `<span style="color:var(--red);">الملف ${sizeMB.toFixed(1)} ميغا — الحد الأقصى ${DAILY_VIDEO_MAX_MB} ميغابايت</span>`;
-    pendingVideoUpload = null;
-    e.target.value = '';
-    return;
-  }
+  // بدون حد أقصى للحجم — أي حجم مسموح
   if (info) info.textContent = `⏳ جاري القراءة... (${sizeMB.toFixed(1)} ميغا)`;
   const r = new FileReader();
   r.onload = ev => {
@@ -3883,6 +3771,37 @@ function handleDailyVideoFile(e) {
   };
   r.onerror = () => { if (info) info.innerHTML = `<span style="color:var(--red);">فشل قراءة الملف</span>`; pendingVideoUpload = null; };
   r.readAsDataURL(f);
+}
+
+async function deleteExplainVideo() {
+  if (!confirm('حذف فيديو الشرح؟ هالإجراء نهائي.')) return;
+  try {
+    await adminFetch(`${W}/api/admin/tutorial-video`, { method: 'DELETE' });
+    await adminFetch(`${W}/api/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dailyVideo: { enabled: false, mode: dailyVideoMode } })
+    });
+    // نظّف الحالة المحلية
+    pendingVideoUpload = null;
+    dailyVideoHasSavedUpload = false;
+    dailyVideoSavedName = '';
+    const cb = document.getElementById('daily-video-enabled'); if (cb) cb.checked = false;
+    const urlEl = document.getElementById('daily-video-url'); if (urlEl) urlEl.value = '';
+    const fileEl = document.getElementById('daily-video-file'); if (fileEl) fileEl.value = '';
+    const info = document.getElementById('dv-file-info'); if (info) info.textContent = '';
+    toggleDailyVideoField();
+    // خبّي زر "الشرح" من الجميع فوراً
+    const nEB = document.getElementById('navExplainBtn'); if (nEB) nEB.style.display = 'none';
+    const dEB = document.getElementById('drawerExplainBtn'); if (dEB) dEB.style.display = 'none';
+    // حدّث الـ cache المحلي
+    try {
+      const c = JSON.parse(localStorage.getItem('sk_settings_cache') || '{}');
+      c.dailyVideo = { enabled: false, mode: dailyVideoMode };
+      localStorage.setItem('sk_settings_cache', JSON.stringify(c));
+    } catch (e2) {}
+    showToast('✅ تم حذف فيديو الشرح');
+  } catch (e) { showToast('خطأ بالحذف', 'err'); }
 }
 
 async function mergeDuplicateKickUsers() {
@@ -3942,6 +3861,8 @@ async function savePtsCfg() {
     try { const c=JSON.parse(localStorage.getItem('sk_settings_cache')||'{}'); c.dailyPts=dailyPts; c.dailyVideo=dailyVideo; c.ptsCfg=ptsCfg; c.levels=levelsConfig; localStorage.setItem('sk_settings_cache',JSON.stringify(c)); } catch(e2){}
     dailyConfig = dailyPts;
     pendingVideoUpload = null;
+    const nEB2 = document.getElementById('navExplainBtn'); if(nEB2) nEB2.style.display = dailyVideoEnabled ? '' : 'none';
+    const dEB2 = document.getElementById('drawerExplainBtn'); if(dEB2) dEB2.style.display = dailyVideoEnabled ? '' : 'none';
     showToast('✅ تم حفظ إعدادات النقاط');
   } catch(e){showToast('خطأ','err');}
 }
@@ -4137,7 +4058,7 @@ function openModal(id){
 function showToast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.style.background=type==='err'?'#ff4040':'var(--kick)';t.style.color=type==='err'?'#fff':'#000';t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3500);}
 
 // Close modals on backdrop click
-['loginModal','adminModal','buyModal','prodModal','staffModal','ruleModal','linkKickModal'].forEach(id=>{
+['loginModal','adminModal','buyModal','prodModal','ruleModal','linkKickModal'].forEach(id=>{
   const el=document.getElementById(id);
   if(el) {
     el.addEventListener('click',e=>{if(e.target.id===id)closeModal(id);});
@@ -4528,8 +4449,8 @@ document.body.classList.add('ready');
 async function logActivity(action, details='') {
   if (!adminSession) adminSession = sessionStorage.getItem('adminSession') || '';
   const isRealAdmin = adminIn && !currentUser;
-  const role = isStaffMode ? 'موظف' : isRealAdmin ? 'المدير' : currentUser ? 'عضو' : 'زائر';
-  const who = isStaffMode ? (currentStaff?.name||'موظف') : isRealAdmin ? 'المدير' : (currentUser?.username||'زائر');
+  const role = isRealAdmin ? 'المدير' : currentUser ? 'عضو' : 'زائر';
+  const who = isRealAdmin ? 'المدير' : (currentUser?.username||'زائر');
   try {
     await adminFetch(`${W}/api/admin/log`, {
       method: 'POST',
@@ -4539,28 +4460,48 @@ async function logActivity(action, details='') {
   } catch(e) {}
 }
 
+let allActivityLogs = [];
+
 async function loadActivityLogs() {
   try {
     const res = await adminFetch(`${W}/api/admin/logs`);
     const { logs } = await res.json();
-    const el = document.getElementById('activityLogsList');
-    if (!el) return;
-    el.innerHTML = logs.length ? logs.map(l => `
-      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border2);">
-        <div style="width:36px;height:36px;border-radius:50%;background:var(--kick-dim);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">
-          ${getActionIcon(l.action)}
-        </div>
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;">${l.staffName} <span style="color:var(--muted);font-weight:400;">—</span> ${l.action}</div>
-          ${l.details ? `<div style="font-size:12px;color:var(--muted);margin-top:3px;">${l.details}</div>` : ''}
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;">${fmtDate(l.time)}</div>
-        </div>
-      </div>
-    `).join('') : '<div class="empty"><p>لا توجد أنشطة بعد</p></div>';
+    allActivityLogs = logs || [];
+    renderActivityLogs();
   } catch(e) {}
 }
 
+function renderActivityLogs() {
+  const el = document.getElementById('activityLogsList');
+  if (!el) return;
+  const q = (document.getElementById('logsSearch')?.value || '').toLowerCase().trim();
+  const logs = q
+    ? allActivityLogs.filter(l =>
+        (l.staffName||'').toLowerCase().includes(q) ||
+        (l.ip||'').toLowerCase().includes(q) ||
+        (l.action||'').toLowerCase().includes(q) ||
+        (l.details||'').toLowerCase().includes(q)
+      )
+    : allActivityLogs;
+  el.innerHTML = logs.length ? logs.map(l => `
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border2);">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--kick-dim);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">
+        ${getActionIcon(l.action)}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span>${l.staffName} <span style="color:var(--muted);font-weight:400;">—</span> ${l.action}</span>
+          ${l.ip ? `<span style="font-family:monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border2);color:var(--muted);padding:2px 8px;border-radius:20px;" title="عنوان الـ IP">🌐 ${l.ip}</span>` : ''}
+        </div>
+        ${l.details ? `<div style="font-size:12px;color:var(--muted);margin-top:3px;">${l.details}</div>` : ''}
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">${fmtDate(l.time)}</div>
+      </div>
+    </div>
+  `).join('') : '<div class="empty"><p>لا توجد أنشطة مطابقة</p></div>';
+}
+
 function getActionIcon(action) {
+  if (action.includes('زار الموقع')) return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>';
   if (action.includes('دخول')) return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--kick)" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>';
   if (action.includes('خروج')) return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>';
   if (action.includes('حذف')) return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
@@ -4570,118 +4511,10 @@ function getActionIcon(action) {
 }
 
 
-// ══ STAFF / ADMIN LOGIN CHOICE ══
+// ══ ADMIN LOGIN ══
 function openLoginChoice() {
   if (sessionStorage.getItem('adminIn') === '1') { adminIn=true; goTo('admin',null); return; }
-  if (sessionStorage.getItem('staffIn')) {
-    const s=JSON.parse(sessionStorage.getItem('staffIn'));
-    currentStaff=s; isStaffMode=true; adminIn=true;
-    // حدّث اسم الموظف في القائمة
-    setEl('adminName', s.name||s.username);
-    const roleEl = document.querySelector('.admin-role');
-    if(roleEl) roleEl.textContent = s.roleTitle||'موظف';
-    goTo('admin',null);
-    setTimeout(()=>applyStaffPermissions(s.perms||[]), 200);
-    return;
-  }
   openAdminLogin();
-}
-
-async function submitStaffLogin() {
-  const user = gv('staffLoginUser');
-  const pass = gv('staffLoginPass');
-  if (!user || !pass) { setEl('staffLoginErr','❌ أدخل البيانات'); return; }
-
-  // تحقق من كلمة السر المدير أولاً
-  if (user === adminUser && pass === adminPass) {
-    adminIn=true; isStaffMode=false; currentStaff=null;
-    sessionStorage.setItem('adminIn','1');
-    closeModal('staffLoginModal');
-    const sm=document.getElementById('staffLoginModal');if(sm)sm.style.display='none';
-    goTo('admin',null);
-    logActivity('تسجيل دخول','دخل كمدير');
-    showToast('أهلاً بك في الإدارة 🛡️');
-    return;
-  }
-
-  // تحقق من الموظفين
-  try {
-    const res = await fetch(`${W}/api/auth/staff/login`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username:user,password:pass})
-    });
-    const d = await res.json();
-    if (d.success) {
-      currentStaff = { username:d.username, name:d.username, roleTitle:d.roleTitle, perms:d.perms };
-      isStaffMode = true;
-      adminIn = true;
-      sessionStorage.setItem('staffIn', JSON.stringify({...currentStaff, token: d.sessionToken}));
-      closeModal('staffLoginModal');
-      const sm=document.getElementById('staffLoginModal');if(sm)sm.style.display='none';
-      goTo('admin',null);
-      logActivity('تسجيل دخول','دخل كموظف: '+d.roleTitle);
-      showToast('أهلاً '+d.username+' 👋');
-      // أخفِ الأقسام الممنوعة
-      applyStaffPermissions(d.perms);
-    } else {
-      setEl('staffLoginErr','❌ بيانات خاطئة');
-    }
-  } catch(e) {
-    setEl('staffLoginErr','❌ خطأ في الاتصال');
-  }
-}
-
-
-
-
-// ══ STAFF PERMISSIONS ══
-const PERM_TAB_MAP = {
-  'dashboard':'dashboard',
-  'orders':'orders',
-  'chats':'chats',
-  'products':'products',
-  'users':'users',
-  'staff':'staff',
-  'pts-cfg':'settings',
-  'rules-admin':'settings',
-  'logs':'settings',
-  'settings':'settings',
-  'auction-admin':'orders',
-  'password':'settings',
-  'tournaments-admin':'orders',
-  'market-admin':'orders',
-  'messages-admin':'orders',
-  'updates-admin':'orders',
-  'security':'orders'
-};
-
-function applyStaffPermissions(perms) {
-  // لا تطبق على المدير الرئيسي
-  if (!isStaffMode || !currentStaff) {
-    // أرجع كل الأزرار
-    document.querySelectorAll('.am[data-tab]').forEach(function(btn){ btn.style.display=''; });
-    return;
-  }
-  if (!perms) return;
-  const staffPerms = Array.isArray(perms) ? perms : [];
-  
-  document.querySelectorAll('.am[data-tab]').forEach(function(btn) {
-    var tab = btn.getAttribute('data-tab');
-    if (tab === 'dashboard') { btn.style.display = ''; return; }
-    var needed = PERM_TAB_MAP[tab];
-    if (!needed) { btn.style.display = 'none'; return; }
-    btn.style.display = (staffPerms.indexOf(needed) !== -1) ? '' : 'none';
-  });
-
-  // افتح أول تبويب مسموح
-  var tabOrder = ['orders','chats','products','users','staff','settings'];
-  for (var i = 0; i < tabOrder.length; i++) {
-    if (staffPerms.indexOf(tabOrder[i]) !== -1) {
-      (function(t){ setTimeout(function(){ aTab(t, null); }, 200); })(tabOrder[i]);
-      break;
-    }
-  }
 }
 
 
@@ -4960,7 +4793,7 @@ async function loadExplainVideo() {
   try {
     const res = await fetch(`${W}/api/settings`);
     const d = await res.json();
-    const ev = d.explainVideo;
+    const ev = d.dailyVideo;
     if (!ev || !ev.enabled) {
       box.innerHTML = `<div id="explainVideoEmpty" style="text-align:center;padding:40px 0;color:var(--muted);font-size:14px;">لا يوجد فيديو شرح مضاف حالياً</div>`;
       return;
@@ -5707,7 +5540,7 @@ async function checkGoogleAdminToken() {
     const res = await fetch(`${W}/auth/google/verify?token=${gadmin}`);
     const d = await res.json();
     if (d.success) {
-      adminIn=true; isStaffMode=false; currentStaff=null;
+      adminIn=true;
       sessionStorage.setItem('adminIn','1');
       sessionStorage.setItem('gadminToken', gadmin);
       // حدّث الـ adminPass من Firebase
@@ -5737,7 +5570,7 @@ async function submitAdmin() {
 
   if (!user || !pass) { setEl('aErr', '❌ أدخل البيانات'); return; }
 
-  // تسجيل دخول المدير عبر الـ Worker
+  // تسجيل دخول المدير عبر الـ Worker — كلمة سر المالك فقط، بيقدر أكثر من شخص يستخدمها بنفس الوقت
   try {
     const loginRes = await fetch(`${W}/api/admin/login`, {
       method: 'POST',
@@ -5750,42 +5583,14 @@ async function submitAdmin() {
       _adminSession = loginD.token;
       window.__adminSess = loginD.token;
       sessionStorage.setItem('adminSession', loginD.token);
-      adminIn = true; isStaffMode = false; currentStaff = null;
+      adminIn = true;
       sessionStorage.setItem('adminIn', '1');
-      sessionStorage.removeItem('staffIn');
       const am = document.getElementById('adminModal');
       if (am) am.style.display = 'none';
       closeModal('adminModal');
       goTo('admin', null);
-      loadStaff();
       logActivity('تسجيل دخول', 'دخل كمدير');
       showToast('أهلاً بك في الإدارة 🛡️');
-      return;
-    }
-  } catch(e) {}
-
-  // تحقق من الموظفين
-  try {
-    const res = await adminFetch(`${W}/api/staff/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: user, password: pass })
-    });
-    const d = await res.json();
-    if (d.success && d.staff) {
-      const s = d.staff;
-      isStaffMode = true; adminIn = true;
-      currentStaff = { id: s.id, username: s.username, name: s.name || s.username, roleTitle: s.roleTitle || 'موظف', perms: s.perms || [] };
-      sessionStorage.setItem('staffIn', JSON.stringify({...currentStaff, token: d.sessionToken}));
-      sessionStorage.removeItem('adminIn');
-      const am = document.getElementById('adminModal');
-      if (am) am.style.display = 'none';
-      closeModal('adminModal');
-      setEl('adminName', currentStaff.name);
-      await logActivity('تسجيل دخول', 'دخل كموظف: ' + currentStaff.roleTitle);
-      goTo('admin', null);
-      setTimeout(() => applyStaffPermissions(currentStaff.perms), 300);
-      showToast('أهلاً ' + currentStaff.name + ' 👮');
       return;
     }
   } catch(e) {}
@@ -7276,6 +7081,12 @@ async function init() {
     adminSession = '';
   }
   await Promise.all([checkAuth(), loadAllSettings()]);
+  // سجّل زيارة الموقع (لكل الزوار، مسجلين أو لأ) — مرة كل نصف ساعة لكل IP
+  fetch(`${W}/api/visit/log`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: sessionToken || null })
+  }).catch(()=>{});
   loadPinnedMsg();
   setInterval(checkDmNotifications, 30000);
   // أظهر زر التحديثات
@@ -7284,28 +7095,10 @@ async function init() {
   if(_nb)_nb.style.display=updatesData.enabled?'inline-block':'none';
   loadStore();
   renderStream();
-  if(adminIn) loadStaff();
   loadRules();
 
   // ارجع للإدارة إذا كان مسجل دخول
-  if (sessionStorage.getItem('staffIn')) {
-    const s=JSON.parse(sessionStorage.getItem('staffIn'));
-    // تحقق من الـ token مع الـ Worker
-    if (!s.token) { sessionStorage.removeItem('staffIn'); }
-    else {
-      const verifyRes = await adminFetch(`${W}/api/staff/verify`, {
-        headers: { 'x-staff-token': s.token }
-      }).catch(()=>null);
-      const verifyD = verifyRes ? await verifyRes.json().catch(()=>({})) : {};
-      if (!verifyD.valid) {
-        sessionStorage.removeItem('staffIn');
-      } else {
-        currentStaff=s; isStaffMode=true; adminIn=true;
-        goTo('admin',null);
-        applyStaffPermissions(s.perms||[]);
-      }
-    }
-  } else if (sessionStorage.getItem('adminIn') === '1') {
+  if (sessionStorage.getItem('adminIn') === '1') {
     const savedSession = sessionStorage.getItem('adminSession');
     if (savedSession) {
       const vRes = await adminFetch(`${W}/api/admin/verify`).catch(()=>null);
@@ -7399,45 +7192,6 @@ init();
 </div>
 
 
-<!-- STAFF MODAL -->
-<div class="overlay hidden" id="staffModal" style="position:fixed!important;inset:0!important;z-index:99999!important;display:none;align-items:center;justify-content:center;overflow-y:auto;">
-  <div class="modal wide">
-    <h3 id="staffModalTitle" style="margin-bottom:16px;">إضافة موظف</h3>
-    <div class="prod-form" style="margin-bottom:14px;">
-      <div class="pf-group"><label>الاسم</label><input class="pf-input" id="sf-name" placeholder="محمد"/></div>
-      <div class="pf-group"><label>اليوزرنيم</label><input class="pf-input" id="sf-user" placeholder="username" dir="ltr"/></div>
-      <div class="pf-group"><label>المسمى الوظيفي</label><input class="pf-input" id="sf-role" placeholder="مشرف شات"/></div>
-      <div class="pf-group" style="grid-column:1/-1;"><label>كلمة السر</label><input class="pf-input" id="sf-pass" type="password" placeholder="••••••" dir="ltr"/></div>
-      <div class="pf-group"><label>لون الشارة</label>
-        <select class="pf-input" id="sf-color">
-          <option value="#53FC18">🟢 أخضر Kick</option>
-          <option value="#5865F2">🔵 أزرق Discord</option>
-          <option value="#FFA500">🟠 برتقالي</option>
-          <option value="#ff4040">🔴 أحمر</option>
-          <option value="#a855f7">🟣 بنفسجي</option>
-          <option value="#888">⚫ رمادي</option>
-        </select>
-      </div>
-    </div>
-    <div style="font-size:13px;font-weight:700;color:var(--kick);margin-bottom:10px;">🔑 الصلاحيات</div>
-    <div class="perm-grid">
-      <label class="perm-item"><input type="checkbox" id="perm-orders"/><span class="perm-label">🛒 الطلبات</span><span class="perm-sub">عرض وإدارة الطلبات</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-products"/><span class="perm-label">🎁 المنتجات</span><span class="perm-sub">إضافة وتعديل المنتجات</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-users"/><span class="perm-label">👥 المستخدمون</span><span class="perm-sub">عرض وإضافة نقاط</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-chats"/><span class="perm-label">💬 الدردشات</span><span class="perm-sub">الرد على الدردشات</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-staff"/><span class="perm-label">👮 الموظفون</span><span class="perm-sub">إدارة الموظفين</span></label>
-      <label class="perm-item"><input type="checkbox" id="perm-settings" checked/><span class="perm-label">📊 الرئيسية</span><span class="perm-sub">عرض الإحصائيات</span></label>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:14px;">
-      <button onclick="selPerms(true)" style="background:rgba(83,252,24,.1);color:var(--kick);border:1px solid var(--border);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;">تحديد الكل</button>
-      <button onclick="selPerms(false)" style="background:var(--card);color:var(--muted);border:1px solid var(--bw);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;">إلغاء الكل</button>
-    </div>
-    <div class="m-btns">
-      <button class="m-ok" onclick="saveStaff()">💾 حفظ</button>
-      <button class="m-cancel" onclick="closeModal('staffModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
 
 
 <!-- RULE MODAL -->

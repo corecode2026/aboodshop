@@ -17,6 +17,7 @@
 :root {
   /* ── Brand ── */
   --kick:         #53FC18;
+  --kick-dark:    #3FD410;
   --kick-dim:     rgba(83,252,24,.12);
   --kick-glow:    rgba(83,252,24,.3);
   --kick-subtle:  rgba(83,252,24,.06);
@@ -248,18 +249,18 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 .btn:hover::after { opacity:1; }
 .btn:active { transform:scale(.96); }
 .btn-kick {
-  background:linear-gradient(135deg, #53FC18 0%, #3FD410 100%);
+  background:linear-gradient(135deg, var(--kick) 0%, var(--kick-dark) 100%);
   color:#000;
-  box-shadow:0 4px 20px rgba(83,252,24,.35);
+  box-shadow:0 4px 20px var(--kick-glow);
 }
-.btn-kick:hover { box-shadow:0 6px 28px rgba(83,252,24,.55); transform:translateY(-2px); }
+.btn-kick:hover { box-shadow:0 6px 28px var(--kick-glow); transform:translateY(-2px); }
 .btn-discord { background:linear-gradient(135deg,#5865F2,#4752C4); color:#fff; box-shadow:0 4px 20px rgba(88,101,242,.35); }
 .btn-discord:hover { box-shadow:0 6px 28px rgba(88,101,242,.55); transform:translateY(-2px); }
 .btn-ghost { background:var(--surface2); color:var(--muted); border:1px solid var(--border2); }
 .btn-ghost:hover { color:var(--red); border-color:rgba(255,59,92,.3); background:rgba(255,59,92,.05); }
 .btn-admin { background:var(--surface2); color:var(--muted); border:1px solid var(--border2); padding:7px 13px; font-size:12px; }
 .btn-admin:hover { color:var(--kick); border-color:var(--border); background:var(--kick-dim); }
-.btn-primary { background:linear-gradient(135deg,#53FC18,#3FD410); color:#000; padding:12px 26px; border-radius:10px; font-weight:700; font-size:14px; border:none; }
+.btn-primary { background:linear-gradient(135deg,var(--kick),var(--kick-dark)); color:#000; padding:12px 26px; border-radius:10px; font-weight:700; font-size:14px; border:none; }
 .btn-secondary { background:transparent; color:var(--text2); padding:11px 22px; border-radius:10px; font-weight:600; font-size:14px; border:1px solid var(--border2); }
 .btn-secondary:hover { border-color:var(--border); color:var(--kick); background:var(--kick-subtle); }
 .btn-danger { background:rgba(255,59,92,.08); color:var(--red); padding:8px 14px; border-radius:8px; font-weight:700; font-size:13px; border:1px solid rgba(255,59,92,.15); }
@@ -667,10 +668,10 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
   width:200px; height:200px;
   background:radial-gradient(circle, var(--kick-dim), transparent 70%);
 }
-.pts-big { font-size:60px; font-weight:900; color:var(--kick); line-height:1; text-shadow:0 0 40px rgba(83,252,24,.5), 0 0 80px rgba(83,252,24,.2); }
+.pts-big { font-size:60px; font-weight:900; color:var(--kick); line-height:1; text-shadow:0 0 40px var(--kick-glow), 0 0 80px var(--kick-subtle); }
 .pts-label { color:var(--muted); font-size:14px; margin:10px 0 20px; }
 .progress-wrap { background:var(--surface2); border-radius:10px; height:7px; overflow:hidden; margin-bottom:7px; }
-.progress-bar { height:100%; border-radius:10px; background:linear-gradient(90deg, #3FD410, #53FC18, rgba(83,252,24,.6)); transition:width .9s cubic-bezier(.4,0,.2,1); box-shadow:0 0 14px rgba(83,252,24,.5); }
+.progress-bar { height:100%; border-radius:10px; background:linear-gradient(90deg, var(--kick-dark), var(--kick), var(--kick-glow)); transition:width .9s cubic-bezier(.4,0,.2,1); box-shadow:0 0 14px var(--kick-glow); }
 .progress-labels { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-bottom:18px; }
 .history { display:flex; flex-direction:column; gap:10px; }
 .history-item {
@@ -998,13 +999,13 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 ══════════════════════════════ */
 .toast {
   position:fixed; bottom:32px; left:50%; transform:translateX(-50%) translateY(10px);
-  background:linear-gradient(135deg,#53FC18,#3FD410); color:#000;
+  background:linear-gradient(135deg,var(--kick),var(--kick-dark)); color:#000;
   padding:11px 28px; border-radius:30px;
   font-weight:700; font-size:13px;
   z-index:50000; opacity:0;
   transition:opacity .3s cubic-bezier(.4,0,.2,1), transform .3s cubic-bezier(.34,1.56,.64,1);
   pointer-events:none; white-space:nowrap;
-  box-shadow:0 8px 32px rgba(83,252,24,.45), 0 0 0 1px rgba(83,252,24,.2);
+  box-shadow:0 8px 32px var(--kick-glow), 0 0 0 1px var(--kick-dim);
   letter-spacing:.3px;
 }
 .toast.on { opacity:1; transform:translateX(-50%) translateY(-4px); }
@@ -1455,6 +1456,24 @@ body.ready .page.on { opacity:1; }
   try {
     var s = JSON.parse(localStorage.getItem('sk_settings_cache') || 'null');
     if (!s) return;
+    // طبّق ألوان الموقع المخصصة بأسرع وقت ممكن (documentElement موجود دايماً، حتى قبل ما البودي يخلص تحميل)
+    if (s.themeColors) {
+      var root = document.documentElement.style;
+      function hx(hex){ hex=String(hex||'').replace('#',''); if(hex.length===3)hex=hex.split('').map(function(c){return c+c;}).join(''); var n=parseInt(hex,16)||0; return {r:(n>>16)&255,g:(n>>8)&255,b:n&255}; }
+      function rg(hex,a){ var c=hx(hex); return 'rgba('+c.r+','+c.g+','+c.b+','+a+')'; }
+      function sh(hex,amt){ var c=hx(hex); function cl(v){return Math.min(255,Math.max(0,v+amt));} return '#'+[cl(c.r),cl(c.g),cl(c.b)].map(function(v){return v.toString(16).padStart(2,'0');}).join(''); }
+      var t = s.themeColors;
+      if (t.accent) {
+        root.setProperty('--kick', t.accent);
+        root.setProperty('--kick-dark', sh(t.accent,-30));
+        root.setProperty('--kick-dim', rg(t.accent,.12));
+        root.setProperty('--kick-glow', rg(t.accent,.3));
+        root.setProperty('--kick-subtle', rg(t.accent,.06));
+        root.setProperty('--border', rg(t.accent,.14));
+      }
+      if (t.bg) { root.setProperty('--bg', t.bg); root.setProperty('--bg2', sh(t.bg,5)); }
+      if (t.surface) { root.setProperty('--surface', t.surface); root.setProperty('--surface2', sh(t.surface,6)); root.setProperty('--surface3', sh(t.surface,12)); }
+    }
     if (s.channelName) {
       ['navName','aboutName','adminName','drawerName'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=s.channelName;
@@ -1472,7 +1491,7 @@ body.ready .page.on { opacity:1; }
 <nav class="nav">
   <button onclick="toggleDrawer()" id="hamburgerBtn" style="display:none;flex-direction:column;gap:5px;border:1px solid var(--border);background:var(--card2);padding:8px;cursor:pointer;border-radius:8px;flex-shrink:0;"><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span><span style="display:block;width:20px;height:2px;background:var(--kick);border-radius:2px;"></span></button>
   <div class="nav-logo" id="navLogo" onclick="goTo('home',this)">
-    <div class="nav-ava" id="navAva" style="background:linear-gradient(135deg,#53FC18,#2a8c00);font-size:16px;font-weight:900;color:#000;">A</div>
+    <div class="nav-ava" id="navAva" style="background:linear-gradient(135deg,var(--kick),var(--kick-dark));font-size:16px;font-weight:900;color:#000;">A</div>
     <span class="nav-name" id="navName"></span>
 
   </div>
@@ -2116,6 +2135,27 @@ body.ready .page.on { opacity:1; }
           </div>
 
         </div>
+        <div class="settings-box">
+          <div class="settings-box-title">🎨 ألوان الموقع</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">غيّر ألوان الموقع بالكامل — اللون الأساسي بيأثر على الأزرار والحدود والتوهج بكل مكان</div>
+          <div class="set-row">
+            <div><div class="set-label">اللون الأساسي</div><div class="set-desc">لون الأزرار والتفاصيل المميزة بكل الموقع</div></div>
+            <input type="color" id="theme-accent" value="#53FC18" style="width:44px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none;"/>
+          </div>
+          <div class="set-row">
+            <div><div class="set-label">لون الخلفية</div><div class="set-desc">خلفية الموقع الأساسية</div></div>
+            <input type="color" id="theme-bg" value="#07070F" style="width:44px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none;"/>
+          </div>
+          <div class="set-row">
+            <div><div class="set-label">لون البطاقات</div><div class="set-desc">خلفية الكروت والصناديق</div></div>
+            <input type="color" id="theme-surface" value="#10101E" style="width:44px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none;"/>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px;">
+            <button class="btn btn-kick" onclick="saveThemeColors()" style="flex:1;">💾 حفظ الألوان</button>
+            <button onclick="resetThemeColors()" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border2);padding:0 16px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">↺ افتراضي</button>
+          </div>
+        </div>
+
         <div class="settings-box">
           <div class="settings-box-title">🖼️ صورة البطاقة الرئيسية</div>
           <div class="img-upload-row">
@@ -2975,7 +3015,7 @@ async function loadAllSettings() {
     const s = await sRes.json();
     const { socials } = await socRes.json();
 
-
+    if (s.themeColors) applyThemeColors(s.themeColors);
 
     if (s.channelName) {
       setEl('navName', s.channelName); setEl('adminName', s.channelName);
@@ -4518,9 +4558,87 @@ function renderSecretCodes() {
 
 
 // ══ SETTINGS CACHE ══
+// ══ ألوان الموقع (Theme Colors) ══
+const DEFAULT_THEME = { accent: '#53FC18', bg: '#07070F', surface: '#10101E' };
+
+function hexToRgbParts(hex) {
+  hex = String(hex||'').replace('#','');
+  if (hex.length === 3) hex = hex.split('').map(c=>c+c).join('');
+  const num = parseInt(hex, 16) || 0;
+  return { r: (num>>16)&255, g: (num>>8)&255, b: num&255 };
+}
+function themeRgba(hex, alpha) {
+  const {r,g,b} = hexToRgbParts(hex);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function themeShade(hex, amt) {
+  const {r,g,b} = hexToRgbParts(hex);
+  const c = v => Math.min(255, Math.max(0, v + amt));
+  return '#' + [c(r),c(g),c(b)].map(v => v.toString(16).padStart(2,'0')).join('');
+}
+
+function applyThemeColors(theme) {
+  if (!theme) return;
+  try {
+    const root = document.documentElement.style;
+    if (theme.accent) {
+      root.setProperty('--kick', theme.accent);
+      root.setProperty('--kick-dark', themeShade(theme.accent, -30));
+      root.setProperty('--kick-dim', themeRgba(theme.accent, .12));
+      root.setProperty('--kick-glow', themeRgba(theme.accent, .3));
+      root.setProperty('--kick-subtle', themeRgba(theme.accent, .06));
+      root.setProperty('--border', themeRgba(theme.accent, .14));
+    }
+    if (theme.bg) {
+      root.setProperty('--bg', theme.bg);
+      root.setProperty('--bg2', themeShade(theme.bg, 5));
+    }
+    if (theme.surface) {
+      root.setProperty('--surface', theme.surface);
+      root.setProperty('--surface2', themeShade(theme.surface, 6));
+      root.setProperty('--surface3', themeShade(theme.surface, 12));
+    }
+    ['theme-accent','theme-bg','theme-surface'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (id==='theme-accent' && theme.accent) el.value = theme.accent;
+      if (id==='theme-bg' && theme.bg) el.value = theme.bg;
+      if (id==='theme-surface' && theme.surface) el.value = theme.surface;
+    });
+  } catch(e) {}
+}
+
+async function saveThemeColors() {
+  const theme = {
+    accent: document.getElementById('theme-accent')?.value || DEFAULT_THEME.accent,
+    bg: document.getElementById('theme-bg')?.value || DEFAULT_THEME.bg,
+    surface: document.getElementById('theme-surface')?.value || DEFAULT_THEME.surface,
+  };
+  applyThemeColors(theme);
+  try {
+    await adminFetch(`${W}/api/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ themeColors: theme })
+    });
+    try {
+      const c = JSON.parse(localStorage.getItem('sk_settings_cache')||'{}');
+      c.themeColors = theme;
+      localStorage.setItem('sk_settings_cache', JSON.stringify(c));
+    } catch(e2) {}
+    showToast('✅ تم حفظ ألوان الموقع');
+  } catch(e) { showToast('خطأ بحفظ الألوان','err'); }
+}
+
+function resetThemeColors() {
+  applyThemeColors(DEFAULT_THEME);
+  showToast('تم إرجاع الألوان الافتراضية — اضغط حفظ لتثبيتها');
+}
+
 function applySettings(s) {
   if (!s) return;
 
+  if (s.themeColors) applyThemeColors(s.themeColors);
   if (s.channelName) {
     setEl('navName',s.channelName); 
     setEl('adminName',s.channelName); 

@@ -5797,6 +5797,28 @@ let scPostType = 'text';
 let scPendingMedia = null; // {data, mime}
 let scPosts = [];
 
+// ── إيموجيات بشكل آيفون (Apple) بدل شكل نظام تشغيل الجهاز ──
+// كل الأجهزة (ويندوز، أندرويد...) بترسم الإيموجي بشكلها الخاص افتراضياً.
+// هون بنجيب صورة PNG بشكل آيفون الحقيقي لكل إيموجي، وبنرجع للنص العادي
+// تلقائياً لو الصورة تعذر تحميلها (بدون ما يصير أي خطأ بالموقع).
+function handleAppleEmojiError(img) {
+  try {
+    const span = document.createElement('span');
+    span.textContent = img.dataset.emoji || '';
+    img.replaceWith(span);
+  } catch(e) {}
+}
+function appleEmojiImg(emoji, px) {
+  px = px || 20;
+  try {
+    const codepoints = Array.from(emoji).map(ch => ch.codePointAt(0).toString(16)).join('-');
+    const url = `https://cdnjs.cloudflare.com/ajax/libs/emoji-datasource-apple/16.0.0/img/apple/64/${codepoints}.png`;
+    return `<img src="${url}" data-emoji="${emoji}" alt="${emoji}" loading="lazy" style="width:${px}px;height:${px}px;vertical-align:-4px;display:inline-block;object-fit:contain;" onerror="handleAppleEmojiError(this)"/>`;
+  } catch(e) {
+    return emoji;
+  }
+}
+
 // ── الصفحة العامة (المتابعين) ──
 async function loadStoreChannel() {
   const el = document.getElementById('storeChannelFeed');
@@ -5838,7 +5860,7 @@ function renderScPostCard(p) {
     const count = (p.reactions && p.reactions[em]) ? p.reactions[em].length : 0;
     const active = em === myReaction;
     return `<button onclick="reactToScPost('${p.id}','${em}')" style="display:flex;align-items:center;gap:5px;background:${active?'var(--kick-dim)':'var(--surface2)'};border:1px solid ${active?'var(--border)':'var(--border2)'};border-radius:20px;padding:5px 12px;font-size:14px;cursor:pointer;transition:var(--transition);">
-      <span>${em}</span>${count>0?`<span style="font-size:11px;color:${active?'var(--kick)':'var(--muted)'};font-weight:700;">${count}</span>`:''}
+      ${appleEmojiImg(em, 18)}${count>0?`<span style="font-size:11px;color:${active?'var(--kick)':'var(--muted)'};font-weight:700;">${count}</span>`:''}
     </button>`;
   }).join('');
 
@@ -5875,7 +5897,7 @@ function showScReactors(postId) {
   modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px;';
   const rows = Object.entries(p.reactions).map(([emoji, users]) => `
     <div style="margin-bottom:14px;">
-      <div style="font-size:16px;margin-bottom:8px;">${emoji} <span style="font-size:12px;color:var(--muted);font-weight:600;">(${users.length})</span></div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">${appleEmojiImg(emoji, 22)} <span style="font-size:12px;color:var(--muted);font-weight:600;">(${users.length})</span></div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">
         ${users.map(u => `<span style="background:var(--surface2);border:1px solid var(--border2);padding:4px 12px;border-radius:20px;font-size:12px;">${u}</span>`).join('')}
       </div>
@@ -5910,8 +5932,8 @@ function renderScEmojiPicker() {
   const el = document.getElementById('scEmojiPicker');
   if (!el) return;
   el.innerHTML = scEmojis.map((em, i) => `
-    <span style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:6px 12px;font-size:16px;">
-      ${em}
+    <span style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:6px 12px;">
+      ${appleEmojiImg(em, 22)}
       <button onclick="removeScEmoji(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;line-height:1;">✕</button>
     </span>
   `).join('');

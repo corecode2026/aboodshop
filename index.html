@@ -2157,6 +2157,15 @@ body.ready .page.on { opacity:1; }
         </div>
 
         <div class="settings-box">
+          <div class="settings-box-title">🎁 استبدال الجوائز</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">لما أي عضو يستبدل جائزة من المتجر، رح تظهرله رسالة فيها زر يوجهه لهاد الرابط عشان يفتح تذكرة</div>
+          <div class="set-row">
+            <div><div class="set-label">رابط الديسكورد</div><div class="set-desc">يظهر بعد كل عملية استبدال ناجحة</div></div>
+            <input class="set-input" id="set-reward-discord" placeholder="https://discord.gg/..." dir="ltr"/>
+          </div>
+        </div>
+
+        <div class="settings-box">
           <div class="settings-box-title">🖼️ صورة البطاقة الرئيسية</div>
           <div class="img-upload-row">
             <div style="width:72px;height:72px;border-radius:50%;border:3px solid var(--border);background:var(--card2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;" id="heroAvaPreview">🎮</div>
@@ -3016,6 +3025,7 @@ async function loadAllSettings() {
     const { socials } = await socRes.json();
 
     if (s.themeColors) applyThemeColors(s.themeColors);
+    if (s.rewardDiscordLink) { window._rewardDiscordLink = s.rewardDiscordLink; setVal('set-reward-discord', s.rewardDiscordLink); }
 
     if (s.channelName) {
       setEl('navName', s.channelName); setEl('adminName', s.channelName);
@@ -3079,7 +3089,9 @@ async function saveSettings() {
     offlineColor:   document.getElementById('set-offline-color')?.value || '#0A0A0F',
     heroDiscord:    gv('set-hero-discord'),
     heroWatch:      gv('set-hero-watch'),
+    rewardDiscordLink: gv('set-reward-discord'),
   };
+  window._rewardDiscordLink = data.rewardDiscordLink;
   // احفظ الصور منفصلة
   if (channelImg && !channelImg.includes('REMOVED')) data.channelImg = channelImg;
   if (window._heroAva) data.heroAva = window._heroAva;
@@ -3570,8 +3582,31 @@ async function confirmBuy() {
       document.getElementById('navPtsVal').textContent = d.remainingPoints.toLocaleString();
       closeModal('buyModal'); loadStore();
       showToast('✅ ' + d.message);
+      openRewardDiscordModal();
     } else showToast(d.error||'فشل الشراء','err');
   } catch(e) { showToast('خطأ','err'); }
+}
+
+function openRewardDiscordModal() {
+  const link = window._rewardDiscordLink || '';
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px;max-width:380px;width:100%;text-align:center;">
+      <div style="font-size:44px;margin-bottom:14px;">🎉</div>
+      <h3 style="font-size:18px;font-weight:800;margin-bottom:10px;">تم استبدال الجائزة بنجاح!</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.7;">لإكمال طلب الجائزة يرجى فتح تذكرة في الديسكورد</p>
+      ${link ? `
+        <a href="${link}" target="_blank" class="btn btn-discord" style="width:100%;justify-content:center;margin-bottom:10px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057c.001.02.011.04.027.053a19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+          انضم للديسكورد
+        </a>
+      ` : `<p style="font-size:12px;color:var(--red);margin-bottom:10px;">لم تتم إضافة رابط الديسكورد بعد — تواصل مع الإدارة</p>`}
+      <button onclick="this.closest('[style*=fixed]').remove()" style="width:100%;background:var(--surface2);color:var(--muted);border:1px solid var(--border2);padding:10px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">إغلاق</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.onclick = e => { if (e.target === modal) modal.remove(); };
 }
 
 // ═══════════════════════════════════════════
@@ -4639,6 +4674,7 @@ function applySettings(s) {
   if (!s) return;
 
   if (s.themeColors) applyThemeColors(s.themeColors);
+  if (s.rewardDiscordLink) { window._rewardDiscordLink = s.rewardDiscordLink; setVal('set-reward-discord', s.rewardDiscordLink); }
   if (s.channelName) {
     setEl('navName',s.channelName); 
     setEl('adminName',s.channelName); 

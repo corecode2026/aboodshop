@@ -1323,6 +1323,34 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 }
 .rule:hover { border-color:rgba(83,252,24,.15); background:rgba(83,252,24,.02); }
 
+/* ══════════════════════════════
+   GLOWING BACKGROUND DOTS
+══════════════════════════════ */
+.bg-glow-dots {
+  position:fixed; inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:0;
+}
+.bg-glow-dots span {
+  position:absolute;
+  width:var(--s,4px); height:var(--s,4px);
+  background:var(--kick);
+  border-radius:50%;
+  opacity:.2;
+  box-shadow:0 0 10px 2px rgba(83,252,24,.55);
+  animation:bgDotFloat var(--dur,14s) ease-in-out infinite;
+  animation-delay:var(--delay,0s);
+}
+@keyframes bgDotFloat {
+  0%,100% { transform:translateY(0) scale(1); opacity:.12; }
+  50%     { transform:translateY(-46px) scale(1.5); opacity:.65; }
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .bg-glow-dots span { animation:none; opacity:.18; }
+}
+
 </style>
 
 
@@ -1370,6 +1398,30 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
 </script>
 </head>
 <body>
+
+<!-- خلفية نقاط مضيئة زخرفية — ما بتأثر على أي شي بالصفحة (pointer-events:none) -->
+<div class="bg-glow-dots" id="bgGlowDots" aria-hidden="true"></div>
+<script>
+(function(){
+  try {
+    var wrap = document.getElementById('bgGlowDots');
+    if (!wrap) return;
+    var n = window.innerWidth < 640 ? 12 : 24;
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < n; i++) {
+      var s = document.createElement('span');
+      var size  = (Math.random() * 3 + 2).toFixed(1);
+      var dur   = (Math.random() * 10 + 8).toFixed(1);
+      var delay = (Math.random() * 10).toFixed(1);
+      var left  = (Math.random() * 100).toFixed(1);
+      var top   = (Math.random() * 100).toFixed(1);
+      s.style.cssText = 'left:' + left + '%;top:' + top + '%;--s:' + size + 'px;--dur:' + dur + 's;--delay:' + delay + 's;';
+      frag.appendChild(s);
+    }
+    wrap.appendChild(frag);
+  } catch (e) { /* أي خطأ هون ما بأثر على باقي الموقع */ }
+})();
+</script>
 
 <!-- NAV -->
 
@@ -1428,16 +1480,17 @@ body.ready .page.on { opacity:1; }
     <button class="nl on" onclick="goTo('home',this)">الرئيسية</button>
     <button class="nl" onclick="goTo('about',this)">من أنا</button>
     <button class="nl" onclick="goTo('store',this)">المتجر</button>
+    <button class="nl" onclick="goTo('store-channel',this)">قناة المتجر</button>
     <button class="nl" onclick="goTo('market',this)">السوق</button>
-    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;">🆕 تحديثات</button>
+    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;">تحديثات</button>
     <button class="nl" onclick="goTo('rules',this)">القوانين</button>
     <button class="nl" onclick="goTo('points',this)">النقاط</button>
     <button class="nl" onclick="goTo('tournaments',this)">البطولات</button>
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
-    <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn" style="position:relative;">💬 رسائل<span id="dmsBadge" style="display:none;position:absolute;top:2px;left:2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;min-width:14px;text-align:center;"></span></button>
+    <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn" style="position:relative;">التواصل<span id="dmsBadge" style="display:none;position:absolute;top:2px;left:2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;min-width:14px;text-align:center;"></span></button>
     <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
     <button class="nl" id="navExplainBtn" onclick="goTo('explain',this)" style="display:none;">🎬 الشرح</button>
-    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);font-weight:800;">🆕 تحديثات</button>
+    <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);font-weight:800;">تحديثات</button>
   </div>
   <div class="nav-right">
     <div class="pts-chip hidden" id="navPts">⭐ <span id="navPtsVal">0</span> نقطة</div>
@@ -1506,6 +1559,9 @@ body.ready .page.on { opacity:1; }
 <!-- ABOUT -->
 <section class="page" id="page-about">
   <div class="stream-section" id="streamSection">
+    <div id="streamLoading" class="stream-offline" style="min-height:340px;background:var(--surface2);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;">
+      <div style="width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--kick);border-radius:50%;animation:spin .8s linear infinite;"></div>
+    </div>
     <div id="streamLive" style="display:none;">
       <div class="stream-live-head">
         <div class="live-badge"><span class="live-ring"></span> LIVE</div>
@@ -1516,7 +1572,7 @@ body.ready .page.on { opacity:1; }
         <iframe id="kickIframe" src="" allowfullscreen allow="autoplay; fullscreen" style="width:100%;height:100%;border:none;display:block;"></iframe>
       </div>
     </div>
-    <div id="streamOffline" class="stream-offline">
+    <div id="streamOffline" class="stream-offline" style="display:none;">
       <div class="offline-bg" id="offlineBg">
         <div class="offline-overlay"></div>
         <div class="offline-content">
@@ -1585,6 +1641,17 @@ body.ready .page.on { opacity:1; }
   </div>
 </section>
 
+<!-- STORE CHANNEL (قناة المتجر) -->
+<section class="page" id="page-store-channel">
+  <div class="section-head">
+    <div class="section-title"><span class="green">قناة</span> المتجر</div>
+    <div style="font-size:12px;color:var(--muted);">آخر المنشورات من الإدارة</div>
+  </div>
+  <div id="storeChannelFeed" style="display:flex;flex-direction:column;gap:18px;max-width:640px;margin:0 auto;">
+    <div class="empty" style="padding:40px;"><p style="color:var(--muted);">جاري التحميل...</p></div>
+  </div>
+</section>
+
 <!-- RULES -->
 <section class="page" id="page-rules">
   <div class="section-head"><div class="section-title"><span class="green">قوانين</span> القناة</div><div style="font-size:12px;color:var(--muted);">اقرأ القوانين قبل المشاركة</div></div>
@@ -1630,6 +1697,7 @@ body.ready .page.on { opacity:1; }
         <button class="am" onclick="aTab('users',this)" data-tab="users"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span> المستخدمون</button>
         <button class="am" onclick="aTab('messages-admin',this)" data-tab="messages-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span> رسائل</button>
         <button class="am" onclick="aTab('market-admin',this)" data-tab="market-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></span> السوق</button>
+        <button class="am" onclick="aTab('store-channel-admin',this)" data-tab="store-channel-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></span> قناة المتجر</button>
         <button class="am" onclick="aTab('tournaments-admin',this)" data-tab="tournaments-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 01-2-2V5h4"/><path d="M18 9h2a2 2 0 002-2V5h-4"/><path d="M12 17v4"/><path d="M8 21h8"/><path d="M6 3h12v8a6 6 0 01-12 0V3z"/></svg></span> البطولات</button>
         <button class="am" onclick="aTab('auction-admin',this)" data-tab="auction-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span> المزاد</button>
         <button class="am" onclick="aTab('rules-admin',this)" data-tab="rules-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> القوانين</button>
@@ -1796,6 +1864,43 @@ body.ready .page.on { opacity:1; }
       <div class="asub" id="asub-market-admin">
         <div class="section-head"><div class="section-title">إدارة السوق المجتمعي</div></div>
         <div id="marketAdminList"></div>
+      </div>
+
+      <!-- STORE CHANNEL ADMIN -->
+      <div class="asub" id="asub-store-channel-admin">
+        <div class="section-head"><div class="section-title">قناة المتجر</div></div>
+
+        <div class="settings-box" style="margin-bottom:16px;">
+          <div class="settings-box-title">😀 الإيموجيات المسموحة للرياكشن</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">اختر مجموعة الإيموجيات اللي بيقدر المتابعين يعملوا فيها رياكشن على منشوراتك</div>
+          <div id="scEmojiPicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
+          <div style="display:flex;gap:8px;">
+            <input class="pf-input" id="scNewEmoji" placeholder="أضف إيموجي... مثال 🎉" style="flex:1;" maxlength="4"/>
+            <button onclick="addScEmoji()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">+ إضافة</button>
+          </div>
+          <button class="btn btn-kick" onclick="saveScEmojis()" style="margin-top:12px;width:100%;">💾 حفظ الإيموجيات</button>
+        </div>
+
+        <div class="settings-box" style="margin-bottom:16px;">
+          <div class="settings-box-title">📢 نشر جديد</div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <button type="button" id="sc-type-text-btn" onclick="setScPostType('text')" class="pf-input" style="flex:1;cursor:pointer;font-weight:700;">📝 رسالة نصية</button>
+            <button type="button" id="sc-type-image-btn" onclick="setScPostType('image')" class="pf-input" style="flex:1;cursor:pointer;font-weight:700;">🖼️ صورة</button>
+            <button type="button" id="sc-type-video-btn" onclick="setScPostType('video')" class="pf-input" style="flex:1;cursor:pointer;font-weight:700;">🎬 فيديو</button>
+          </div>
+          <div id="sc-media-box" style="display:none;margin-bottom:12px;">
+            <input type="file" id="scMediaFile" accept="image/*,video/*" class="pf-input" onchange="handleScMediaFile(event)"/>
+            <div id="sc-media-info" style="font-size:11px;color:var(--muted);margin-top:6px;"></div>
+            <div id="sc-media-preview" style="margin-top:10px;"></div>
+          </div>
+          <textarea class="pf-input" id="scCaption" rows="3" style="resize:vertical;" placeholder="اكتب رسالتك أو وصف المنشور هنا..."></textarea>
+          <button class="btn btn-kick" onclick="publishScPost()" style="margin-top:12px;width:100%;">📢 نشر</button>
+        </div>
+
+        <div class="settings-box">
+          <div class="settings-box-title">📋 المنشورات المنشورة</div>
+          <div id="scAdminList"></div>
+        </div>
       </div>
 
       <!-- TOURNAMENTS ADMIN -->
@@ -2412,6 +2517,10 @@ body.ready .page.on { opacity:1; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
       المتجر
     </button>
+    <button class="dl" onclick="drawerGoTo('store-channel')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+      قناة المتجر
+    </button>
     <button class="dl" onclick="drawerGoTo('rules')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       القوانين
@@ -2432,7 +2541,7 @@ body.ready .page.on { opacity:1; }
     </button>
     <button class="dl" onclick="drawerGoTo('dms')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      رسائل
+      التواصل
     </button>
     <button class="dl" onclick="drawerGoTo('daily')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -2716,6 +2825,7 @@ function goTo(id, btn) {
   if (id === 'profile') loadProfile();
   if (id === 'daily') loadDaily();
   if (id === 'explain') loadExplainVideo();
+  if (id === 'store-channel') loadStoreChannel();
   if (id === 'dms') { if (!dmAllUsers.length) loadDms(); else renderDmList(dmAllUsers); }
   if (id === 'updates') { loadUpdates(); setTimeout(renderUpdatesPage, 300); }
   else if (dmInterval) { clearInterval(dmInterval); dmInterval = null; }
@@ -3000,6 +3110,8 @@ async function setStream(status) {
 function renderStream() {
   const liveEl = document.getElementById('streamLive'), offEl = document.getElementById('streamOffline');
   if (!liveEl || !offEl) return;
+  const loadingEl = document.getElementById('streamLoading');
+  if (loadingEl) loadingEl.style.display = 'none'; // خلص عرفنا الحالة الحقيقية، شيل السبينر
   if (streamState.status === 'live' && streamState.username) {
     liveEl.style.display = 'block'; offEl.style.display = 'none';
     const titleEl = document.getElementById('streamTitle'); if(titleEl) titleEl.textContent = streamState.title || 'البث المباشر';
@@ -3489,6 +3601,7 @@ function aTab(tab, btn) {
   if(tab==='auction-admin') loadAuctionAdmin();
   if(tab==='tournaments-admin') loadTournamentsAdmin();
   if(tab==='market-admin') loadMarketAdmin();
+  if(tab==='store-channel-admin') loadScAdmin();
   if(tab==='messages-admin') loadAdminMessages();
   if(tab==='security') loadSecurityLogs();
   if(tab==='updates-admin') { loadUpdates(); setTimeout(renderUpdatesAdmin, 300); }
@@ -4268,12 +4381,16 @@ async function deleteRule(id) {
 
 async function saveRulesToServer() {
   try {
-    await fetch(`${W}/api/rules`, {
+    const res = await adminFetch(`${W}/api/rules`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
-  } catch(e) {}
+    if (!res.ok) {
+      const d = await res.json().catch(()=>({}));
+      showToast(d.error || 'فشل حفظ القانون — تأكد إنك مسجل دخول كمدير', 'err');
+    }
+  } catch(e) { showToast('خطأ بالاتصال أثناء حفظ القانون', 'err'); }
 }
 
 
@@ -5670,6 +5787,255 @@ async function resetAllPoints() {
     } else showToast(d.error||'خطأ','err');
   } catch(e) { showToast('خطأ في الاتصال','err'); }
 }
+
+
+// ══════════════════════════════════════════
+// STORE CHANNEL (قناة المتجر)
+// ══════════════════════════════════════════
+let scEmojis = ['❤️','😂','👍','🔥','😮','😢'];
+let scPostType = 'text';
+let scPendingMedia = null; // {data, mime}
+let scPosts = [];
+
+// ── الصفحة العامة (المتابعين) ──
+async function loadStoreChannel() {
+  const el = document.getElementById('storeChannelFeed');
+  if (!el) return;
+  el.innerHTML = '<div class="empty" style="padding:40px;"><p style="color:var(--muted);">جاري التحميل...</p></div>';
+  try {
+    const res = await fetch(`${W}/api/store-channel`);
+    const d = await res.json();
+    scEmojis = d.emojis && d.emojis.length ? d.emojis : scEmojis;
+    scPosts = d.posts || [];
+    renderStoreChannelFeed();
+  } catch(e) {
+    el.innerHTML = '<div class="empty"><p style="color:var(--muted);">تعذر التحميل</p></div>';
+  }
+}
+
+function renderStoreChannelFeed() {
+  const el = document.getElementById('storeChannelFeed');
+  if (!el) return;
+  if (!scPosts.length) {
+    el.innerHTML = '<div class="empty" style="padding:60px 20px;text-align:center;"><div style="font-size:48px;margin-bottom:14px;">📢</div><p style="color:var(--muted);">لا توجد منشورات بعد</p></div>';
+    return;
+  }
+  el.innerHTML = scPosts.map(p => renderScPostCard(p)).join('');
+}
+
+function renderScPostCard(p) {
+  let mediaHtml = '';
+  if (p.type === 'image' && p.content) {
+    mediaHtml = `<img src="${p.content}" style="width:100%;border-radius:var(--radius);margin-bottom:12px;display:block;"/>`;
+  } else if (p.type === 'video' && p.content) {
+    mediaHtml = `<video src="${p.content}" controls style="width:100%;border-radius:var(--radius);margin-bottom:12px;display:block;background:#000;"></video>`;
+  }
+  const totalReactions = Object.values(p.reactions||{}).reduce((s,arr)=>s+arr.length,0);
+  const myUsername = currentUser?.username;
+  const myReaction = myUsername ? Object.keys(p.reactions||{}).find(em => (p.reactions[em]||[]).includes(myUsername)) : null;
+
+  const emojiRow = scEmojis.map(em => {
+    const count = (p.reactions && p.reactions[em]) ? p.reactions[em].length : 0;
+    const active = em === myReaction;
+    return `<button onclick="reactToScPost('${p.id}','${em}')" style="display:flex;align-items:center;gap:5px;background:${active?'var(--kick-dim)':'var(--surface2)'};border:1px solid ${active?'var(--border)':'var(--border2)'};border-radius:20px;padding:5px 12px;font-size:14px;cursor:pointer;transition:var(--transition);">
+      <span>${em}</span>${count>0?`<span style="font-size:11px;color:${active?'var(--kick)':'var(--muted)'};font-weight:700;">${count}</span>`:''}
+    </button>`;
+  }).join('');
+
+  return `<div class="card" style="margin-bottom:0;">
+    ${mediaHtml}
+    ${p.caption ? `<div style="font-size:14px;line-height:1.7;margin-bottom:14px;white-space:pre-wrap;">${p.caption}</div>` : ''}
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">${fmtDate(p.createdAt)}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:${totalReactions>0?'10px':'0'};">${emojiRow}</div>
+    ${totalReactions>0 ? `<div onclick="showScReactors('${p.id}')" style="cursor:pointer;font-size:12px;color:var(--muted);">👥 ${totalReactions} عملوا رياكشن — اضغط لتشوف مين</div>` : ''}
+  </div>`;
+}
+
+async function reactToScPost(postId, emoji) {
+  if (!currentUser) { showToast('سجّل دخول أولاً','err'); doLogin('kick'); return; }
+  try {
+    const res = await fetch(`${W}/api/store-channel/${postId}/react`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: sessionToken, emoji })
+    });
+    const d = await res.json();
+    if (d.success) {
+      const idx = scPosts.findIndex(p => p.id === postId);
+      if (idx !== -1) scPosts[idx].reactions = d.reactions || {};
+      renderStoreChannelFeed();
+    } else showToast(d.error||'خطأ','err');
+  } catch(e) { showToast('خطأ في الاتصال','err'); }
+}
+
+function showScReactors(postId) {
+  const p = scPosts.find(x => x.id === postId);
+  if (!p || !p.reactions) return;
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px;';
+  const rows = Object.entries(p.reactions).map(([emoji, users]) => `
+    <div style="margin-bottom:14px;">
+      <div style="font-size:16px;margin-bottom:8px;">${emoji} <span style="font-size:12px;color:var(--muted);font-weight:600;">(${users.length})</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${users.map(u => `<span style="background:var(--surface2);border:1px solid var(--border2);padding:4px 12px;border-radius:20px;font-size:12px;">${u}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px;max-width:420px;width:100%;max-height:80vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:15px;font-weight:800;">مين عمل رياكشن</div>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+      </div>
+      ${rows}
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.onclick = e => { if (e.target === modal) modal.remove(); };
+}
+
+// ── لوحة الإدارة ──
+async function loadScAdmin() {
+  try {
+    const res = await adminFetch(`${W}/api/store-channel`);
+    const d = await res.json();
+    scEmojis = d.emojis && d.emojis.length ? d.emojis : scEmojis;
+    scPosts = d.posts || [];
+  } catch(e) {}
+  renderScEmojiPicker();
+  renderScAdminList();
+}
+
+function renderScEmojiPicker() {
+  const el = document.getElementById('scEmojiPicker');
+  if (!el) return;
+  el.innerHTML = scEmojis.map((em, i) => `
+    <span style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:6px 12px;font-size:16px;">
+      ${em}
+      <button onclick="removeScEmoji(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;line-height:1;">✕</button>
+    </span>
+  `).join('');
+}
+
+function addScEmoji() {
+  const inp = document.getElementById('scNewEmoji');
+  const val = inp?.value.trim();
+  if (!val) return;
+  if (scEmojis.includes(val)) { showToast('موجود مسبقاً','err'); return; }
+  scEmojis.push(val);
+  inp.value = '';
+  renderScEmojiPicker();
+}
+
+function removeScEmoji(idx) {
+  scEmojis.splice(idx, 1);
+  renderScEmojiPicker();
+}
+
+async function saveScEmojis() {
+  if (!scEmojis.length) { showToast('أضف إيموجي واحد على الأقل','err'); return; }
+  try {
+    const res = await adminFetch(`${W}/api/admin/store-channel/emojis`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ emojis: scEmojis })
+    });
+    const d = await res.json();
+    if (d.success) showToast('✅ تم حفظ الإيموجيات');
+    else showToast(d.error||'خطأ','err');
+  } catch(e) { showToast('خطأ في الاتصال','err'); }
+}
+
+function setScPostType(type) {
+  scPostType = type;
+  scPendingMedia = null;
+  const box = document.getElementById('sc-media-box');
+  const preview = document.getElementById('sc-media-preview');
+  const info = document.getElementById('sc-media-info');
+  const fileInput = document.getElementById('scMediaFile');
+  if (preview) preview.innerHTML = '';
+  if (info) info.textContent = '';
+  if (fileInput) { fileInput.value = ''; fileInput.accept = type === 'video' ? 'video/*' : 'image/*'; }
+  if (box) box.style.display = type === 'text' ? 'none' : 'block';
+  ['text','image','video'].forEach(t => {
+    const btn = document.getElementById('sc-type-'+t+'-btn');
+    if (btn) { btn.style.background = t===type ? 'var(--kick-dim)' : ''; btn.style.color = t===type ? 'var(--kick)' : ''; }
+  });
+}
+
+function handleScMediaFile(e) {
+  const f = e.target.files[0];
+  const info = document.getElementById('sc-media-info');
+  const preview = document.getElementById('sc-media-preview');
+  if (!f) return;
+  const sizeMB = f.size / (1024*1024);
+  if (info) info.textContent = `⏳ جاري القراءة... (${sizeMB.toFixed(1)} ميغا)`;
+  const r = new FileReader();
+  r.onload = ev => {
+    scPendingMedia = { data: ev.target.result, mime: f.type || '' };
+    if (info) info.innerHTML = `<span style="color:var(--kick);">✅ جاهز: ${f.name} (${sizeMB.toFixed(1)} ميغا)</span>`;
+    if (preview) {
+      preview.innerHTML = scPostType === 'video'
+        ? `<video src="${scPendingMedia.data}" controls style="max-width:100%;max-height:200px;border-radius:var(--radius);"></video>`
+        : `<img src="${scPendingMedia.data}" style="max-width:100%;max-height:200px;border-radius:var(--radius);"/>`;
+    }
+  };
+  r.onerror = () => { if (info) info.innerHTML = `<span style="color:var(--red);">فشل قراءة الملف</span>`; scPendingMedia = null; };
+  r.readAsDataURL(f);
+}
+
+async function publishScPost() {
+  const caption = document.getElementById('scCaption')?.value.trim() || '';
+  if (scPostType === 'text' && !caption) { showToast('اكتب نص الرسالة','err'); return; }
+  if (scPostType !== 'text' && !scPendingMedia) { showToast('اختر ملف الصورة/الفيديو أولاً','err'); return; }
+  try {
+    const res = await adminFetch(`${W}/api/admin/store-channel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: scPostType,
+        content: scPendingMedia ? scPendingMedia.data : null,
+        caption
+      })
+    });
+    const d = await res.json();
+    if (d.success) {
+      showToast('✅ تم النشر');
+      document.getElementById('scCaption').value = '';
+      scPendingMedia = null;
+      setScPostType('text');
+      loadScAdmin();
+    } else showToast(d.error||'فشل النشر — تأكد من حجم الملف','err');
+  } catch(e) { showToast('خطأ بالنشر — تأكد من حجم الملف','err'); }
+}
+
+function renderScAdminList() {
+  const el = document.getElementById('scAdminList');
+  if (!el) return;
+  if (!scPosts.length) { el.innerHTML = '<div class="empty"><p>لا توجد منشورات بعد</p></div>'; return; }
+  el.innerHTML = scPosts.map(p => {
+    const totalReactions = Object.values(p.reactions||{}).reduce((s,arr)=>s+arr.length,0);
+    const typeLabel = p.type === 'text' ? '📝 نص' : p.type === 'image' ? '🖼️ صورة' : '🎬 فيديو';
+    return `<div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;">
+      <div style="flex:1;">
+        <div style="font-size:12px;color:var(--kick);font-weight:700;margin-bottom:4px;">${typeLabel} · ${fmtDate(p.createdAt)}</div>
+        ${p.caption ? `<div style="font-size:13px;margin-bottom:6px;">${p.caption.substring(0,80)}${p.caption.length>80?'...':''}</div>` : ''}
+        <div style="font-size:11px;color:var(--muted);">👥 ${totalReactions} رياكشن</div>
+      </div>
+      <button class="btn-sm btn-del" onclick="deleteScPost('${p.id}')">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+async function deleteScPost(id) {
+  if (!confirm('حذف هالمنشور نهائياً؟')) return;
+  try {
+    await adminFetch(`${W}/api/admin/store-channel/${id}`, { method: 'DELETE' });
+    showToast('تم الحذف');
+    loadScAdmin();
+  } catch(e) { showToast('خطأ','err'); }
+}
+try { setScPostType('text'); } catch(e) {} // شكل افتراضي صح لأزرار نوع المنشور من أول تحميل
 
 
 // ══════════════════════════════════════════

@@ -2178,8 +2178,16 @@ body.ready .page.on { opacity:1; }
           <div class="set-row"><div><div class="set-label">مدة المشاهدة (ثانية)</div></div><input class="set-input" id="we-seconds" type="number" value="15" min="5" dir="ltr" style="width:80px;min-width:80px;"/></div>
           <div class="set-row"><div><div class="set-label">أقصى عدد مرات باليوم</div></div><input class="set-input" id="we-maxday" type="number" value="10" min="1" dir="ltr" style="width:80px;min-width:80px;"/></div>
           <div class="set-row"><div><div class="set-label">AdSense Client ID</div></div><input class="set-input" id="we-adclient" value="ca-pub-2053917230593629" dir="ltr" style="min-width:200px;"/></div>
-          <div class="set-row"><div><div class="set-label">AdSense Ad Slot ID</div><div class="set-desc">أنشئ وحدة إعلانية من لوحة AdSense وحط رقمها هون</div></div><input class="set-input" id="we-adslot" placeholder="1234567890" dir="ltr" style="min-width:160px;"/></div>
-          <button class="btn btn-kick" onclick="saveWatchEarnCfg()" style="margin-top:12px;width:100%;">💾 حفظ إعدادات شاهد واربح</button>
+          <div style="margin-top:10px;">
+            <div class="set-label" style="margin-bottom:6px;">إعلانات "شاهد واربح" (بالترتيب)</div>
+            <div class="set-desc" style="margin-bottom:10px;">أنشئ وحدة إعلانية لكل إعلان من لوحة AdSense وضيف رقمها هون — كل ما حدا يفتح الصفحة بيشوف الإعلان اللي بعد الأخير اللي شافه، وبيرجع للأول بعد ما يخلص الدور</div>
+            <div id="weAdSlotsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>
+            <div style="display:flex;gap:8px;">
+              <input class="pf-input" id="we-new-adslot" placeholder="رقم الوحدة الإعلانية (Ad Slot ID)" dir="ltr" style="flex:1;"/>
+              <button onclick="addWeAdSlot()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">+ إضافة</button>
+            </div>
+          </div>
+          <button class="btn btn-kick" onclick="saveWatchEarnCfg()" style="margin-top:14px;width:100%;">💾 حفظ إعدادات شاهد واربح</button>
         </div>
 
         <div class="settings-box">
@@ -5163,7 +5171,7 @@ async function loadExplainVideo() {
 // ══════════════════════════════════════════
 // WATCH & EARN (شاهد واربح)
 // ══════════════════════════════════════════
-let weConfig = { enabled: false, points: 2, seconds: 15, maxPerDay: 10, adClient: 'ca-pub-2053917230593629', adSlot: '' };
+let weConfig = { enabled: false, points: 2, seconds: 15, maxPerDay: 10, adClient: 'ca-pub-2053917230593629', adSlots: [] };
 let weTimerInterval = null;
 let weAdPushed = false;
 
@@ -5211,11 +5219,13 @@ async function loadWatchEarn() {
   if(adBox) adBox.style.display = 'flex';
   setEl('weRemainingText', `متبقي ${remaining} من ${weConfig.maxPerDay} مرة اليوم`);
 
-  // إذا ما في Ad Slot متجهز، بيّن رسالة بدل ما نحاول نعرض إعلان مكسور
+  // إذا ما في أي إعلان متجهز، بيّن رسالة بدل ما نحاول نعرض إعلان مكسور
   const adIns = document.getElementById('weAdIns');
+  const adSlots = getWeAdSlotsList();
   if (adIns) {
-    if (weConfig.adSlot) {
-      adIns.setAttribute('data-ad-slot', weConfig.adSlot);
+    const nextSlot = adSlots.length ? getNextWeAdSlot(adSlots) : '';
+    if (nextSlot) {
+      adIns.setAttribute('data-ad-slot', nextSlot);
       if (!weAdPushed) {
         try { (window.adsbygoogle = window.adsbygoogle || []).push({}); weAdPushed = true; } catch(e) {}
       }
@@ -5225,6 +5235,23 @@ async function loadWatchEarn() {
   }
 
   startWeTimer();
+}
+
+// دعم النسخة القديمة (adSlot مفرد) + النسخة الجديدة (adSlots مصفوفة)
+function getWeAdSlotsList() {
+  if (Array.isArray(weConfig.adSlots) && weConfig.adSlots.length) return weConfig.adSlots;
+  if (weConfig.adSlot) return [weConfig.adSlot]; // توافق مع إعداد قديم محفوظ بحقل واحد
+  return [];
+}
+
+// يرجّع الإعلان اللي بعد آخر وحدة اتفرجوا عليها بنفس الجهاز، وبيلف على الأول
+// بعد ما يخلص الدور — يعني كل زيارة/تحديث للصفحة بيجيب إعلان مختلف بالترتيب
+function getNextWeAdSlot(adSlots) {
+  let idx = 0;
+  try { idx = parseInt(localStorage.getItem('we_ad_rotation_index') || '0', 10) || 0; } catch(e) {}
+  const slot = adSlots[idx % adSlots.length];
+  try { localStorage.setItem('we_ad_rotation_index', String((idx + 1) % adSlots.length)); } catch(e) {}
+  return slot;
 }
 
 function startWeTimer() {
@@ -5280,9 +5307,42 @@ function loadWatchEarnAdminFields() {
   setVal('we-seconds', weConfig.seconds);
   setVal('we-maxday', weConfig.maxPerDay);
   setVal('we-adclient', weConfig.adClient);
-  setVal('we-adslot', weConfig.adSlot);
   const cb = document.getElementById('we-enabled');
   if (cb) cb.checked = !!weConfig.enabled;
+  // توافق مع إعداد قديم بحقل واحد (adSlot) — حوّله لمصفوفة أول مرة تفتح الإعدادات
+  if (!Array.isArray(weConfig.adSlots) || !weConfig.adSlots.length) {
+    weConfig.adSlots = weConfig.adSlot ? [weConfig.adSlot] : [];
+  }
+  renderWeAdSlotsList();
+}
+
+function renderWeAdSlotsList() {
+  const el = document.getElementById('weAdSlotsList');
+  if (!el) return;
+  const slots = weConfig.adSlots || [];
+  el.innerHTML = slots.length ? slots.map((slot, i) => `
+    <div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:8px 12px;">
+      <span style="width:24px;height:24px;border-radius:50%;background:var(--kick-dim);color:var(--kick);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
+      <span style="flex:1;font-family:monospace;font-size:13px;direction:ltr;text-align:left;">${slot}</span>
+      <button onclick="removeWeAdSlot(${i})" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'Cairo',sans-serif;">حذف</button>
+    </div>
+  `).join('') : '<p style="color:var(--muted);font-size:12px;">ما ضفت أي إعلان بعد</p>';
+}
+
+function addWeAdSlot() {
+  const inp = document.getElementById('we-new-adslot');
+  const val = inp?.value.trim();
+  if (!val) { showToast('أدخل رقم الوحدة الإعلانية', 'err'); return; }
+  if (!Array.isArray(weConfig.adSlots)) weConfig.adSlots = [];
+  if (weConfig.adSlots.includes(val)) { showToast('هالإعلان مضاف مسبقاً', 'err'); return; }
+  weConfig.adSlots.push(val);
+  inp.value = '';
+  renderWeAdSlotsList();
+}
+
+function removeWeAdSlot(idx) {
+  weConfig.adSlots.splice(idx, 1);
+  renderWeAdSlotsList();
 }
 
 async function saveWatchEarnCfg() {
@@ -5292,17 +5352,22 @@ async function saveWatchEarnCfg() {
     seconds: Number(document.getElementById('we-seconds')?.value) || 15,
     maxPerDay: Number(document.getElementById('we-maxday')?.value) || 10,
     adClient: document.getElementById('we-adclient')?.value.trim() || 'ca-pub-2053917230593629',
-    adSlot: document.getElementById('we-adslot')?.value.trim() || '',
+    adSlots: weConfig.adSlots || [],
   };
-  weConfig = cfg;
   try {
-    await adminFetch(`${W}/api/settings`, {
+    const res = await adminFetch(`${W}/api/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ watchEarn: cfg })
     });
-    showToast('✅ تم حفظ إعدادات شاهد واربح');
-  } catch(e) { showToast('خطأ بالحفظ', 'err'); }
+    if (!res.ok) {
+      const d = await res.json().catch(()=>({}));
+      showToast(d.error || 'فشل الحفظ — تأكد إنك مسجل دخول كأدمن (جرب سجل خروج ودخول من جديد)', 'err');
+      return;
+    }
+    weConfig = cfg;
+    showToast('✅ تم حفظ إعدادات شاهد واربح فعلياً');
+  } catch(e) { showToast('خطأ بالاتصال أثناء الحفظ', 'err'); }
 }
 
 async function loadDaily() {

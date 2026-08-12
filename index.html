@@ -1397,6 +1397,7 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
   document.addEventListener('contextmenu', e => e.preventDefault());
 })();
 </script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2053917230593629" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -1508,6 +1509,7 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('profile',this)">ملفي</button>
     <button class="nl" onclick="goTo('dms',this)" id="navDmsBtn" style="position:relative;">التواصل<span id="dmsBadge" style="display:none;position:absolute;top:2px;left:2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;min-width:14px;text-align:center;"></span></button>
     <button class="nl" onclick="goTo('daily',this)">التسجيل اليومي</button>
+    <button class="nl" onclick="goTo('watch-earn',this)">شاهد واربح</button>
     <button class="nl" id="navExplainBtn" onclick="goTo('explain',this)" style="display:none;">🎬 الشرح</button>
     <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;color:var(--orange);font-weight:800;">تحديثات</button>
   </div>
@@ -2166,6 +2168,21 @@ body.ready .page.on { opacity:1; }
         </div>
 
         <div class="settings-box">
+          <div class="settings-box-title">📺 شاهد واربح</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">يشاهد العضو إعلان AdSense لمدة محددة ويكسب نقاط — مع حد أقصى يومي لمنع الاستغلال</div>
+          <div class="set-row">
+            <div><div class="set-label">تفعيل الميزة</div></div>
+            <label class="toggle"><input type="checkbox" id="we-enabled"/><span class="toggle-sl"></span></label>
+          </div>
+          <div class="set-row"><div><div class="set-label">النقاط لكل مشاهدة</div></div><input class="set-input" id="we-points" type="number" value="2" min="1" dir="ltr" style="width:80px;min-width:80px;"/></div>
+          <div class="set-row"><div><div class="set-label">مدة المشاهدة (ثانية)</div></div><input class="set-input" id="we-seconds" type="number" value="15" min="5" dir="ltr" style="width:80px;min-width:80px;"/></div>
+          <div class="set-row"><div><div class="set-label">أقصى عدد مرات باليوم</div></div><input class="set-input" id="we-maxday" type="number" value="10" min="1" dir="ltr" style="width:80px;min-width:80px;"/></div>
+          <div class="set-row"><div><div class="set-label">AdSense Client ID</div></div><input class="set-input" id="we-adclient" value="ca-pub-2053917230593629" dir="ltr" style="min-width:200px;"/></div>
+          <div class="set-row"><div><div class="set-label">AdSense Ad Slot ID</div><div class="set-desc">أنشئ وحدة إعلانية من لوحة AdSense وحط رقمها هون</div></div><input class="set-input" id="we-adslot" placeholder="1234567890" dir="ltr" style="min-width:160px;"/></div>
+          <button class="btn btn-kick" onclick="saveWatchEarnCfg()" style="margin-top:12px;width:100%;">💾 حفظ إعدادات شاهد واربح</button>
+        </div>
+
+        <div class="settings-box">
           <div class="settings-box-title">🖼️ صورة البطاقة الرئيسية</div>
           <div class="img-upload-row">
             <div style="width:72px;height:72px;border-radius:50%;border:3px solid var(--border);background:var(--card2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;" id="heroAvaPreview">🎮</div>
@@ -2414,6 +2431,45 @@ body.ready .page.on { opacity:1; }
 </section>
 
 
+<!-- WATCH & EARN PAGE (شاهد واربح) -->
+<section class="page" id="page-watch-earn">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="font-size:11px;font-weight:700;color:var(--kick);letter-spacing:2px;margin-bottom:8px;">WATCH &amp; EARN</div>
+      <h2 style="font-size:28px;font-weight:900;margin-bottom:8px;">شاهد <span style="color:var(--kick);">واربح</span></h2>
+      <p style="color:var(--muted);font-size:14px;" id="weSubtitle">شاهد الإعلان واكسب نقاط</p>
+    </div>
+
+    <!-- غير مسجل -->
+    <div id="weGuest" style="display:none;text-align:center;padding:40px 0;">
+      <p style="color:var(--muted);margin-bottom:20px;">سجّل دخول للمشاركة</p>
+      <button class="btn btn-kick" onclick="doLogin('kick')">تسجيل دخول</button>
+    </div>
+
+    <!-- الميزة موقوفة من الإدارة -->
+    <div id="weDisabled" style="display:none;text-align:center;padding:40px 0;">
+      <div style="font-size:44px;margin-bottom:14px;">😴</div>
+      <p style="color:var(--muted);">هالميزة موقوفة حالياً</p>
+    </div>
+
+    <!-- المحتوى الفعلي -->
+    <div id="weContent" style="display:none;">
+      <div class="settings-box" style="margin-bottom:20px;text-align:center;">
+        <div id="weAdBox" style="background:var(--surface2);border-radius:var(--radius);min-height:250px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:16px;">
+          <ins class="adsbygoogle" id="weAdIns" style="display:block;width:100%;min-height:250px;" data-ad-client="ca-pub-2053917230593629" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        </div>
+        <div id="weTimerBox" style="margin-bottom:16px;">
+          <div class="progress-wrap"><div class="progress-bar" id="weProgressBar" style="width:0%;"></div></div>
+          <div style="font-size:13px;color:var(--muted);margin-top:8px;" id="weTimerText">شاهد الإعلان لمدة <span id="weSecondsLeft">15</span> ثانية...</div>
+        </div>
+        <button id="weClaimBtn" class="btn btn-kick" style="width:100%;font-size:15px;padding:12px;" disabled onclick="claimWatchEarn()">🎁 استلم نقاطك</button>
+        <div id="weRemainingText" style="font-size:12px;color:var(--muted);margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 <!-- EXPLAIN VIDEO PAGE (الشرح) -->
 <section class="page" id="page-explain">
   <div class="wrap">
@@ -2595,6 +2651,10 @@ body.ready .page.on { opacity:1; }
     <button class="dl" onclick="drawerGoTo('daily')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       التسجيل اليومي
+    </button>
+    <button class="dl" onclick="drawerGoTo('watch-earn')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      شاهد واربح
     </button>
     <button class="dl" id="drawerExplainBtn" onclick="drawerGoTo('explain')" style="display:none;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
@@ -2874,6 +2934,7 @@ function goTo(id, btn) {
   if (id === 'profile') loadProfile();
   if (id === 'daily') loadDaily();
   if (id === 'explain') loadExplainVideo();
+  if (id === 'watch-earn') loadWatchEarn();
   if (id === 'store-channel') loadStoreChannel();
   if (id === 'dms') { if (!dmAllUsers.length) loadDms(); else renderDmList(dmAllUsers); }
   if (id === 'updates') { loadUpdates(); setTimeout(renderUpdatesPage, 300); }
@@ -3026,6 +3087,7 @@ async function loadAllSettings() {
 
     if (s.themeColors) applyThemeColors(s.themeColors);
     if (s.rewardDiscordLink) { window._rewardDiscordLink = s.rewardDiscordLink; setVal('set-reward-discord', s.rewardDiscordLink); }
+    if (s.watchEarn) { weConfig = { ...weConfig, ...s.watchEarn }; loadWatchEarnAdminFields(); }
 
     if (s.channelName) {
       setEl('navName', s.channelName); setEl('adminName', s.channelName);
@@ -4675,6 +4737,7 @@ function applySettings(s) {
 
   if (s.themeColors) applyThemeColors(s.themeColors);
   if (s.rewardDiscordLink) { window._rewardDiscordLink = s.rewardDiscordLink; setVal('set-reward-discord', s.rewardDiscordLink); }
+  if (s.watchEarn) { weConfig = { ...weConfig, ...s.watchEarn }; loadWatchEarnAdminFields(); }
   if (s.channelName) {
     setEl('navName',s.channelName); 
     setEl('adminName',s.channelName); 
@@ -5095,6 +5158,151 @@ async function loadExplainVideo() {
   } catch (e) {
     box.innerHTML = `<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:14px;">تعذّر تحميل الفيديو</div>`;
   }
+}
+
+// ══════════════════════════════════════════
+// WATCH & EARN (شاهد واربح)
+// ══════════════════════════════════════════
+let weConfig = { enabled: false, points: 2, seconds: 15, maxPerDay: 10, adClient: 'ca-pub-2053917230593629', adSlot: '' };
+let weTimerInterval = null;
+let weAdPushed = false;
+
+async function loadWatchEarn() {
+  const guestEl = document.getElementById('weGuest');
+  const disabledEl = document.getElementById('weDisabled');
+  const contentEl = document.getElementById('weContent');
+  [guestEl, disabledEl, contentEl].forEach(el => { if(el) el.style.display = 'none'; });
+  if (weTimerInterval) { clearInterval(weTimerInterval); weTimerInterval = null; }
+
+  // جيب أحدث إعدادات
+  try {
+    const res = await fetch(`${W}/api/settings`);
+    const s = await res.json();
+    if (s.watchEarn) weConfig = { ...weConfig, ...s.watchEarn };
+  } catch(e) {}
+
+  if (!currentUser) { if(guestEl) guestEl.style.display = 'block'; return; }
+  if (!weConfig.enabled) { if(disabledEl) disabledEl.style.display = 'block'; return; }
+  if(contentEl) contentEl.style.display = 'block';
+
+  setEl('weSubtitle', `شاهد الإعلان لمدة ${weConfig.seconds} ثانية واكسب ${weConfig.points} نقطة`);
+
+  // جيب حالة اليوم (كم مرة استفاد)
+  let remaining = weConfig.maxPerDay;
+  try {
+    const r2 = await fetch(`${W}/api/watch-earn/status?token=${sessionToken}`);
+    const d2 = await r2.json();
+    if (typeof d2.remainingToday === 'number') remaining = d2.remainingToday;
+  } catch(e) {}
+
+  const btn = document.getElementById('weClaimBtn');
+  const adBox = document.getElementById('weAdBox');
+  const timerBox = document.getElementById('weTimerBox');
+
+  if (remaining <= 0) {
+    if(timerBox) timerBox.style.display = 'none';
+    if(adBox) adBox.style.display = 'none';
+    if(btn) { btn.disabled = true; btn.textContent = '✅ خلصت مرات اليوم'; }
+    setEl('weRemainingText', 'رجعلك بكرة — استنى التسجيل يتجدد');
+    return;
+  }
+
+  if(timerBox) timerBox.style.display = 'block';
+  if(adBox) adBox.style.display = 'flex';
+  setEl('weRemainingText', `متبقي ${remaining} من ${weConfig.maxPerDay} مرة اليوم`);
+
+  // إذا ما في Ad Slot متجهز، بيّن رسالة بدل ما نحاول نعرض إعلان مكسور
+  const adIns = document.getElementById('weAdIns');
+  if (adIns) {
+    if (weConfig.adSlot) {
+      adIns.setAttribute('data-ad-slot', weConfig.adSlot);
+      if (!weAdPushed) {
+        try { (window.adsbygoogle = window.adsbygoogle || []).push({}); weAdPushed = true; } catch(e) {}
+      }
+    } else if (adBox) {
+      adBox.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);font-size:13px;">الإعلان غير مهيأ بعد من الإدارة</div>';
+    }
+  }
+
+  startWeTimer();
+}
+
+function startWeTimer() {
+  if (weTimerInterval) clearInterval(weTimerInterval);
+  let left = weConfig.seconds;
+  const btn = document.getElementById('weClaimBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ شاهد الإعلان...'; }
+  setEl('weSecondsLeft', left);
+  const bar = document.getElementById('weProgressBar');
+  if (bar) bar.style.width = '0%';
+
+  weTimerInterval = setInterval(() => {
+    left--;
+    setEl('weSecondsLeft', Math.max(left,0));
+    if (bar) bar.style.width = Math.min(100, ((weConfig.seconds-left)/weConfig.seconds)*100) + '%';
+    if (left <= 0) {
+      clearInterval(weTimerInterval);
+      weTimerInterval = null;
+      setEl('weTimerText', '✅ جاهز — استلم نقاطك!');
+      if (btn) { btn.disabled = false; btn.textContent = '🎁 استلم نقاطك'; }
+    }
+  }, 1000);
+}
+
+async function claimWatchEarn() {
+  if (!currentUser) return;
+  const btn = document.getElementById('weClaimBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ جاري...'; }
+  try {
+    const res = await fetch(`${W}/api/watch-earn/claim`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: sessionToken })
+    });
+    const d = await res.json();
+    if (d.success) {
+      currentUser.points = (currentUser.points||0) + d.points;
+      const ptsEl = document.getElementById('navPtsVal'); if(ptsEl) ptsEl.textContent = currentUser.points.toLocaleString();
+      showToast(`🎉 كسبت ${d.points} نقطة!`);
+      loadWatchEarn(); // أعد التحميل — يبدأ عداد جديد أو يبيّن إنه خلص المرات
+    } else {
+      showToast(d.error || 'خطأ', 'err');
+      if (btn) { btn.disabled = false; btn.textContent = '🎁 استلم نقاطك'; }
+    }
+  } catch(e) {
+    showToast('خطأ في الاتصال', 'err');
+    if (btn) { btn.disabled = false; btn.textContent = '🎁 استلم نقاطك'; }
+  }
+}
+
+function loadWatchEarnAdminFields() {
+  setVal('we-points', weConfig.points);
+  setVal('we-seconds', weConfig.seconds);
+  setVal('we-maxday', weConfig.maxPerDay);
+  setVal('we-adclient', weConfig.adClient);
+  setVal('we-adslot', weConfig.adSlot);
+  const cb = document.getElementById('we-enabled');
+  if (cb) cb.checked = !!weConfig.enabled;
+}
+
+async function saveWatchEarnCfg() {
+  const cfg = {
+    enabled: !!document.getElementById('we-enabled')?.checked,
+    points: Number(document.getElementById('we-points')?.value) || 2,
+    seconds: Number(document.getElementById('we-seconds')?.value) || 15,
+    maxPerDay: Number(document.getElementById('we-maxday')?.value) || 10,
+    adClient: document.getElementById('we-adclient')?.value.trim() || 'ca-pub-2053917230593629',
+    adSlot: document.getElementById('we-adslot')?.value.trim() || '',
+  };
+  weConfig = cfg;
+  try {
+    await adminFetch(`${W}/api/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ watchEarn: cfg })
+    });
+    showToast('✅ تم حفظ إعدادات شاهد واربح');
+  } catch(e) { showToast('خطأ بالحفظ', 'err'); }
 }
 
 async function loadDaily() {

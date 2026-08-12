@@ -2463,15 +2463,24 @@ body.ready .page.on { opacity:1; }
     <!-- المحتوى الفعلي -->
     <div id="weContent" style="display:none;">
       <div class="settings-box" style="margin-bottom:20px;text-align:center;">
-        <div id="weAdBox" style="background:var(--surface2);border-radius:var(--radius);min-height:250px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:16px;">
-          <ins class="adsbygoogle" id="weAdIns" style="display:block;width:100%;min-height:250px;" data-ad-client="ca-pub-2053917230593629" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <!-- حالة البداية — قبل ما يضغط "ابدأ المشاهدة" -->
+        <div id="weStartBox" style="padding:40px 16px;">
+          <div style="font-size:44px;margin-bottom:14px;">📺</div>
+          <button id="weStartBtn" class="btn btn-kick" style="font-size:15px;padding:12px 32px;" onclick="startWatchEarn()">▶️ ابدأ المشاهدة</button>
+          <div id="weRemainingText2" style="font-size:12px;color:var(--muted);margin-top:12px;"></div>
         </div>
-        <div id="weTimerBox" style="margin-bottom:16px;">
-          <div class="progress-wrap"><div class="progress-bar" id="weProgressBar" style="width:0%;"></div></div>
-          <div style="font-size:13px;color:var(--muted);margin-top:8px;" id="weTimerText">شاهد الإعلان لمدة <span id="weSecondsLeft">15</span> ثانية...</div>
+        <!-- حالة المشاهدة الفعلية — تظهر بس بعد الضغط -->
+        <div id="weWatchBox" style="display:none;">
+          <div id="weAdBox" style="background:var(--surface2);border-radius:var(--radius);min-height:250px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:16px;">
+            <ins class="adsbygoogle" id="weAdIns" style="display:block;width:100%;min-height:250px;" data-ad-client="ca-pub-2053917230593629" data-ad-format="auto" data-full-width-responsive="true"></ins>
+          </div>
+          <div id="weTimerBox" style="margin-bottom:16px;">
+            <div class="progress-wrap"><div class="progress-bar" id="weProgressBar" style="width:0%;"></div></div>
+            <div style="font-size:13px;color:var(--muted);margin-top:8px;" id="weTimerText">شاهد الإعلان لمدة <span id="weSecondsLeft">15</span> ثانية...</div>
+          </div>
+          <button id="weClaimBtn" class="btn btn-kick" style="width:100%;font-size:15px;padding:12px;" disabled onclick="claimWatchEarn()">🎁 استلم نقاطك</button>
+          <div id="weRemainingText" style="font-size:12px;color:var(--muted);margin-top:10px;"></div>
         </div>
-        <button id="weClaimBtn" class="btn btn-kick" style="width:100%;font-size:15px;padding:12px;" disabled onclick="claimWatchEarn()">🎁 استلم نقاطك</button>
-        <div id="weRemainingText" style="font-size:12px;color:var(--muted);margin-top:10px;"></div>
       </div>
     </div>
   </div>
@@ -5175,12 +5184,19 @@ let weConfig = { enabled: false, points: 2, seconds: 15, maxPerDay: 10, adClient
 let weTimerInterval = null;
 let weAdPushed = false;
 
+let weRemainingToday = 0; // نخزنها هون عشان startWatchEarn() يقدر يستخدمها لما يضغط المستخدم زر البدء
+
 async function loadWatchEarn() {
   const guestEl = document.getElementById('weGuest');
   const disabledEl = document.getElementById('weDisabled');
   const contentEl = document.getElementById('weContent');
+  const startBox = document.getElementById('weStartBox');
+  const watchBox = document.getElementById('weWatchBox');
   [guestEl, disabledEl, contentEl].forEach(el => { if(el) el.style.display = 'none'; });
+  if (startBox) startBox.style.display = 'block';
+  if (watchBox) watchBox.style.display = 'none';
   if (weTimerInterval) { clearInterval(weTimerInterval); weTimerInterval = null; }
+  weAdPushed = false; // كل ما ندخل الصفحة من جديد، خلي فرصة يطلب إعلان جديد لما يضغط بدء
 
   // جيب أحدث إعدادات
   try {
@@ -5196,28 +5212,33 @@ async function loadWatchEarn() {
   setEl('weSubtitle', `شاهد الإعلان لمدة ${weConfig.seconds} ثانية واكسب ${weConfig.points} نقطة`);
 
   // جيب حالة اليوم (كم مرة استفاد)
-  let remaining = weConfig.maxPerDay;
+  weRemainingToday = weConfig.maxPerDay;
   try {
     const r2 = await fetch(`${W}/api/watch-earn/status?token=${sessionToken}`);
     const d2 = await r2.json();
-    if (typeof d2.remainingToday === 'number') remaining = d2.remainingToday;
+    if (typeof d2.remainingToday === 'number') weRemainingToday = d2.remainingToday;
   } catch(e) {}
 
-  const btn = document.getElementById('weClaimBtn');
-  const adBox = document.getElementById('weAdBox');
-  const timerBox = document.getElementById('weTimerBox');
-
-  if (remaining <= 0) {
-    if(timerBox) timerBox.style.display = 'none';
-    if(adBox) adBox.style.display = 'none';
-    if(btn) { btn.disabled = true; btn.textContent = '✅ خلصت مرات اليوم'; }
-    setEl('weRemainingText', 'رجعلك بكرة — استنى التسجيل يتجدد');
-    return;
+  const startBtn = document.getElementById('weStartBtn');
+  if (weRemainingToday <= 0) {
+    if (startBtn) { startBtn.disabled = true; startBtn.textContent = '✅ خلصت مرات اليوم'; }
+    setEl('weRemainingText2', 'رجعلك بكرة — استنى التسجيل يتجدد');
+  } else {
+    if (startBtn) { startBtn.disabled = false; startBtn.textContent = '▶️ ابدأ المشاهدة'; }
+    setEl('weRemainingText2', `متبقي ${weRemainingToday} من ${weConfig.maxPerDay} مرة اليوم`);
   }
+}
 
-  if(timerBox) timerBox.style.display = 'block';
-  if(adBox) adBox.style.display = 'flex';
-  setEl('weRemainingText', `متبقي ${remaining} من ${weConfig.maxPerDay} مرة اليوم`);
+// يبلّش فعلياً بس لما المستخدم يضغط "ابدأ المشاهدة" — هون بس بيطلب الإعلان ويبلّش العداد
+function startWatchEarn() {
+  if (weRemainingToday <= 0) return;
+  const startBox = document.getElementById('weStartBox');
+  const watchBox = document.getElementById('weWatchBox');
+  if (startBox) startBox.style.display = 'none';
+  if (watchBox) watchBox.style.display = 'block';
+
+  const adBox = document.getElementById('weAdBox');
+  setEl('weRemainingText', `متبقي ${weRemainingToday} من ${weConfig.maxPerDay} مرة اليوم`);
 
   // إذا ما في أي إعلان متجهز، بيّن رسالة بدل ما نحاول نعرض إعلان مكسور
   const adIns = document.getElementById('weAdIns');

@@ -5717,6 +5717,8 @@ function renderAuctionCard(a) {
   const topBidder = a.bids?.find(b => b.amount === topBid);
   const isWinning = topBidder?.userId === currentUser?.id;
   const canBid = currentUser && !ended && (currentUser.points > 0);
+  const regFee = Number(a.registrationFee) || 0;
+  const isRegistered = !regFee || (currentUser && Array.isArray(a.registeredUsers) && a.registeredUsers.includes(currentUser.id));
 
   return `<div style="background:var(--surface);border:1px solid ${isWinning?'var(--kick)':'var(--border2)'};border-radius:var(--radius-lg);overflow:hidden;margin-bottom:20px;transition:var(--transition);" id="auction-${a.id}">
     <!-- صورة المنتج -->
@@ -5775,8 +5777,13 @@ function renderAuctionCard(a) {
       <!-- مزايدتي -->
       <div id="auc-my-${a.id}" style="font-size:12px;color:var(--muted);margin-bottom:12px;text-align:center;display:${myBid?'block':'none'}">${myBid?'مزايدتك الحالية: <strong style="color:var(--kick);">'+(myBid.amount.toLocaleString())+' نقطة</strong>':''}</div>
 
-      <!-- زر المزايدة -->
-      ${!ended && currentUser ? `
+      <!-- زر المزايدة / التسجيل -->
+      ${!ended && currentUser && !isRegistered ? `
+      <div style="background:rgba(255,140,0,.08);border:1px solid rgba(255,140,0,.2);border-radius:10px;padding:16px;text-align:center;">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:10px;">لازم تسجّل بهالمزاد أول عشان تقدر تزايد — رسم دخول <strong style="color:var(--orange);">${regFee.toLocaleString()} نقطة</strong> (ما بيرجع)</div>
+        <button onclick="registerForAuction('${a.id}', ${regFee})" class="btn" style="background:var(--orange);color:#000;width:100%;justify-content:center;font-weight:800;">✅ سجّل بـ ${regFee.toLocaleString()} نقطة</button>
+      </div>
+      ` : !ended && currentUser ? `
       <div style="display:flex;gap:10px;">
         <input type="number" id="bid-${a.id}" placeholder="أدخل عدد النقاط" min="${Math.max(a.minBid||1, topBid+1)}" 
           style="flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:10px 14px;border-radius:10px;font-size:14px;font-family:'Cairo',sans-serif;direction:ltr;"
@@ -5787,6 +5794,26 @@ function renderAuctionCard(a) {
       ` : !currentUser ? `<button class="btn btn-kick" onclick="doLogin('kick')" style="width:100%;justify-content:center;">سجّل دخول للمزايدة</button>` : ''}
     </div>
   </div>`;
+}
+
+async function registerForAuction(auctionId, fee) {
+  if (!currentUser) { doLogin('kick'); return; }
+  if (fee > 0 && (currentUser.points||0) < fee) { showToast('نقاطك غير كافية لدفع رسم التسجيل','err'); return; }
+  if (!confirm(`رح يتخصم منك ${fee.toLocaleString()} نقطة كرسم تسجيل ثابت ما بيرجع. متأكد؟`)) return;
+  try {
+    const res = await fetch(`${W}/api/auctions/${auctionId}/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: sessionToken })
+    });
+    const d = await res.json();
+    if (d.success) {
+      currentUser.points = d.remainingPoints;
+      const ptsEl = document.getElementById('navPtsVal'); if (ptsEl) ptsEl.textContent = currentUser.points.toLocaleString();
+      showToast(d.alreadyRegistered ? 'أنت مسجّل مسبقاً' : '✅ تم التسجيل — فيك تزايد هلق');
+      loadAuctionInStore(true);
+    } else showToast(d.error || 'فشل التسجيل', 'err');
+  } catch(e) { showToast('خطأ في الاتصال', 'err'); }
 }
 
 function startAuctionTimer(a) {
@@ -5832,6 +5859,9 @@ async function placeBid(auctionId) {
       showToast('✅ تم تسجيل مزايدتك بـ '+amount.toLocaleString()+' نقطة!');
       if(input) input.value = '';
       loadAuctionInStore(true);
+    } else if (d.needsRegistration) {
+      showToast('لازم تسجّل بالمزاد أول', 'err');
+      loadAuctionInStore(true); // يعيد رسم الكارد فيظهر زر التسجيل بدل حقل المزايدة
     } else {
       showToast(d.error||'فشلت المزايدة','err');
     }
@@ -5873,6 +5903,10 @@ function openAuctionModal(id=null) {
         </div>
         <div><label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">الحد الأدنى للمزايدة (نقاط)</label>
           <input class="pf-input" id="am-min" type="number" value="${a?.minBid||1}" min="1" dir="ltr"/></div>
+        <div><label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">رسم التسجيل للمشاركة (نقاط)</label>
+          <input class="pf-input" id="am-regfee" type="number" value="${a?.registrationFee||0}" min="0" dir="ltr" placeholder="0 = بدون رسم"/>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">لازم المزايد يدفعه مرة وحدة قبل ما يقدر يزايد بهالمزاد — رسم دخول ثابت ما بيرجع، منفصل عن نقاط المزايدة</div>
+        </div>
         <div><label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">وقت الانتهاء</label>
           <input class="pf-input" id="am-end" type="datetime-local" value="${a?.endTime?new Date(a.endTime).toISOString().slice(0,16):defStr}" dir="ltr"/></div>
       </div>
@@ -5914,6 +5948,7 @@ async function saveAuction(editId='') {
   const desc = document.getElementById('am-desc')?.value.trim();
   const icon = document.getElementById('am-icon')?.value.trim() || '🎁';
   const minBid = parseInt(document.getElementById('am-min')?.value)||1;
+  const registrationFee = Math.max(0, parseInt(document.getElementById('am-regfee')?.value)||0);
   const endTime = new Date(document.getElementById('am-end')?.value).toISOString();
   const mode = document.getElementById('am-mode')?.value || 'classic';
   if (!name || !endTime) { showToast('أدخل الاسم والوقت','err'); return; }
@@ -5922,7 +5957,7 @@ async function saveAuction(editId='') {
     const res = await adminFetch(`${W}/api/admin/auctions${editId?'/'+editId:''}`, {
       method: editId ? 'PUT' : 'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,desc,icon,minBid,endTime,mode})
+      body:JSON.stringify({name,desc,icon,minBid,registrationFee,endTime,mode})
     });
     const d = await res.json();
     if(d.success) {

@@ -3800,12 +3800,45 @@ async function loadAdminProds() {
   try {
     const { products } = await (await adminFetch(`${W}/api/admin/products`)).json();
     window._adminProds = products;
-    const g = document.getElementById('prodsGrid');
-    g.innerHTML = products.length ? products.map(p => {
-      const img = p.img?`<div class="pa-img"><img src="${p.img}" alt="${p.name}"/></div>`:`<div class="pa-img">${p.icon||'🎁'}</div>`;
-      return `<div class="prod-adm">${img}<div class="pa-body"><div class="pa-name">${p.name}</div><div class="pa-price">⭐ ${p.price.toLocaleString()} نق · <span class="sbadge ${p.active?'s-done':'s-off'}">${p.active?'نشط':'موقوف'}</span></div><div class="pa-acts"><button class="btn-sm btn-edit" onclick="openProdModal(${p.id})">✏️</button><button class="btn-sm btn-pause" onclick="toggleProd(${p.id},${!p.active})">${p.active?'⏸':'▶'}</button><button class="btn-sm btn-del" onclick="delProd(${p.id})">🗑</button></div></div></div>`;
-    }).join('') : '<div class="empty"><p>لا توجد منتجات</p></div>';
+    renderAdminProdsGrid();
   } catch(e) {}
+}
+
+function renderAdminProdsGrid() {
+  const products = window._adminProds || [];
+  const g = document.getElementById('prodsGrid');
+  if (!g) return;
+  g.innerHTML = products.length ? products.map((p, i) => {
+    const img = p.img?`<div class="pa-img"><img src="${p.img}" alt="${p.name}"/></div>`:`<div class="pa-img">${p.icon||'🎁'}</div>`;
+    return `<div class="prod-adm">${img}<div class="pa-body"><div class="pa-name">${p.name}</div><div class="pa-price">⭐ ${p.price.toLocaleString()} نق · <span class="sbadge ${p.active?'s-done':'s-off'}">${p.active?'نشط':'موقوف'}</span></div><div class="pa-acts">
+      <button class="btn-sm" onclick="moveProd(${i},-1)" ${i===0?'disabled':''} style="background:var(--surface2);color:${i===0?'var(--muted2)':'var(--text)'};border:1px solid var(--border2);" title="حرّك لفوق">⬆️</button>
+      <button class="btn-sm" onclick="moveProd(${i},1)" ${i===products.length-1?'disabled':''} style="background:var(--surface2);color:${i===products.length-1?'var(--muted2)':'var(--text)'};border:1px solid var(--border2);" title="حرّك لتحت">⬇️</button>
+      <button class="btn-sm btn-edit" onclick="openProdModal(${p.id})">✏️</button><button class="btn-sm btn-pause" onclick="toggleProd(${p.id},${!p.active})">${p.active?'⏸':'▶'}</button><button class="btn-sm btn-del" onclick="delProd(${p.id})">🗑</button></div></div></div>`;
+  }).join('') : '<div class="empty"><p>لا توجد منتجات</p></div>';
+}
+
+async function moveProd(index, dir) {
+  const products = window._adminProds || [];
+  const newIndex = index + dir;
+  if (newIndex < 0 || newIndex >= products.length) return;
+  // بدّل مكان المنتجين محلياً فوراً (استجابة سريعة بدون ما تستنى السيرفر)
+  [products[index], products[newIndex]] = [products[newIndex], products[index]];
+  renderAdminProdsGrid();
+  try {
+    const res = await adminFetch(`${W}/api/admin/products-reorder`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order: products.map(p => p.id) })
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(()=>({}));
+      showToast(d.error || 'فشل حفظ الترتيب', 'err');
+      loadAdminProds(); // ارجع للترتيب الصحيح من السيرفر لو فشل الحفظ
+    }
+  } catch(e) {
+    showToast('خطأ بالاتصال أثناء حفظ الترتيب', 'err');
+    loadAdminProds();
+  }
 }
 
 function openProdModal(id) {

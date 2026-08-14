@@ -1652,7 +1652,12 @@ body.ready .page.on { opacity:1; }
   <!-- المنتجات -->
   <div id="storeTabProducts">
     <div id="storePagination" style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;flex-wrap:wrap;"></div>
-    <div class="store-grid" id="storeGrid"><p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p></div>
+    <div class="store-grid" id="storeGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--kick)" stroke-width="2" style="animation:spin 1.1s linear infinite;margin-bottom:12px;"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+        <p style="color:var(--muted);">جاري تحميل المنتجات...</p>
+      </div>
+    </div>
     </div>
   </div>
 
@@ -3601,7 +3606,7 @@ async function loadStore() {
     g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;"><div style="font-size:56px;margin-bottom:16px;">🔐</div><div style="font-size:20px;font-weight:800;margin-bottom:10px;">سجّل دخول أولاً</div><div style="font-size:14px;color:var(--muted);margin-bottom:24px;">يجب تسجيل الدخول للوصول للمتجر</div><button class="btn btn-kick" onclick="doLogin(&quot;kick&quot;)" style="font-size:15px;padding:12px 32px;">سجّل بـ Kick</button></div>';
     return;
   }
-  g.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1;">جاري التحميل...</p>';
+  g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--kick)" stroke-width="2" style="animation:spin 1.1s linear infinite;margin-bottom:12px;"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg><p style="color:var(--muted);">جاري تحميل المنتجات...</p></div>';
   fetch(`${W}/api/auctions`).then(r=>r.json()).then(({auctions})=>{ const dot=document.getElementById('auctionActiveDot'); if(dot&&auctions?.filter(a=>!a.finalized&&new Date(a.endTime)>new Date()).length) dot.style.display='block'; }).catch(()=>{});
   try {
     const { products } = await (await fetch(`${W}/api/products`)).json();

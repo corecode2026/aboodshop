@@ -2207,24 +2207,14 @@ body.ready .page.on { opacity:1; }
 
         <div class="settings-box">
           <div class="settings-box-title">📺 شاهد واربح</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">يشاهد العضو إعلان AdSense لمدة محددة ويكسب نقاط — مع حد أقصى يومي لمنع الاستغلال</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">العضو يضغط زر "شاهد الإعلان" (بيفعّل إعلان Monetag OnClick تلقائياً بتاب جديد) ويكسب نقاط — مع حد أقصى يومي لمنع الاستغلال</div>
           <div class="set-row">
             <div><div class="set-label">تفعيل الميزة</div></div>
             <label class="toggle"><input type="checkbox" id="we-enabled"/><span class="toggle-sl"></span></label>
           </div>
           <div class="set-row"><div><div class="set-label">النقاط لكل مشاهدة</div></div><input class="set-input" id="we-points" type="number" value="2" min="1" dir="ltr" style="width:80px;min-width:80px;"/></div>
-          <div class="set-row"><div><div class="set-label">مدة المشاهدة (ثانية)</div></div><input class="set-input" id="we-seconds" type="number" value="15" min="5" dir="ltr" style="width:80px;min-width:80px;"/></div>
-          <div class="set-row"><div><div class="set-label">أقصى عدد مرات باليوم</div></div><input class="set-input" id="we-maxday" type="number" value="10" min="1" dir="ltr" style="width:80px;min-width:80px;"/></div>
-          <div class="set-row"><div><div class="set-label">AdSense Client ID</div></div><input class="set-input" id="we-adclient" value="ca-pub-2053917230593629" dir="ltr" style="min-width:200px;"/></div>
-          <div style="margin-top:10px;">
-            <div class="set-label" style="margin-bottom:6px;">إعلانات "شاهد واربح" (بالترتيب)</div>
-            <div class="set-desc" style="margin-bottom:10px;">أنشئ وحدة إعلانية لكل إعلان من لوحة AdSense وضيف رقمها هون — كل ما حدا يفتح الصفحة بيشوف الإعلان اللي بعد الأخير اللي شافه، وبيرجع للأول بعد ما يخلص الدور</div>
-            <div id="weAdSlotsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>
-            <div style="display:flex;gap:8px;">
-              <input class="pf-input" id="we-new-adslot" placeholder="رقم الوحدة الإعلانية (Ad Slot ID)" dir="ltr" style="flex:1;"/>
-              <button onclick="addWeAdSlot()" style="background:var(--kick-dim);color:var(--kick);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">+ إضافة</button>
-            </div>
-          </div>
+          <div class="set-row"><div><div class="set-label">مهلة الانتظار قبل الاستلام (ثانية)</div></div><input class="set-input" id="we-seconds" type="number" value="5" min="2" dir="ltr" style="width:80px;min-width:80px;"/></div>
+          <div class="set-row"><div><div class="set-label">أقصى عدد مرات باليوم</div></div><input class="set-input" id="we-maxday" type="number" value="3" min="1" dir="ltr" style="width:80px;min-width:80px;"/></div>
           <button class="btn btn-kick" onclick="saveWatchEarnCfg()" style="margin-top:14px;width:100%;">💾 حفظ إعدادات شاهد واربح</button>
         </div>
 
@@ -2501,20 +2491,19 @@ body.ready .page.on { opacity:1; }
     <!-- المحتوى الفعلي -->
     <div id="weContent" style="display:none;">
       <div class="settings-box" style="margin-bottom:20px;text-align:center;">
-        <!-- حالة البداية — قبل ما يضغط "ابدأ المشاهدة" -->
+        <!-- حالة البداية — قبل ما يضغط "شاهد الإعلان" -->
         <div id="weStartBox" style="padding:40px 16px;">
           <div style="font-size:44px;margin-bottom:14px;">📺</div>
-          <button id="weStartBtn" class="btn btn-kick" style="font-size:15px;padding:12px 32px;" onclick="startWatchEarn()">▶️ ابدأ المشاهدة</button>
+          <p style="color:var(--muted);font-size:13px;margin-bottom:18px;">اضغط الزر — رح يفتح إعلان بتاب جديد، ارجع على هالصفحة بعدها لتستلم نقاطك</p>
+          <button id="weStartBtn" class="btn btn-kick" style="font-size:15px;padding:12px 32px;" onclick="startWatchEarn()">👆 شاهد الإعلان</button>
           <div id="weRemainingText2" style="font-size:12px;color:var(--muted);margin-top:12px;"></div>
         </div>
-        <!-- حالة المشاهدة الفعلية — تظهر بس بعد الضغط -->
+        <!-- حالة الانتظار القصير قبل الاستلام — تظهر بس بعد الضغط -->
         <div id="weWatchBox" style="display:none;">
-          <div id="weAdBox" style="background:var(--surface2);border-radius:var(--radius);min-height:250px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:16px;">
-            <ins class="adsbygoogle" id="weAdIns" style="display:block;width:100%;min-height:250px;" data-ad-client="ca-pub-2053917230593629" data-ad-format="auto" data-full-width-responsive="true"></ins>
-          </div>
+          <div style="font-size:40px;margin-bottom:14px;">✅</div>
           <div id="weTimerBox" style="margin-bottom:16px;">
             <div class="progress-wrap"><div class="progress-bar" id="weProgressBar" style="width:0%;"></div></div>
-            <div style="font-size:13px;color:var(--muted);margin-top:8px;" id="weTimerText">شاهد الإعلان لمدة <span id="weSecondsLeft">15</span> ثانية...</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:8px;" id="weTimerText">استنى <span id="weSecondsLeft">5</span> ثانية...</div>
           </div>
           <button id="weClaimBtn" class="btn btn-kick" style="width:100%;font-size:15px;padding:12px;" disabled onclick="claimWatchEarn()">🎁 استلم نقاطك</button>
           <div id="weRemainingText" style="font-size:12px;color:var(--muted);margin-top:10px;"></div>
@@ -5251,9 +5240,8 @@ async function loadExplainVideo() {
 // ══════════════════════════════════════════
 // WATCH & EARN (شاهد واربح)
 // ══════════════════════════════════════════
-let weConfig = { enabled: false, points: 2, seconds: 15, maxPerDay: 10, adClient: 'ca-pub-2053917230593629', adSlots: [] };
+let weConfig = { enabled: false, points: 2, seconds: 5, maxPerDay: 3 };
 let weTimerInterval = null;
-let weAdPushed = false;
 
 let weRemainingToday = 0; // نخزنها هون عشان startWatchEarn() يقدر يستخدمها لما يضغط المستخدم زر البدء
 
@@ -5267,7 +5255,6 @@ async function loadWatchEarn() {
   if (startBox) startBox.style.display = 'block';
   if (watchBox) watchBox.style.display = 'none';
   if (weTimerInterval) { clearInterval(weTimerInterval); weTimerInterval = null; }
-  weAdPushed = false; // كل ما ندخل الصفحة من جديد، خلي فرصة يطلب إعلان جديد لما يضغط بدء
 
   // جيب أحدث إعدادات
   try {
@@ -5280,7 +5267,7 @@ async function loadWatchEarn() {
   if (!weConfig.enabled) { if(disabledEl) disabledEl.style.display = 'block'; return; }
   if(contentEl) contentEl.style.display = 'block';
 
-  setEl('weSubtitle', `شاهد الإعلان لمدة ${weConfig.seconds} ثانية واكسب ${weConfig.points} نقطة`);
+  setEl('weSubtitle', `اضغط، شاهد الإعلان، واكسب ${weConfig.points} نقطة — حتى ${weConfig.maxPerDay} مرات باليوم`);
 
   // جيب حالة اليوم (كم مرة استفاد)
   weRemainingToday = weConfig.maxPerDay;
@@ -5295,12 +5282,14 @@ async function loadWatchEarn() {
     if (startBtn) { startBtn.disabled = true; startBtn.textContent = '✅ خلصت مرات اليوم'; }
     setEl('weRemainingText2', 'رجعلك بكرة — استنى التسجيل يتجدد');
   } else {
-    if (startBtn) { startBtn.disabled = false; startBtn.textContent = '▶️ ابدأ المشاهدة'; }
+    if (startBtn) { startBtn.disabled = false; startBtn.textContent = '👆 شاهد الإعلان'; }
     setEl('weRemainingText2', `متبقي ${weRemainingToday} من ${weConfig.maxPerDay} مرة اليوم`);
   }
 }
 
-// يبلّش فعلياً بس لما المستخدم يضغط "ابدأ المشاهدة" — هون بس بيطلب الإعلان ويبلّش العداد
+// الضغطة نفسها هي يلي بتفعّل إعلان الـ OnClick (Monetag) تلقائياً — لأنه سكريبته
+// موجود بكل صفحات الموقع وبيتفاعل مع أي ضغطة. بعد الضغط منعطي مهلة قصيرة (ثواني
+// معدودة) قبل ما نفعّل زر الاستلام، حتى نتأكد إنه فعلاً صار فيه ضغط/تفاعل حقيقي.
 function startWatchEarn() {
   if (weRemainingToday <= 0) return;
   const startBox = document.getElementById('weStartBox');
@@ -5308,42 +5297,8 @@ function startWatchEarn() {
   if (startBox) startBox.style.display = 'none';
   if (watchBox) watchBox.style.display = 'block';
 
-  const adBox = document.getElementById('weAdBox');
   setEl('weRemainingText', `متبقي ${weRemainingToday} من ${weConfig.maxPerDay} مرة اليوم`);
-
-  // إذا ما في أي إعلان متجهز، بيّن رسالة بدل ما نحاول نعرض إعلان مكسور
-  const adIns = document.getElementById('weAdIns');
-  const adSlots = getWeAdSlotsList();
-  if (adIns) {
-    const nextSlot = adSlots.length ? getNextWeAdSlot(adSlots) : '';
-    if (nextSlot) {
-      adIns.setAttribute('data-ad-slot', nextSlot);
-      if (!weAdPushed) {
-        try { (window.adsbygoogle = window.adsbygoogle || []).push({}); weAdPushed = true; } catch(e) {}
-      }
-    } else if (adBox) {
-      adBox.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);font-size:13px;">الإعلان غير مهيأ بعد من الإدارة</div>';
-    }
-  }
-
   startWeTimer();
-}
-
-// دعم النسخة القديمة (adSlot مفرد) + النسخة الجديدة (adSlots مصفوفة)
-function getWeAdSlotsList() {
-  if (Array.isArray(weConfig.adSlots) && weConfig.adSlots.length) return weConfig.adSlots;
-  if (weConfig.adSlot) return [weConfig.adSlot]; // توافق مع إعداد قديم محفوظ بحقل واحد
-  return [];
-}
-
-// يرجّع الإعلان اللي بعد آخر وحدة اتفرجوا عليها بنفس الجهاز، وبيلف على الأول
-// بعد ما يخلص الدور — يعني كل زيارة/تحديث للصفحة بيجيب إعلان مختلف بالترتيب
-function getNextWeAdSlot(adSlots) {
-  let idx = 0;
-  try { idx = parseInt(localStorage.getItem('we_ad_rotation_index') || '0', 10) || 0; } catch(e) {}
-  const slot = adSlots[idx % adSlots.length];
-  try { localStorage.setItem('we_ad_rotation_index', String((idx + 1) % adSlots.length)); } catch(e) {}
-  return slot;
 }
 
 function startWeTimer() {
@@ -5398,53 +5353,16 @@ function loadWatchEarnAdminFields() {
   setVal('we-points', weConfig.points);
   setVal('we-seconds', weConfig.seconds);
   setVal('we-maxday', weConfig.maxPerDay);
-  setVal('we-adclient', weConfig.adClient);
   const cb = document.getElementById('we-enabled');
   if (cb) cb.checked = !!weConfig.enabled;
-  // توافق مع إعداد قديم بحقل واحد (adSlot) — حوّله لمصفوفة أول مرة تفتح الإعدادات
-  if (!Array.isArray(weConfig.adSlots) || !weConfig.adSlots.length) {
-    weConfig.adSlots = weConfig.adSlot ? [weConfig.adSlot] : [];
-  }
-  renderWeAdSlotsList();
-}
-
-function renderWeAdSlotsList() {
-  const el = document.getElementById('weAdSlotsList');
-  if (!el) return;
-  const slots = weConfig.adSlots || [];
-  el.innerHTML = slots.length ? slots.map((slot, i) => `
-    <div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:8px 12px;">
-      <span style="width:24px;height:24px;border-radius:50%;background:var(--kick-dim);color:var(--kick);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
-      <span style="flex:1;font-family:monospace;font-size:13px;direction:ltr;text-align:left;">${slot}</span>
-      <button onclick="removeWeAdSlot(${i})" style="background:rgba(255,59,92,.1);color:var(--red);border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'Cairo',sans-serif;">حذف</button>
-    </div>
-  `).join('') : '<p style="color:var(--muted);font-size:12px;">ما ضفت أي إعلان بعد</p>';
-}
-
-function addWeAdSlot() {
-  const inp = document.getElementById('we-new-adslot');
-  const val = inp?.value.trim();
-  if (!val) { showToast('أدخل رقم الوحدة الإعلانية', 'err'); return; }
-  if (!Array.isArray(weConfig.adSlots)) weConfig.adSlots = [];
-  if (weConfig.adSlots.includes(val)) { showToast('هالإعلان مضاف مسبقاً', 'err'); return; }
-  weConfig.adSlots.push(val);
-  inp.value = '';
-  renderWeAdSlotsList();
-}
-
-function removeWeAdSlot(idx) {
-  weConfig.adSlots.splice(idx, 1);
-  renderWeAdSlotsList();
 }
 
 async function saveWatchEarnCfg() {
   const cfg = {
     enabled: !!document.getElementById('we-enabled')?.checked,
     points: Number(document.getElementById('we-points')?.value) || 2,
-    seconds: Number(document.getElementById('we-seconds')?.value) || 15,
-    maxPerDay: Number(document.getElementById('we-maxday')?.value) || 10,
-    adClient: document.getElementById('we-adclient')?.value.trim() || 'ca-pub-2053917230593629',
-    adSlots: weConfig.adSlots || [],
+    seconds: Number(document.getElementById('we-seconds')?.value) || 5,
+    maxPerDay: Number(document.getElementById('we-maxday')?.value) || 3,
   };
   try {
     const res = await adminFetch(`${W}/api/settings`, {

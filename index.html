@@ -7619,13 +7619,16 @@ function renderUpdatesAdmin() {
       '<select data-idx="'+i+'" data-field="link" onchange="updateItem(this)" class="pf-input" style="font-size:12px;">'+
         '<option value="" '+(!u.link?'selected':'')+'>بدون رابط</option>'+
         '<option value="store" '+(u.link==="store"?'selected':'')+'>🛍️ المتجر</option>'+
+        '<option value="store-channel" '+(u.link==="store-channel"?'selected':'')+'>📢 قناة المتجر</option>'+
         '<option value="market" '+(u.link==="market"?'selected':'')+'>🛒 السوق</option>'+
         '<option value="tournaments" '+(u.link==="tournaments"?'selected':'')+'>🏆 البطولات</option>'+
         '<option value="daily" '+(u.link==="daily"?'selected':'')+'>📅 التسجيل اليومي</option>'+
+        '<option value="watch-earn" '+(u.link==="watch-earn"?'selected':'')+'>📺 شاهد واربح</option>'+
         '<option value="points" '+(u.link==="points"?'selected':'')+'>⭐ النقاط</option>'+
         '<option value="profile" '+(u.link==="profile"?'selected':'')+'>👤 ملفي</option>'+
         '<option value="rules" '+(u.link==="rules"?'selected':'')+'>📋 القوانين</option>'+
         '<option value="about" '+(u.link==="about"?'selected':'')+'>ℹ️ من أنا</option>'+
+        '<option value="explain" '+(u.link==="explain"?'selected':'')+'>🎬 الشرح</option>'+
         '<option value="dms" '+(u.link==="dms"?'selected':'')+'>💬 الرسائل</option>'+
       '</select>'+
     '</div>'

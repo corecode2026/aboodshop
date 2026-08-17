@@ -1429,7 +1429,6 @@ input, select, textarea { font-family:'Cairo',sans-serif; }
   document.addEventListener('contextmenu', e => e.preventDefault());
 })();
 </script>
-<script>(function(s){s.dataset.zone='11591994',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 </head>
 <body>
 
@@ -5240,6 +5239,24 @@ async function loadExplainVideo() {
 // WATCH & EARN (شاهد واربح)
 // ══════════════════════════════════════════
 let weConfig = { enabled: false, points: 2, seconds: 5, maxPerDay: 3 };
+let weAdScriptLoaded = false;
+
+// نحمّل سكريبت إعلان Monetag بس أول ما المستخدم يدخل صفحة "شاهد واربح" —
+// مش من أول ما يفتح الموقع. ملاحظة مهمة: هاد إعلان نوعه OnClick، يعني بمجرد
+// ما يتحمّل، بيصير شغال على أي ضغطة بالصفحة (مش بس زر "شاهد الإعلان" تحديداً)
+// طول ما المستخدم قاعد بنفس الجلسة — لأنه سكريبت زي هيك بيسجّل مستمع ضغط عام
+// وما في طريقة "نلغي" تسجيله لاحقاً حتى لو حذفنا وسم السكريبت. أفضل شي ممكن
+// نعمله هو تأخير تحميله لحد ما يوصل هالصفحة تحديداً، مش منعه نهائياً برة منها.
+function loadWeAdScriptIfNeeded() {
+  if (weAdScriptLoaded) return;
+  try {
+    const s = document.createElement('script');
+    s.dataset.zone = '11591994';
+    s.src = 'https://nap5k.com/tag.min.js';
+    document.body.appendChild(s);
+    weAdScriptLoaded = true;
+  } catch(e) {}
+}
 let weTimerInterval = null;
 
 let weRemainingToday = 0; // نخزنها هون عشان startWatchEarn() يقدر يستخدمها لما يضغط المستخدم زر البدء
@@ -5254,6 +5271,7 @@ async function loadWatchEarn() {
   if (startBox) startBox.style.display = 'block';
   if (watchBox) watchBox.style.display = 'none';
   if (weTimerInterval) { clearInterval(weTimerInterval); weTimerInterval = null; }
+  loadWeAdScriptIfNeeded(); // حمّل سكريبت الإعلان بس هلق، أول ما وصل هالصفحة
 
   // جيب أحدث إعدادات
   try {

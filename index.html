@@ -6185,7 +6185,7 @@ async function submitAdmin() {
       headers:{'x-admin-session':adminSession, 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: user, password: pass })
     });
-    const loginD = await loginRes.json();
+    const loginD = await loginRes.json().catch(()=>({}));
     if (loginD.success && loginD.token) {
       adminSession = loginD.token;
       _adminSession = loginD.token;
@@ -6201,9 +6201,12 @@ async function submitAdmin() {
       showToast('أهلاً بك في الإدارة 🛡️');
       return;
     }
-  } catch(e) {}
-
-  setEl('aErr', '❌ بيانات خاطئة');
+    // فشل حقيقي من السيرفر — بيّن السبب الفعلي يلي رجعه (بدل رسالة عامة دايماً)
+    setEl('aErr', '❌ ' + (loginD.error || ('خطأ HTTP ' + loginRes.status)));
+  } catch(e) {
+    // فشل الاتصال نفسه (شبكة، CORS...) — مختلف عن "بيانات خاطئة" تماماً
+    setEl('aErr', '❌ تعذّر الاتصال بالسيرفر: ' + (e && e.message ? e.message : String(e)));
+  }
 }
 
 

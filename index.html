@@ -1532,7 +1532,6 @@ body.ready .page.on { opacity:1; }
     <button class="nl" onclick="goTo('about',this)">من أنا</button>
     <button class="nl" onclick="goTo('store',this)">المتجر</button>
     <button class="nl" onclick="goTo('store-channel',this)">قناة المتجر</button>
-    <button class="nl" onclick="goTo('market',this)">السوق</button>
     <button id="navUpdatesBtn" class="nl" onclick="goTo('updates',this)" style="display:none;">تحديثات</button>
     <button class="nl" onclick="goTo('rules',this)">القوانين</button>
     <button class="nl" onclick="goTo('points',this)">النقاط</button>
@@ -1753,7 +1752,6 @@ body.ready .page.on { opacity:1; }
         <button class="am" onclick="aTab('products',this)" data-tab="products"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></span> المنتجات</button>
         <button class="am" onclick="aTab('users',this)" data-tab="users"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span> المستخدمون</button>
         <button class="am" onclick="aTab('messages-admin',this)" data-tab="messages-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span> رسائل</button>
-        <button class="am" onclick="aTab('market-admin',this)" data-tab="market-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></span> السوق</button>
         <button class="am" onclick="aTab('store-channel-admin',this)" data-tab="store-channel-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></span> قناة المتجر</button>
         <button class="am" onclick="aTab('tournaments-admin',this)" data-tab="tournaments-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 01-2-2V5h4"/><path d="M18 9h2a2 2 0 002-2V5h-4"/><path d="M12 17v4"/><path d="M8 21h8"/><path d="M6 3h12v8a6 6 0 01-12 0V3z"/></svg></span> البطولات</button>
         <button class="am" onclick="aTab('auction-admin',this)" data-tab="auction-admin"><span class="am-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span> المزاد</button>
@@ -1917,11 +1915,6 @@ body.ready .page.on { opacity:1; }
         </div>
       </div>
 
-      <!-- MARKET ADMIN -->
-      <div class="asub" id="asub-market-admin">
-        <div class="section-head"><div class="section-title">إدارة السوق المجتمعي</div></div>
-        <div id="marketAdminList"></div>
-      </div>
 
       <!-- STORE CHANNEL ADMIN -->
       <div class="asub" id="asub-store-channel-admin">
@@ -2531,22 +2524,6 @@ body.ready .page.on { opacity:1; }
 
 
 
-<!-- MARKET PAGE -->
-<section class="page" id="page-market">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-    <div>
-      <div class="section-title">🛒 السوق <span class="green">المجتمعي</span></div>
-      <div style="font-size:12px;color:var(--muted);">انشر منتجاتك للبيع والشراء</div>
-    </div>
-    <button class="btn btn-kick" onclick="openMarketPost()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      نشر منتجك
-    </button>
-  </div>
-  <div id="marketGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;">
-    <div class="empty"><p style="color:var(--muted);">جاري التحميل...</p></div>
-  </div>
-</section>
 
 
 
@@ -2656,10 +2633,6 @@ body.ready .page.on { opacity:1; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       من أنا
     </button>
-    <button class="dl" onclick="drawerGoTo('market')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-      السوق
-    </button>
     <button class="dl" onclick="drawerGoTo('store')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
       المتجر
@@ -2751,95 +2724,6 @@ body.ready .page.on { opacity:1; }
 </div>
 
 
-<!-- MARKET POST MODAL -->
-<div class="overlay hidden" id="marketModal" style="position:fixed!important;inset:0!important;z-index:99999!important;display:none;align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
-  <div class="modal wide" style="max-width:500px;text-align:right;max-height:90vh;overflow-y:auto;">
-    <h3 style="margin-bottom:16px;">📦 نشر منتج</h3>
-    
-    <!-- صور متعددة -->
-    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;">صور المنتج (حتى 5 صور)</div>
-    <div id="mkt-imgs-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;">
-      <div onclick="document.getElementById('mkt-img-file').click()" style="aspect-ratio:1;background:var(--surface2);border:2px dashed var(--border2);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;transition:var(--transition);" onmouseover="this.style.borderColor='var(--kick)'" onmouseout="this.style.borderColor='var(--border2)'">+</div>
-    </div>
-    <input type="file" id="mkt-img-file" accept="image/*" multiple style="display:none;" onchange="handleMarketImgs(event)"/>
-    
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
-      <div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">اسم المنتج *</div>
-        <input class="pf-input" id="mkt-name" placeholder="مثال: آيفون 15 برو"/>
-      </div>
-      <div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">الوصف</div>
-        <textarea class="pf-input" id="mkt-desc" rows="2" style="resize:vertical;" placeholder="حالة المنتج، المواصفات..."></textarea>
-      </div>
-
-      <!-- نوع النشر -->
-      <div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;">نوع النشر</div>
-        <div style="display:flex;gap:10px;">
-          <label style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:var(--transition);">
-            <input type="radio" name="mkt-type" value="sell" checked onchange="toggleMktType()" style="accent-color:var(--kick);"/>
-            <div><div style="font-size:13px;font-weight:700;">💰 بيع مباشر</div><div style="font-size:11px;color:var(--muted);">سعر ثابت بالدولار</div></div>
-          </label>
-          <label style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:var(--transition);">
-            <input type="radio" name="mkt-type" value="auction" onchange="toggleMktType()" style="accent-color:var(--kick);"/>
-            <div><div style="font-size:13px;font-weight:700;">🔨 مزاد</div><div style="font-size:11px;color:var(--muted);">أعلى سعر يفوز</div></div>
-          </label>
-        </div>
-      </div>
-
-      <!-- حقول البيع -->
-      <div id="mkt-sell-fields">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">السعر ($)</div>
-        <input class="pf-input" id="mkt-price" type="number" placeholder="99" dir="ltr" min="0"/>
-      </div>
-
-      <!-- حقول المزاد -->
-      <div id="mkt-auction-fields" style="display:none;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">أقل سعر ($)</div>
-            <input class="pf-input" id="mkt-start-price" type="number" placeholder="10" dir="ltr" min="1"/>
-          </div>
-          <div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">ينتهي خلال</div>
-            <select class="pf-input" id="mkt-duration">
-              <option value="1">ساعة واحدة</option>
-              <option value="3">3 ساعات</option>
-              <option value="6">6 ساعات</option>
-              <option value="12">12 ساعة</option>
-              <option value="24" selected>يوم كامل</option>
-              <option value="48">يومين</option>
-              <option value="72">3 أيام</option>
-              <option value="168">أسبوع</option>
-            </select>
-          </div>
-          <div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">خصم بكل مزايدة</div>
-            <select class="pf-input" id="mkt-deduct">
-              <option value="0">لا خصم</option>
-              <option value="1" selected>دقيقة واحدة</option>
-              <option value="2">دقيقتان</option>
-              <option value="5">5 دقائق</option>
-              <option value="10">10 دقائق</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;">رقم واتساب *</div>
-        <input class="pf-input" id="mkt-whatsapp" placeholder="970591234567" dir="ltr" type="tel"/>
-      </div>
-    </div>
-    
-    <div id="mkt-err" style="color:var(--red);font-size:12px;margin-bottom:10px;"></div>
-    <div class="m-btns">
-      <button class="m-ok" onclick="submitMarketPost()">📦 نشر الآن</button>
-      <button class="m-cancel" onclick="closeMarketModal()">إلغاء</button>
-    </div>
-  </div>
-</div>
 
 
 <!-- PRODUCT CROP MODAL -->
@@ -2949,7 +2833,7 @@ function goTo(id, btn) {
   // سجّل زيارة الصفحة للمستخدم
   if (currentUser && id !== 'home' && id !== 'admin') {
     var pageNames = {
-      'store': 'المتجر', 'market': 'السوق', 'tournaments': 'البطولات',
+      'store': 'المتجر', 'tournaments': 'البطولات',
       'points': 'النقاط', 'profile': 'ملفي', 'daily': 'التسجيل اليومي',
       'about': 'من أنا', 'rules': 'القوانين', 'explain': 'الشرح'
     };
@@ -2969,7 +2853,6 @@ function goTo(id, btn) {
   document.getElementById('page-' + id)?.classList.add('on');
   if (btn && btn.classList) btn.classList.add('on');
   if (id === 'store') loadStore();
-  if (id === 'market') loadMarket();
   if (id === 'tournaments') loadTournaments();
   if (id !== 'store') stopAuctionAutoRefresh();
   if (id === 'points') loadPoints();
@@ -3779,7 +3662,6 @@ function aTab(tab, btn) {
   if(tab==='logs') loadActivityLogs();
   if(tab==='auction-admin') loadAuctionAdmin();
   if(tab==='tournaments-admin') loadTournamentsAdmin();
-  if(tab==='market-admin') loadMarketAdmin();
   if(tab==='store-channel-admin') loadScAdmin();
   if(tab==='messages-admin') loadAdminMessages();
   if(tab==='security') loadSecurityLogs();
@@ -6554,269 +6436,6 @@ async function deleteScPost(id) {
 try { setScPostType('text'); } catch(e) {} // شكل افتراضي صح لأزرار نوع المنشور من أول تحميل
 
 
-// ══════════════════════════════════════════
-// MARKET SYSTEM
-// ══════════════════════════════════════════
-let _marketImgs = [];
-let _mktCurrentImg = 0;
-
-function toggleMktType() {
-  const type = document.querySelector('input[name="mkt-type"]:checked')?.value;
-  document.getElementById('mkt-sell-fields').style.display = type === 'sell' ? 'block' : 'none';
-  document.getElementById('mkt-auction-fields').style.display = type === 'auction' ? 'block' : 'none';
-}
-
-function openMarketPost() {
-  if (!currentUser) {
-    showToast('سجّل دخول بـ Kick أولاً', 'err');
-    doLogin('kick');
-    return;
-  }
-  _marketImgs = [];
-  ['mkt-name','mkt-desc','mkt-price','mkt-whatsapp','mkt-start-price'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.value = '';
-  });
-  document.getElementById('mkt-err').textContent = '';
-  document.querySelector('input[name="mkt-type"][value="sell"]').checked = true;
-  toggleMktType();
-  renderMktImgsGrid();
-  const m = document.getElementById('marketModal');
-  m.classList.remove('hidden'); m.style.display = 'flex';
-}
-
-function closeMarketModal() {
-  const m = document.getElementById('marketModal');
-  m.classList.add('hidden'); m.style.display = 'none';
-}
-
-function handleMarketImgs(e) {
-  const files = Array.from(e.target.files).slice(0, 5 - _marketImgs.length);
-  files.forEach(f => {
-    const r = new FileReader();
-    r.onload = ev => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX = 600;
-        let w=img.width, h=img.height;
-        if(w>h){if(w>MAX){h=Math.round(h*(MAX/w));w=MAX;}}else{if(h>MAX){w=Math.round(w*(MAX/h));h=MAX;}}
-        canvas.width=w; canvas.height=h;
-        canvas.getContext('2d').drawImage(img,0,0,w,h);
-        _marketImgs.push(canvas.toDataURL('image/jpeg',0.75));
-        renderMktImgsGrid();
-      };
-      img.src = ev.target.result;
-    };
-    r.readAsDataURL(f);
-  });
-  e.target.value = '';
-}
-
-function renderMktImgsGrid() {
-  const grid = document.getElementById('mkt-imgs-grid');
-  if (!grid) return;
-  let html = _marketImgs.map((src, i) => `
-    <div style="aspect-ratio:1;border-radius:10px;overflow:hidden;position:relative;border:1px solid var(--border2);">
-      <img src="${src}" style="width:100%;height:100%;object-fit:cover;"/>
-      <button onclick="removeMktImg(${i})" style="position:absolute;top:3px;left:3px;background:rgba(255,59,92,.9);color:#fff;border:none;width:18px;height:18px;border-radius:50%;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-    </div>
-  `).join('');
-  if (_marketImgs.length < 5) {
-    html += `<div onclick="document.getElementById('mkt-img-file').click()" style="aspect-ratio:1;background:var(--surface2);border:2px dashed var(--border2);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--muted);" onmouseover="this.style.borderColor='var(--kick)'" onmouseout="this.style.borderColor='var(--border2)'">+</div>`;
-  }
-  grid.innerHTML = html;
-}
-
-function removeMktImg(i) {
-  _marketImgs.splice(i, 1);
-  renderMktImgsGrid();
-}
-
-async function submitMarketPost() {
-  const name = document.getElementById('mkt-name').value.trim();
-  const desc = document.getElementById('mkt-desc').value.trim();
-  const whatsapp = document.getElementById('mkt-whatsapp').value.trim();
-  const type = document.querySelector('input[name="mkt-type"]:checked')?.value || 'sell';
-  const err = document.getElementById('mkt-err');
-
-  if (!name) { err.textContent = 'أدخل اسم المنتج'; return; }
-  if (!whatsapp) { err.textContent = 'أدخل رقم واتساب'; return; }
-
-  const post = {
-    name, desc, whatsapp, type,
-    imgs: _marketImgs,
-    status: 'pending',
-    seller: currentUser ? currentUser.username : 'زائر',
-    sellerId: currentUser ? currentUser.id : null,
-    sellerAvatar: currentUser?.avatar || null,
-    date: new Date().toISOString(),
-    bids: [],
-  };
-
-  if (type === 'sell') {
-    post.price = Number(document.getElementById('mkt-price').value) || 0;
-  } else {
-    post.startPrice = Number(document.getElementById('mkt-start-price').value) || 1;
-    post.price = post.startPrice;
-    const hours = Number(document.getElementById('mkt-duration').value) || 24;
-    post.deductPerBid = Number(document.getElementById('mkt-deduct').value) || 0;
-    post.endTime = new Date(Date.now() + hours * 3600000).toISOString();
-  }
-
-  try {
-    const res = await fetch(`${W}/api/market`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ post })
-    });
-    const d = await res.json();
-    if (d.success) {
-      closeMarketModal();
-      showToast('⏳ طلبك قيد المراجعة — سيظهر بعد موافقة الإدارة');
-      logUserActivity('نشر منتج', post.name + ' — بانتظار الموافقة');
-      loadMarket();
-    } else { err.textContent = d.error || 'خطأ في النشر'; }
-  } catch(e) { err.textContent = 'خطأ في الاتصال'; }
-}
-
-async function placeMktBid(postId) {
-  if (!currentUser) { showToast('سجّل دخول أولاً','err'); return; }
-  const input = document.getElementById('mkt-bid-'+postId);
-  const amount = parseFloat(input?.value);
-  if (!amount || amount <= 0) { showToast('أدخل مبلغ المزايدة','err'); return; }
-
-  try {
-    const res = await fetch(`${W}/api/market/${postId}/bid`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ amount, username: currentUser.username, userId: currentUser.id, whatsapp: '' })
-    });
-    const d = await res.json();
-    if (d.success) {
-      showToast('✅ تم تسجيل مزايدتك بـ $'+amount + (d.newEndTime ? ' ⏱' : ''));
-      if(input) input.value = '';
-      // حدّث العداد فوراً
-      if (d.newEndTime) startMktTimer(postId, d.newEndTime);
-      loadMarket();
-    } else showToast(d.error||'خطأ','err');
-  } catch(e) { showToast('خطأ','err'); }
-}
-
-async function loadMarket() {
-  const grid = document.getElementById('marketGrid');
-  if (!grid) return;
-  try {
-    const res = await fetch(`${W}/api/market`);
-    const { posts: allPosts } = await res.json();
-    const posts = (allPosts||[]).filter(p => p.status === 'approved');
-    if (!posts || !posts.length) {
-      grid.innerHTML = '<div class="empty" style="grid-column:1/-1;text-align:center;padding:60px;"><div style="font-size:48px;margin-bottom:12px;">🛒</div><p style="color:var(--muted);">لا توجد منتجات بعد — كن أول من ينشر!</p></div>';
-      return;
-    }
-    // امسح العدادات القديمة
-    Object.values(_mktTimers).forEach(t=>clearInterval(t)); _mktTimers={};
-    const auctionPosts = posts.filter(p=>p.type==='auction');
-    grid.innerHTML = posts.map(p => {
-      const isAuction = p.type === 'auction';
-      const ended = isAuction && new Date(p.endTime) <= new Date();
-      const topBid = p.bids?.length ? Math.max(...p.bids.map(b=>b.amount)) : p.startPrice||p.price||0;
-      const topBidder = p.bids?.find(b=>b.amount===topBid);
-      const imgs = p.imgs || (p.img ? [p.img] : []);
-
-      return `<div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;transition:var(--transition);" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
-        ${imgs.length > 0 ? `
-          <div style="position:relative;width:100%;height:160px;overflow:hidden;background:var(--surface2);">
-            <img id="mkt-img-${p.id}" src="${imgs[0]}" style="width:100%;height:100%;object-fit:cover;"/>
-            ${imgs.length > 1 ? `
-              <div style="position:absolute;bottom:6px;left:0;right:0;display:flex;justify-content:center;gap:4px;">
-                ${imgs.map((_,i)=>`<div onclick="document.getElementById('mkt-img-${p.id}').src='${imgs[i]}'" style="width:6px;height:6px;border-radius:50%;background:${i===0?'#fff':'rgba(255,255,255,.5)'};cursor:pointer;"></div>`).join('')}
-              </div>
-              <button onclick="prevMktImg('${p.id}',${JSON.stringify(imgs).replace(/"/g,"'")},-1)" style="position:absolute;left:6px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);color:#fff;border:none;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:14px;">‹</button>
-              <button onclick="prevMktImg('${p.id}',${JSON.stringify(imgs).replace(/"/g,"'")},1)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);color:#fff;border:none;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:14px;">›</button>
-            ` : ''}
-            ${isAuction ? `<div style="position:absolute;top:8px;right:8px;background:${ended?'var(--red)':'var(--kick)'};color:${ended?'#fff':'#000'};font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;">${ended?'انتهى':'🔨 مزاد'}</div>` : ''}
-          </div>
-        ` : `<div style="width:100%;height:100px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:40px;">📦</div>`}
-        
-        <div style="padding:12px;">
-          <div style="font-size:14px;font-weight:800;margin-bottom:4px;">${p.name}</div>
-          ${p.desc ? `<div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${p.desc}</div>` : ''}
-          
-          ${isAuction ? `
-            <div style="background:var(--surface2);border-radius:8px;padding:10px;margin-bottom:10px;">
-              <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-                <span style="font-size:12px;color:var(--muted);">أعلى مزايدة</span>
-                <span style="font-size:15px;font-weight:900;color:var(--kick);">$${topBid}</span>
-              </div>
-              ${topBidder ? `<div style="font-size:11px;color:var(--muted);">بواسطة: ${topBidder.username}</div>` : ''}
-              ${!ended ? `<div id="mkt-timer-${p.id}" style="font-size:11px;color:var(--kick);margin-top:4px;font-weight:700;">⏱ --:--:--</div>` : ''}
-            </div>
-            ${!ended ? `
-              <div style="display:flex;gap:6px;margin-bottom:8px;">
-                <input id="mkt-bid-${p.id}" type="number" placeholder="$${topBid+1}" min="${topBid+1}" step="0.5"
-                  style="flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:7px 10px;border-radius:8px;font-size:13px;direction:ltr;"/>
-                <button onclick="placeMktBid('${p.id}')" class="btn btn-kick" style="padding:7px 14px;font-size:12px;">زايد 🔨</button>
-              </div>
-            ` : `<div style="text-align:center;font-size:12px;color:var(--red);font-weight:700;margin-bottom:8px;">🏆 الفائز: ${topBidder?.username||'لا يوجد'}</div>`}
-          ` : `
-            <div style="font-size:16px;font-weight:900;color:var(--kick);margin-bottom:10px;">${p.price ? '$'+p.price : 'تواصل للسعر'}</div>
-          `}
-          
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
-            ${p.sellerAvatar ? `<img src="${p.sellerAvatar}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;"/>` : ''}
-            <span style="font-size:11px;color:var(--muted);">@${p.seller} · ${fmtDate(p.date)}</span>
-          </div>
-          
-          <a href="https://wa.me/${p.whatsapp.replace(/[^0-9]/g,'')}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#25D366;color:#fff;padding:8px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/></svg>
-            تواصل واتساب
-          </a>
-          ${adminIn ? `<button onclick="deleteMarketPost('${p.id}')" style="width:100%;margin-top:6px;background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);padding:6px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Cairo',sans-serif;">🗑 حذف</button>` : ''}
-        </div>
-      </div>`;
-    }).join('');
-    // ابدأ العدادات
-    setTimeout(() => {
-      auctionPosts.forEach(p => {
-        if (new Date(p.endTime) > new Date()) startMktTimer(p.id, p.endTime);
-      });
-    }, 100);
-  } catch(e) { grid.innerHTML = '<div class="empty"><p>خطأ في التحميل</p></div>'; }
-}
-
-let _mktTimers = {};
-function startMktTimer(id, endTime) {
-  if(_mktTimers[id]) clearInterval(_mktTimers[id]);
-  function update() {
-    const diff = new Date(endTime) - new Date();
-    const el = document.getElementById('mkt-timer-'+id);
-    if (!el) { clearInterval(_mktTimers[id]); return; }
-    if (diff <= 0) { el.textContent = '⏱ انتهى'; el.style.color='var(--red)'; clearInterval(_mktTimers[id]); return; }
-    const h = Math.floor(diff/3600000);
-    const m = Math.floor((diff%3600000)/60000);
-    const s = Math.floor((diff%60000)/1000);
-    el.textContent = '⏱ '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-    el.style.color = diff < 600000 ? 'var(--red)' : 'var(--kick)';
-  }
-  update();
-  _mktTimers[id] = setInterval(update, 1000);
-}
-
-let _mktImgIdx = {};
-function prevMktImg(id, imgs, dir) {
-  if (!_mktImgIdx[id]) _mktImgIdx[id] = 0;
-  _mktImgIdx[id] = (_mktImgIdx[id] + dir + imgs.length) % imgs.length;
-  const el = document.getElementById('mkt-img-'+id);
-  if(el) el.src = imgs[_mktImgIdx[id]];
-}
-
-async function deleteMarketPost(id) {
-  if (!confirm('حذف هذا الإعلان؟')) return;
-  try {
-    await fetch(`${W}/api/market/${id}`, { method:'DELETE', headers:{'x-admin-session':adminSession} });
-    showToast('تم الحذف'); loadMarket();
-  } catch(e) {}
-}
 
 
 // ══════════════════════════════════════════
@@ -7093,54 +6712,6 @@ async function deleteTeam(tournId, teamIdx) {
 }
 
 
-async function loadMarketAdmin() {
-  const el = document.getElementById('marketAdminList');
-  if (!el) return;
-  try {
-    const res = await adminFetch(`${W}/api/admin/market`);
-    const { posts } = await res.json();
-    if (!posts?.length) { el.innerHTML = '<div class="empty"><p>لا توجد منتجات</p></div>'; return; }
-    
-    const pending = posts.filter(p => p.status === 'pending');
-    const approved = posts.filter(p => p.status === 'approved');
-    
-    el.innerHTML = `
-      ${pending.length ? `<div style="font-size:13px;font-weight:700;color:var(--orange);margin-bottom:12px;">⏳ بانتظار الموافقة (${pending.length})</div>` : ''}
-      ${pending.map(p => renderMarketAdminCard(p)).join('')}
-      ${approved.length ? `<div style="font-size:13px;font-weight:700;color:var(--kick);margin:16px 0 12px;">✅ مقبولة (${approved.length})</div>` : ''}
-      ${approved.map(p => renderMarketAdminCard(p)).join('')}
-    `;
-  } catch(e) {}
-}
-
-function renderMarketAdminCard(p) {
-  const isPending = p.status === 'pending';
-  return `<div style="background:var(--surface);border:1px solid ${isPending?'rgba(255,140,0,.3)':'var(--border2)'};border-radius:var(--radius);padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;">
-    ${p.imgs?.length ? `<img src="${p.imgs[0]}" style="width:64px;height:64px;border-radius:8px;object-fit:cover;flex-shrink:0;"/>` : '<div style="width:64px;height:64px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📦</div>'}
-    <div style="flex:1;">
-      <div style="font-size:13px;font-weight:700;">${p.name}</div>
-      <div style="font-size:12px;color:var(--muted);margin:3px 0;">${p.desc||''}</div>
-      <div style="font-size:12px;color:var(--muted);">@${p.seller} · ${p.type==='auction'?'مزاد':'بيع'} · ${p.price?'$'+p.price:''}</div>
-      <div style="font-size:11px;color:var(--muted);">واتساب: ${p.whatsapp}</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-      ${isPending ? `<button onclick="approveMarket('${p.id}')" class="btn-sm btn-ok">✅ قبول</button>` : ''}
-      <button onclick="deleteMarketPost('${p.id}')" class="btn-sm btn-del">🗑 حذف</button>
-    </div>
-  </div>`;
-}
-
-async function approveMarket(id) {
-  try {
-    const res = await adminFetch(`${W}/api/admin/market/${id}/approve`, {
-      method: 'POST',
-      headers:{'x-admin-session':adminSession}
-    });
-    const d = await res.json();
-    if (d.success) { showToast('✅ تم قبول المنتج'); logActivity('قبول منتج سوق', id); loadMarketAdmin(); }
-    else showToast(d.error||'خطأ','err');
-  } catch(e) { showToast('خطأ','err'); }
-}
 
 
 async function clearLogs() {
@@ -7623,7 +7194,6 @@ function renderUpdatesAdmin() {
         '<option value="" '+(!u.link?'selected':'')+'>بدون رابط</option>'+
         '<option value="store" '+(u.link==="store"?'selected':'')+'>🛍️ المتجر</option>'+
         '<option value="store-channel" '+(u.link==="store-channel"?'selected':'')+'>📢 قناة المتجر</option>'+
-        '<option value="market" '+(u.link==="market"?'selected':'')+'>🛒 السوق</option>'+
         '<option value="tournaments" '+(u.link==="tournaments"?'selected':'')+'>🏆 البطولات</option>'+
         '<option value="daily" '+(u.link==="daily"?'selected':'')+'>📅 التسجيل اليومي</option>'+
         '<option value="watch-earn" '+(u.link==="watch-earn"?'selected':'')+'>📺 شاهد واربح</option>'+
